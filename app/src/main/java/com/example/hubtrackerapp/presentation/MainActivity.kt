@@ -1,4 +1,4 @@
-package com.example.hubtrackerapp
+package com.example.hubtrackerapp.presentation
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -11,7 +11,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import com.example.hubtrackerapp.ui.theme.HubTrackerAppTheme
+import com.example.hubtrackerapp.presentation.ui.theme.HubTrackerAppTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
