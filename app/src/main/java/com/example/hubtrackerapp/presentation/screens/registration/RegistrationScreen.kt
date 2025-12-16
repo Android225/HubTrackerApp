@@ -1,6 +1,6 @@
 @file:OptIn(ExperimentalMaterial3Api::class)
 
-package com.example.hubtrackerapp.presentation.screens.authorization
+package com.example.hubtrackerapp.presentation.screens.registration
 
 import android.content.Context
 import androidx.compose.foundation.background
@@ -34,26 +34,21 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.input.VisualTransformation
-import androidx.compose.ui.text.input.VisualTransformation.Companion
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.hubtrackerapp.presentation.screens.authorization.AuthorizationViewModel
 import com.example.hubtrackerapp.presentation.theme.Black10
 import com.example.hubtrackerapp.presentation.theme.Black20
 import com.example.hubtrackerapp.presentation.theme.Black60
 import com.example.hubtrackerapp.presentation.theme.Blue100
 import com.example.hubtrackerapp.presentation.theme.White100
-
+import java.time.format.TextStyle
 
 @Composable
-fun AuthorizationHubScreen(
+fun RegistrationScreen(
     modifier: Modifier = Modifier,
-    context: Context = LocalContext.current.applicationContext,
-    viewModel: AuthorizationViewModel = viewModel {
-        AuthorizationViewModel(context)
-    },
-    onFinished: () -> Unit
+    onNextStep: () -> Unit
 ) {
 
     Scaffold(
@@ -68,10 +63,11 @@ fun AuthorizationHubScreen(
                 ),
                 title = {
                     Text(
-                        text = "Continue with E-mail",
+                        text = "Create Account",
                         style = MaterialTheme.typography.headlineMedium,
                         color = MaterialTheme.colorScheme.onBackground,
-                        textAlign = TextAlign.Center)
+                        textAlign = TextAlign.Center
+                    )
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = Color.Transparent,
@@ -86,8 +82,8 @@ fun AuthorizationHubScreen(
                             .background(
                                 color = Black10
                             )
-                            .clickable{
-                                onFinished()
+                            .clickable {
+
                                 TODO("THIS IS BUTTON BACK NOT A NEXT NOT A FINISHED!")
                             },
                         contentAlignment = Alignment.Center
@@ -110,24 +106,15 @@ fun AuthorizationHubScreen(
                     .padding(horizontal = 24.dp)
                     .padding(bottom = 24.dp, top = 16.dp)
             ) {
-                Text(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable{
-                            TODO()
-                        },
-                    text = "Dont't have account? Let's create",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = Blue100,
-                    textAlign = TextAlign.Center
-                )
+
                 Spacer(modifier = Modifier.padding(8.dp))
                 Button(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 20.dp),
+                        .padding(horizontal = 24.dp),
                     onClick = {
-                        viewModel.onLoginClick()
+                        TODO()
+                        //следующий экран выбора
                     },
                     shape = RoundedCornerShape(40.dp),
 
@@ -139,6 +126,7 @@ fun AuthorizationHubScreen(
             }
         }
     ) { innerPadding ->
+
         Box(
             modifier = Modifier
                 .padding(innerPadding)
@@ -146,7 +134,6 @@ fun AuthorizationHubScreen(
                 .height(1.dp)
                 .background(Black20)
         )
-
         Column(
             modifier = Modifier
                 .padding(innerPadding)
@@ -155,31 +142,29 @@ fun AuthorizationHubScreen(
         ) {
             Spacer(modifier = Modifier.padding(4.dp))
 
-            TextStr(text = "EMAIL")
+            TextStr(text = "NAME")
             TextContent(
-                text = viewModel.email,
-                textPlace = "Enter your email",
+                text = "TODOTODTODOTODOTOD",
+                textPlace = "Enter your name",
                 onTextChanged = {
-                    viewModel.onEmailChanged(it)
+
                 }
             )
-            TextStr(text = "Password")
+            TextStr(text = "SURNAME")
             TextContent(
-                text = viewModel.password,
-                textPlace = "Enter your password",
-                visualTransformation = PasswordVisualTransformation(),
+                text = "TODOTODTODOTODOTOD",
+                textPlace = "Enter your surname",
                 onTextChanged = {
-                    viewModel.onPasswordChanged(it)
+
                 }
             )
-            Text(
-                modifier = Modifier
-                    .clickable{
-                        TODO()
-                    },
-                text = "I forgot my password",
-                style = MaterialTheme.typography.bodyMedium,
-                color = Black60
+            TextStr(text = "BIRTHDATE")
+            TextContent(
+                text = "TODOTODTODOTODOTOD",
+                textPlace = "mm/dd/yyyy",
+                onTextChanged = {
+
+                }
             )
         }
     }
@@ -197,13 +182,13 @@ private fun TextStr(
         style = MaterialTheme.typography.labelSmall
     )
 }
+
 @Composable
 private fun TextContent(
     modifier: Modifier = Modifier,
     text: String,
     textPlace: String,
-    onTextChanged: (String) -> Unit,
-    visualTransformation: PasswordVisualTransformation = VisualTransformation.None as PasswordVisualTransformation
+    onTextChanged: (String) -> Unit
 ){
     TextField(
         modifier = modifier
@@ -217,7 +202,6 @@ private fun TextContent(
             //focusedIndicatorColor = Color.Transparent,
             //unfocusedIndicatorColor = Color.Transparent
         ),
-        visualTransformation = visualTransformation,
         textStyle = MaterialTheme.typography.titleLarge,
         placeholder = {
             Text(

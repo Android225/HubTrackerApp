@@ -12,6 +12,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.hubtrackerapp.presentation.screens.authorization.AuthorizationHubScreen
+import com.example.hubtrackerapp.presentation.screens.registration.RegistrationScreen
 import com.example.hubtrackerapp.presentation.ui.theme.HubTrackerAppTheme
 
 class MainActivity : ComponentActivity() {
@@ -21,8 +22,11 @@ class MainActivity : ComponentActivity() {
         setContent {
             HubTrackerAppTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    AuthorizationHubScreen(
-                        onFinished = {  }
+//                    AuthorizationHubScreen(
+//                        onFinished = {  }
+//                    )
+                    RegistrationScreen(
+                        onNextStep = {}
                     )
                 }
             }
