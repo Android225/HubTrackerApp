@@ -197,13 +197,14 @@ private fun TextStr(
         style = MaterialTheme.typography.labelSmall
     )
 }
+val x = PasswordVisualTransformation()
 @Composable
 private fun TextContent(
     modifier: Modifier = Modifier,
     text: String,
     textPlace: String,
     onTextChanged: (String) -> Unit,
-    visualTransformation: PasswordVisualTransformation = VisualTransformation.None as PasswordVisualTransformation
+    visualTransformation: VisualTransformation = VisualTransformation.None
 ){
     TextField(
         modifier = modifier

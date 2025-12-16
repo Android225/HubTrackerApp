@@ -22,12 +22,12 @@ class MainActivity : ComponentActivity() {
         setContent {
             HubTrackerAppTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-//                    AuthorizationHubScreen(
-//                        onFinished = {  }
-//                    )
-                    RegistrationScreen(
-                        onNextStep = {}
+                    AuthorizationHubScreen(
+                        onFinished = {  }
                     )
+//                    RegistrationScreen(
+//                        onNextStep = {}
+//                    )
                 }
             }
         }
