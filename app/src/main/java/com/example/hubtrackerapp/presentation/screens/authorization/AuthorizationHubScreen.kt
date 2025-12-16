@@ -2,8 +2,8 @@
 
 package com.example.hubtrackerapp.presentation.screens.authorization
 
+import android.content.Context
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -17,12 +17,10 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
-import androidx.compose.material.icons.filled.KeyboardArrowLeft
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextFieldDefaults.contentPadding
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -30,21 +28,18 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.RectangleShape
-import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.hubtrackerapp.presentation.theme.Black10
 import com.example.hubtrackerapp.presentation.theme.Black20
 import com.example.hubtrackerapp.presentation.theme.Black60
-import com.example.hubtrackerapp.presentation.theme.Blue10
 import com.example.hubtrackerapp.presentation.theme.Blue100
 import com.example.hubtrackerapp.presentation.theme.White100
 
@@ -52,6 +47,10 @@ import com.example.hubtrackerapp.presentation.theme.White100
 @Composable
 fun AuthorizationHubScreen(
     modifier: Modifier = Modifier,
+    context: Context = LocalContext.current.applicationContext,
+    viewModel: AuthorizationViewModel = viewModel {
+        AuthorizationViewModel(context)
+    },
     onFinished: () -> Unit
 ) {
 
@@ -126,7 +125,7 @@ fun AuthorizationHubScreen(
                         .fillMaxWidth()
                         .padding(horizontal = 20.dp),
                     onClick = {
-                        onFinished()
+                        viewModel.onLoginClick()
                     },
                     shape = RoundedCornerShape(40.dp),
 
@@ -163,9 +162,9 @@ fun AuthorizationHubScreen(
             TextField(
                 modifier = Modifier
                     .fillMaxWidth(),
-                value = tess,
+                value = viewModel.email,
                 onValueChange = {
-                    TODO()
+                    viewModel.onEmailChanged(it)
                 },
                 colors = TextFieldDefaults.colors(
                     focusedContainerColor = Color.Transparent,
@@ -192,9 +191,9 @@ fun AuthorizationHubScreen(
             TextField(
                 modifier = Modifier
                     .fillMaxWidth(),
-                value = tess,
+                value = viewModel.password,
                 onValueChange = {
-                    TODO()
+                    viewModel.onPasswordChanged(it)
                 },
                 colors = TextFieldDefaults.colors(
                     focusedContainerColor = Color.Transparent,
