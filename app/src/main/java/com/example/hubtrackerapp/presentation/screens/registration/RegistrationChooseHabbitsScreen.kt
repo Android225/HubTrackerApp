@@ -34,6 +34,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -52,9 +53,10 @@ import com.example.hubtrackerapp.presentation.theme.White100
 @Composable
 fun RegistrationChooseHabbitsScreen(
     modifier: Modifier = Modifier,
-    onNextStep: () -> Unit,
+    onRegister: () -> Unit,
+    onBackClick: () -> Unit,
     viewModel: RegistrationViewModel = viewModel {
-        RegistrationViewModel()
+        RegistrationViewModel
     }
 ) {
     val state by viewModel.state.collectAsState()
@@ -90,8 +92,7 @@ fun RegistrationChooseHabbitsScreen(
                                 color = Black10
                             )
                             .clickable {
-
-                                TODO("THIS IS BUTTON BACK NOT A NEXT NOT A FINISHED!")
+                                onBackClick()
                             },
                         contentAlignment = Alignment.Center
                     ) {
@@ -120,8 +121,8 @@ fun RegistrationChooseHabbitsScreen(
                         .fillMaxWidth()
                         .padding(horizontal = 24.dp),
                     onClick = {
-                        TODO()
-                        //следующий экран выбора
+                        viewModel.onRegisterClick()
+                        onRegister()
                     },
                     shape = RoundedCornerShape(40.dp),
 
@@ -192,9 +193,6 @@ private fun BoxContent(
     isSelected: Boolean,
     textOnCard: String
 ) {
-    //СДЕЛАТЬ ИЗМЕНЕНИЕ ЦВЕТА ПРИ ВЫБОРЕ КАРТОЧКИ! ДОБАВИТЬ ПОЛЕ
-    //pinned или что-то наподобии и в зависимости от нажатия изменять его
-    //и цвет вместе с ним на Синий как в макете
     val borderColor = if (isSelected) MaterialTheme.colorScheme.primary else Black10
     Box(
         modifier = Modifier

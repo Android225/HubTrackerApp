@@ -34,6 +34,8 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -57,9 +59,13 @@ import java.time.format.TextStyle
 @Composable
 fun RegistrationChoseGenderScreen(
     modifier: Modifier = Modifier,
-    onNextStep: () -> Unit
+    onNextStep: () -> Unit,
+    onBackClick: () -> Unit,
+    viewModel: RegistrationViewModel = viewModel {
+        RegistrationViewModel
+    }
 ) {
-
+    val draft by viewModel.draft.collectAsState()
     Scaffold(
         modifier = modifier,
         topBar = {
@@ -92,8 +98,7 @@ fun RegistrationChoseGenderScreen(
                                 color = Black10
                             )
                             .clickable {
-
-                                TODO("THIS IS BUTTON BACK NOT A NEXT NOT A FINISHED!")
+                                onBackClick()
                             },
                         contentAlignment = Alignment.Center
                     ) {
@@ -122,8 +127,7 @@ fun RegistrationChoseGenderScreen(
                         .fillMaxWidth()
                         .padding(horizontal = 24.dp),
                     onClick = {
-                        TODO()
-                        //следующий экран выбора
+                        onNextStep()
                     },
                     shape = RoundedCornerShape(40.dp),
 
@@ -173,7 +177,7 @@ fun RegistrationChoseGenderScreen(
                             shape = RoundedCornerShape(16.dp)
                         )
                         .clickable{
-                            TODO("Chose GENDER MEN")
+                            viewModel.setGender("Male")
                         },
                     contentAlignment = Alignment.Center
                 ) {
@@ -205,7 +209,7 @@ fun RegistrationChoseGenderScreen(
                             shape = RoundedCornerShape(16.dp)
                         )
                         .clickable{
-                            TODO("Chose GENDER WOMEN")
+                            viewModel.setGender("Female")
                         },
                     contentAlignment = Alignment.Center
                 ) {
@@ -221,7 +225,7 @@ fun RegistrationChoseGenderScreen(
                         Text(
                             modifier = Modifier
                                 .align(Alignment.CenterHorizontally),
-                            text = "Male",
+                            text = "Female",
                             style = MaterialTheme.typography.bodyMedium
                         )
                     }

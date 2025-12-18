@@ -51,9 +51,10 @@ fun AuthorizationHubScreen(
     modifier: Modifier = Modifier,
     context: Context = LocalContext.current.applicationContext,
     viewModel: AuthorizationViewModel = viewModel {
-        AuthorizationViewModel(context)
+        AuthorizationViewModel
     },
-    onFinished: () -> Unit
+    onFinished: () -> Unit,
+    onRegisterAccount: () -> Unit
 ) {
 
     Scaffold(
@@ -114,7 +115,7 @@ fun AuthorizationHubScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clickable{
-                            TODO()
+                            onRegisterAccount()
                         },
                     text = "Dont't have account? Let's create",
                     style = MaterialTheme.typography.bodyMedium,

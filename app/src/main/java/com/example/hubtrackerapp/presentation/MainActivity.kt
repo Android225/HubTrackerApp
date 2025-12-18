@@ -11,7 +11,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import com.example.hubtrackerapp.presentation.navigation.NavGraph
 import com.example.hubtrackerapp.presentation.screens.authorization.AuthorizationHubScreen
+import com.example.hubtrackerapp.presentation.screens.registration.RegistrationChooseHabbitsScreen
+import com.example.hubtrackerapp.presentation.screens.registration.RegistrationChoseGenderScreen
 import com.example.hubtrackerapp.presentation.screens.registration.RegistrationScreen
 import com.example.hubtrackerapp.presentation.ui.theme.HubTrackerAppTheme
 
@@ -20,16 +23,26 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            HubTrackerAppTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    AuthorizationHubScreen(
-                        onFinished = {  }
-                    )
-//                    RegistrationScreen(
-//                        onNextStep = {}
-//                    )
-                }
-            }
+            NavGraph()
         }
     }
 }
+
+
+/*HubTrackerAppTheme {
+    Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+//                    AuthorizationHubScreen(
+//                        onFinished = {  }
+//                    )
+//                    RegistrationScreen(
+//                        onNextStep = {}
+//                    )
+//                    RegistrationChoseGenderScreen(
+//                        onNextStep = {}
+//                    )
+        RegistrationChooseHabbitsScreen(
+            onNextStep = {}
+        )
+
+    }
+}*/

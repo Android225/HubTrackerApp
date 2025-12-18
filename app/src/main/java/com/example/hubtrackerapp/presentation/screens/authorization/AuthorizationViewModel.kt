@@ -11,9 +11,9 @@ import com.example.hubtrackerapp.data.AuthRepositoryImpl
 import com.example.hubtrackerapp.domain.auth.LoginUseCase
 import kotlinx.coroutines.launch
 
-class AuthorizationViewModel(context: Context) : ViewModel() {
+object AuthorizationViewModel : ViewModel() {
 
-    private val repository = AuthRepositoryImpl()
+    private val repository = AuthRepositoryImpl
     private val loginUseCase = LoginUseCase(repository)
     var email by mutableStateOf("")
         private set

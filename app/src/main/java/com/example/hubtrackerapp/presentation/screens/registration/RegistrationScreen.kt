@@ -15,6 +15,8 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.KeyboardOptions.Companion
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material3.Button
@@ -28,12 +30,20 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -48,9 +58,13 @@ import java.time.format.TextStyle
 @Composable
 fun RegistrationScreen(
     modifier: Modifier = Modifier,
-    onNextStep: () -> Unit
+    onBackClick: () -> Unit,
+    onNextStep: () -> Unit,
+    viewModel: RegistrationViewModel = viewModel {
+        RegistrationViewModel
+    }
 ) {
-
+    val draft by viewModel.draft.collectAsState()
     Scaffold(
         modifier = modifier,
         topBar = {
@@ -83,8 +97,7 @@ fun RegistrationScreen(
                                 color = Black10
                             )
                             .clickable {
-
-                                TODO("THIS IS BUTTON BACK NOT A NEXT NOT A FINISHED!")
+                                onBackClick()
                             },
                         contentAlignment = Alignment.Center
                     ) {
@@ -113,8 +126,7 @@ fun RegistrationScreen(
                         .fillMaxWidth()
                         .padding(horizontal = 24.dp),
                     onClick = {
-                        TODO()
-                        //следующий экран выбора
+                        onNextStep()
                     },
                     shape = RoundedCornerShape(40.dp),
 
@@ -144,26 +156,28 @@ fun RegistrationScreen(
 
             TextStr(text = "NAME")
             TextContent(
-                text = "TODOTODTODOTODOTOD",
+                text = draft.firstName,
                 textPlace = "Enter your name",
                 onTextChanged = {
-
+                    viewModel.setFirtsName(it)
                 }
             )
             TextStr(text = "SURNAME")
             TextContent(
-                text = "TODOTODTODOTODOTOD",
+                text = draft.lastName,
                 textPlace = "Enter your surname",
                 onTextChanged = {
-
+                    viewModel.setLastName(it)
                 }
             )
             TextStr(text = "BIRTHDATE")
+
+            //ДОДЕЛАТЬ ОТОБРАЖЕНИЕ НОРМАЛЬНОЕ
             TextContent(
-                text = "TODOTODTODOTODOTOD",
+                text = draft.birthDate.filter { it.isDigit() || it == '/' }.take(10),
                 textPlace = "mm/dd/yyyy",
                 onTextChanged = {
-
+                    viewModel.setDate(it)
                 }
             )
         }
