@@ -173,7 +173,7 @@ fun RegistrationChooseHabbitsScreen(
                     BoxContent(
                         textSmile = habit.emoji,
                         textOnCard = habit.title,
-                        isSelected = habit.isSelected,
+                        isSelected = habit.isPinned,
                         onBoxClick = {
                             viewModel.onHabitClick(habit.id)
                         }

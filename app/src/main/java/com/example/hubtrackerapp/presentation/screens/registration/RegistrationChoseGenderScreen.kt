@@ -176,6 +176,7 @@ fun RegistrationChoseGenderScreen(
                             color = Black10,
                             shape = RoundedCornerShape(16.dp)
                         )
+                        .clip(RoundedCornerShape(16.dp))
                         .clickable{
                             viewModel.setGender("Male")
                         },
@@ -208,6 +209,7 @@ fun RegistrationChoseGenderScreen(
                             color = Black10,
                             shape = RoundedCornerShape(16.dp)
                         )
+                        .clip(RoundedCornerShape(16.dp))
                         .clickable{
                             viewModel.setGender("Female")
                         },
