@@ -45,6 +45,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.hubtrackerapp.domain.hubbit.models.CalendarDayUi
 import com.example.hubtrackerapp.domain.hubbit.models.ModeForSwitch
 import com.example.hubtrackerapp.presentation.theme.Black10
+import com.example.hubtrackerapp.presentation.theme.Black100
 import com.example.hubtrackerapp.presentation.theme.Black20
 import com.example.hubtrackerapp.presentation.theme.Black60
 import com.example.hubtrackerapp.presentation.theme.Blue10
@@ -62,57 +63,39 @@ fun HomeScreen(
     val mode by viewModel.mode.collectAsState()
     val daysInMonth by viewModel.calendarDays.collectAsState()
     Scaffold(
-        modifier = modifier,
-        topBar = {
-            TopAppBar(
-                modifier = Modifier.padding(
-                    start = 24.dp,
-                    end = 24.dp,
-                    top = 8.dp,
-                    bottom = 16.dp
-                ),
-                title = {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp, vertical = 8.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        TopActionRow()
-                        ProfileRow()
-                        ModSwitcher(
-                            selected = mode,
-                            onModChange = viewModel::changeMode
-                        )
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.Transparent,
-                    navigationIconContentColor = MaterialTheme.colorScheme.onSurface,
-                    actionIconContentColor = MaterialTheme.colorScheme.onSurface
-                ),
-            )
-        }
+        modifier = modifier
     ) { innerPadding ->
 
-        Box(
+        Column(
             modifier = Modifier
                 .padding(innerPadding)
-                .fillMaxWidth()
-                .height(1.dp)
-                .background(Black20)
-        )
-
-        LazyColumn(
-            contentPadding = innerPadding
         ) {
+            TopActionRow()
+            ProfileRow()
+            ModSwitcher(
+                selected = mode,
+                onModChange = viewModel::changeMode
+            )
 
-            //Date Boxes Row
-            item {
-                CalendarRow(
-                    dates = daysInMonth,
-                    onDateClick = {}
-                )
+
+            Box(
+                modifier = Modifier
+                    .padding(top = 16.dp)
+                    .fillMaxWidth()
+                    .height(1.dp)
+                    .background(Black20)
+            )
+
+            LazyColumn(
+                modifier = Modifier
+            ) {
+                //Date Boxes Row
+                item {
+                    CalendarRow(
+                        dates = daysInMonth,
+                        onDateClick = {}
+                    )
+                }
             }
         }
     }
@@ -152,7 +135,9 @@ fun TopActionRow() {
 @Composable
 fun ProfileRow() {
     Row(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 24.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -163,25 +148,25 @@ fun ProfileRow() {
             Text(
                 text = "Let's make habits together!"
             )
-            Box(
-                modifier = Modifier
-                    .size(40.dp)
-                    .clip(CircleShape)
-                    .background(Blue10)
-                    .clickable {
-                        TODO("EMOJI BUTTON")
-                    }
-            ) {
-                Text(
-                    text = "\uD83D\uDE07",
-                    fontSize = 16.sp,
-                    textAlign = TextAlign.Center,
-                )
-            }
+        }
+        Box(
+            modifier = Modifier
+                .size(40.dp)
+                .clip(CircleShape)
+                .background(Blue10)
+                .clickable {
+                    TODO("EMOJI BUTTON")
+                },
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = "\uD83D\uDE07",
+                fontSize = 16.sp,
+                textAlign = TextAlign.Center,
+            )
         }
     }
 }
-
 
 
 @Composable
@@ -191,18 +176,28 @@ private fun ModSwitcher(
 ) {
     Row(
         modifier = Modifier
+            .padding(horizontal = 24.dp)
+            .padding(top = 16.dp)
             .clip(RoundedCornerShape(16.dp))
             .background(Black10)
+            .fillMaxWidth()
+            .border(
+                width = 1.dp,
+                color = Black20,
+                shape = RoundedCornerShape(16.dp)),
+        horizontalArrangement = Arrangement.Center
     ) {
         ModeItem(
+            modifier = Modifier.weight(1f),
             text = "Today",
             selected = selected == ModeForSwitch.HOBBIES,
-            onClick = {onModChange(ModeForSwitch.HOBBIES)}
+            onClick = { onModChange(ModeForSwitch.HOBBIES) }
         )
         ModeItem(
+            modifier = Modifier.weight(1f),
             text = "Clubs",
             selected = selected == ModeForSwitch.CLUBS,
-            onClick = {onModChange(ModeForSwitch.CLUBS)}
+            onClick = { onModChange(ModeForSwitch.CLUBS) }
         )
 
     }
@@ -211,17 +206,19 @@ private fun ModSwitcher(
 
 @Composable
 private fun ModeItem(
+    modifier: Modifier = Modifier,
     text: String,
     selected: Boolean,
     onClick: () -> Unit
 ) {
     Box(
-        modifier = Modifier
+        modifier = modifier
             .background(if (selected) White100 else Color.Transparent)
             .clickable(onClick = onClick)
-            .padding(8.dp),
+            .padding(8.dp)
+            .clip(RoundedCornerShape(32.dp)),
         contentAlignment = Alignment.Center
-    ){
+    ) {
         Text(
             text = text,
             color = if (selected) Blue100 else Black60
@@ -236,17 +233,18 @@ fun CalendarRow(
     dates: List<CalendarDayUi>,
     //selectedDate: LocalDate,
     onDateClick: (LocalDate) -> Unit
-){
+) {
     LazyRow(
         modifier = Modifier
-            .fillMaxSize(),
+            .fillMaxSize()
+            .padding(top = 8.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         contentPadding = PaddingValues(8.dp)
     ) {
         items(
             items = dates,
-            key = {it.dayNumber}
-        ){ day ->
+            key = { it.dayNumber }
+        ) { day ->
             DateCard(
                 day = day,
                 onClick = onDateClick
@@ -259,30 +257,38 @@ fun CalendarRow(
 fun DateCard(
     day: CalendarDayUi,
     onClick: (LocalDate) -> Unit
-){
+) {
     //УБРАТЬ ЛОГИКУ В VIEWMODEL!!!
-    val colorInBox = if (day.isToday) Blue100 else Black10
+    val colorInBox = if (day.isToday) Blue100 else Black20
+    val colorInBoxNumbers = if (day.isToday) Blue100 else Black100
     val borderWidth = if (day.isToday) 2.dp else 1.dp
- Box(
-    modifier = Modifier
-        .size(width = 48.dp, height = 64.dp)
-        .clip(RoundedCornerShape(16.dp))
-        .clickable{ onClick(day.date) } // выбор дня в списке
-        .border(
-            width = borderWidth,
-            color = colorInBox,
-            shape = RoundedCornerShape(16.dp)),
-     contentAlignment = Alignment.Center
- ) {
-     Text(
-         text = (day.dayNumber).toString(),
-         style = MaterialTheme.typography.headlineSmall,
-         color = colorInBox
-     )
-     Text(
-         text = day.dayOfWeek,
-         style = MaterialTheme.typography.labelSmall,
-         color = colorInBox
-     )
- }
+    Box(
+        modifier = Modifier
+            .size(width = 48.dp, height = 64.dp)
+            .clip(RoundedCornerShape(16.dp))
+            .clickable { onClick(day.date) } // выбор дня в списке
+            .border(
+                width = borderWidth,
+                color = colorInBox,
+                shape = RoundedCornerShape(16.dp)
+            ),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                text = (day.dayNumber).toString(),
+                style = MaterialTheme.typography.headlineSmall,
+                color = colorInBoxNumbers
+            )
+            Text(
+                text = day.dayOfWeek,
+                style = MaterialTheme.typography.labelSmall,
+                color = colorInBox
+            )
+        }
+
+    }
 }
