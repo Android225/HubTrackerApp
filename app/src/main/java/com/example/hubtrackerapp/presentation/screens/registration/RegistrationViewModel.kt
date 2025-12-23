@@ -5,8 +5,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.hubtrackerapp.data.AuthRepositoryImpl
 import com.example.hubtrackerapp.domain.auth.RegisterUseCase
-import com.example.hubtrackerapp.domain.user.HabitUi
-import com.example.hubtrackerapp.presentation.screens.registration.RegisterHabits
 import com.example.hubtrackerapp.presentation.screens.registration.model.RegistrationDraft
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow

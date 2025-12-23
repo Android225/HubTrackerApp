@@ -1,6 +1,5 @@
 package com.example.hubtrackerapp.presentation.screens.registration.model
 
-import com.example.hubtrackerapp.domain.user.HabitUi
 import com.example.hubtrackerapp.presentation.screens.registration.RegisterHabits
 
 data class RegistrationDraft(

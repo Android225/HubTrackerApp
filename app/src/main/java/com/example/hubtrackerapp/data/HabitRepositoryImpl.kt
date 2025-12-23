@@ -1,17 +1,26 @@
 package com.example.hubtrackerapp.data
 
-import android.util.Log
-import com.example.hubtrackerapp.domain.auth.AuthRepository
+import com.example.hubtrackerapp.domain.hubbit.HabitRepository
 import com.example.hubtrackerapp.domain.hubbit.models.HabitSchedule
-import com.example.hubtrackerapp.domain.user.User
 import com.example.hubtrackerapp.domain.hubbit.models.HabitUi
-import com.example.hubtrackerapp.presentation.screens.registration.model.RegistrationDraft
+import com.example.hubtrackerapp.domain.user.User
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.update
 import java.time.LocalDate
 import java.util.UUID
 
-object AuthRepositoryImpl : AuthRepository {
+object HabitRepositoryImpl : HabitRepository {
+
+
+    private val testUser = User(
+        userId = UUID.randomUUID().toString(),
+        email = "Alifas@hub.com",
+        password = "123",
+        firstName = "Alifas",
+        lastName = "Fazan",
+        birthDate = "12/12/2000",
+        gender = "Male"
+    )
 
     private val testUsers = mutableListOf<User>().apply {
         repeat(8) {
@@ -27,12 +36,16 @@ object AuthRepositoryImpl : AuthRepository {
                 )
             )
         }
+        add(
+            testUser
+        )
     }
 
     private val usersListFlow = MutableStateFlow<List<User>>(testUsers)
 
 
-    private val hubitsUsersList = mutableListOf<HabitUi>().apply {
+
+    private val habitsUsersList = mutableListOf<HabitUi>().apply {
         add(
             HabitUi(
                 habitId = UUID.randomUUID().toString(),
@@ -123,64 +136,94 @@ object AuthRepositoryImpl : AuthRepository {
                 schedule = HabitSchedule.EveryDay,
             )
         )
-    }
-    private val hubitsStateFlow = MutableStateFlow<List<HabitUi>>(hubitsUsersList)
+        //// Add Habits To USER
 
-
-
-
-    override fun login(email: String, password: String): Boolean {
-        return email == "Admin@Admin" && password == "Admin"
-    }
-
-    override fun register(
-        registerUser: RegistrationDraft
-    ): Boolean {
-
-        val user = User(
-            userId = UUID.randomUUID().toString(),
-            email = registerUser.email,
-            password = registerUser.password,
-            firstName = registerUser.firstName,
-            lastName = registerUser.lastName,
-            birthDate = registerUser.birthDate,
-            gender = registerUser.gender
-        )
-
-        val habbitsList = registerUser.habbies.map { registerHabit ->
+        add(
             HabitUi(
                 habitId = UUID.randomUUID().toString(),
-                userId = user.userId,
-                emoji = registerHabit.emoji,
-                title = registerHabit.title,
+                userId = usersListFlow.value[8].userId,
+                emoji = "😴",
+                title = "Sleep",
                 createdAt = LocalDate.now(),
-                schedule = HabitSchedule.EveryDay
+                schedule = HabitSchedule.EveryDay,
             )
-        }
-
-        val exist = usersListFlow.value.any { it.email == user.email }
-
-        if (exist) {
-            return false
-        }
-
-        usersListFlow.update { oldList ->
-
-            oldList + user
-        }
-        hubitsStateFlow.update { oldList ->
-            oldList + habbitsList
-        }
-        Log.d(
-            "Register",
-            "REPOSITORE ${usersListFlow.value.last().email} - ${usersListFlow.value.last().email}"
         )
-        Log.d(
-            "Register",
-            "REPOSITOREDataToADd ${user} - ${habbitsList}"
+        add(
+            HabitUi(
+                habitId = UUID.randomUUID().toString(),
+                userId = usersListFlow.value[8].userId,
+                emoji = "🧑‍💻",
+                title = "Study",
+                createdAt = LocalDate.now(),
+                schedule = HabitSchedule.EveryDay,
+            )
         )
-        return true
+        add(
+            HabitUi(
+                habitId = UUID.randomUUID().toString(),
+                userId = usersListFlow.value[8].userId,
+                emoji = "📕",
+                title = "Journal",
+                createdAt = LocalDate.now(),
+                schedule = HabitSchedule.EveryDay,
+            )
+        )
+        add(
+            HabitUi(
+                habitId = UUID.randomUUID().toString(),
+                userId = usersListFlow.value[8].userId,
+                emoji = "🌿",
+                title = "Water plant",
+                createdAt = LocalDate.now(),
+                schedule = HabitSchedule.EveryDay,
+            )
+        )
     }
 
-}
+    private val habitsStateFlow = MutableStateFlow<List<HabitUi>>(habitsUsersList)
 
+    override fun getAllHabits(): Flow<List<HabitUi>> {
+        return habitsStateFlow
+    }
+
+    override suspend fun switchCompleteStatusInThisDate(habitId: String, date: LocalDate) {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun getHabit(habitId: String): HabitUi {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun changeSchedule(
+        habitId: String,
+        schedule: HabitSchedule
+    ) {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun deleteHabit(habitId: String) {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun editHabit(habit: HabitUi) {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun addHabit(
+        emoji: String,
+        title: String,
+        createdAt: LocalDate,
+        schedule: HabitSchedule
+    ) {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun saveProgress(
+        habitId: String,
+        date: LocalDate,
+        isCompleted: Boolean,
+        progress: Float
+    ) {
+        TODO("Not yet implemented")
+    }
+}
