@@ -4,8 +4,7 @@ import java.time.LocalDate
 
 data class HabitProgress(
     val habitId: String,
-    val userId: String,
     val date: LocalDate,
-    val isCompleted: Boolean,
-    val progress: Float
+    val isCompleted: Boolean = false,
+    val progress: Float = 0f
 )

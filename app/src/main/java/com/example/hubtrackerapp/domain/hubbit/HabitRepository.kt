@@ -3,16 +3,16 @@ package com.example.hubtrackerapp.domain.hubbit
 import com.example.hubtrackerapp.domain.hubbit.models.HabitProgress
 import com.example.hubtrackerapp.domain.hubbit.models.HabitSchedule
 import com.example.hubtrackerapp.domain.hubbit.models.HabitUi
+import com.example.hubtrackerapp.domain.hubbit.models.forUi.HabitWithProgressUi
 import kotlinx.coroutines.flow.Flow
 import java.time.LocalDate
 
 interface HabitRepository {
 
-    fun getAllHabits(): Flow<List<HabitUi>>
+    suspend fun getHabitsWithScheduleForDate(userId: String, date: LocalDate): Flow<List<HabitWithProgressUi>>
 
-    suspend fun switchCompleteStatusInThisDate(habitId: String, date: LocalDate)
 
-    suspend fun getHabit(habitId: String): HabitUi
+    suspend fun getHabit(userId: String,habitId: String): HabitUi
 
     suspend fun changeSchedule(habitId: String, schedule: HabitSchedule)
 
@@ -26,12 +26,21 @@ interface HabitRepository {
         createdAt: LocalDate,
         schedule: HabitSchedule
     )
-
-    suspend fun saveProgress(
+    suspend fun addProgressForHabit(
         habitId: String,
-        date: LocalDate,
-        isCompleted: Boolean,
-        progress: Float
+        date: LocalDate
+    ): HabitProgress
+    suspend fun saveProgress(
+        habitProgress: HabitProgress
     )
 
+    suspend fun  getProgressForHabitInDate(
+        habitId: String,
+        date: LocalDate
+    ): HabitProgress
+
+    suspend fun getProgress(
+        habitId: String,
+        date: LocalDate
+    ): HabitProgress?
 }

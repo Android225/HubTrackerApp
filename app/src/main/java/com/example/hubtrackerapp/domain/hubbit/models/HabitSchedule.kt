@@ -7,3 +7,4 @@ sealed class HabitSchedule {
     data class EveryNDays(val n: Int) : HabitSchedule()
     data class SpecificDays(val daysOfWeek: Set<DayOfWeek>): HabitSchedule()
 }
+

@@ -1,11 +1,17 @@
 package com.example.hubtrackerapp.data
 
 import com.example.hubtrackerapp.domain.hubbit.HabitRepository
+import com.example.hubtrackerapp.domain.hubbit.models.HabitProgress
 import com.example.hubtrackerapp.domain.hubbit.models.HabitSchedule
 import com.example.hubtrackerapp.domain.hubbit.models.HabitUi
+import com.example.hubtrackerapp.domain.hubbit.models.forUi.HabitWithProgressUi
+import com.example.hubtrackerapp.domain.hubbit.models.isActive
 import com.example.hubtrackerapp.domain.user.User
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.last
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.update
 import java.time.LocalDate
 import java.util.UUID
 
@@ -182,15 +188,59 @@ object HabitRepositoryImpl : HabitRepository {
 
     private val habitsStateFlow = MutableStateFlow<List<HabitUi>>(habitsUsersList)
 
-    override fun getAllHabits(): Flow<List<HabitUi>> {
-        return habitsStateFlow
+    private val progressHabitsList = mutableListOf<HabitProgress>().apply {
+        add(
+            HabitProgress(
+                habitId = habitsStateFlow.value[9].habitId,
+                date = LocalDate.now()
+            )
+        )
+        add(
+            HabitProgress(
+                habitId = habitsStateFlow.value[10].habitId,
+                date = LocalDate.now()
+            )
+        )
+        add(
+            HabitProgress(
+                habitId = habitsStateFlow.value[11].habitId,
+                date = LocalDate.now()
+            )
+        )
+        add(
+            HabitProgress(
+                habitId = habitsStateFlow.value[12].habitId,
+                date = LocalDate.now()
+            )
+        )
+    }
+    private val progressStateFlow = MutableStateFlow<List<HabitProgress>>(progressHabitsList)
+
+    override suspend fun getHabitsWithScheduleForDate(
+        userId: String,
+        date: LocalDate
+    ): Flow<List<HabitWithProgressUi>> {
+        val x = habitsStateFlow.map{oldList ->
+            oldList.filter {
+            it.userId == userId && it.schedule.isActive(createdAt = it.createdAt, date = date)
+            }
+        }.map {habits ->
+            habits.map {habit ->
+                val temp = progressStateFlow.value.first { it.habitId == habit.habitId }
+                HabitWithProgressUi(
+                    habitId = habit.habitId,
+                    emoji = habit.emoji,
+                    title = habit.title,
+                    isCompleted = temp.isCompleted,
+                    progress = temp.progress
+                )
+            }
+        }
+        return x
     }
 
-    override suspend fun switchCompleteStatusInThisDate(habitId: String, date: LocalDate) {
-        TODO("Not yet implemented")
-    }
 
-    override suspend fun getHabit(habitId: String): HabitUi {
+    override suspend fun getHabit(userId: String, habitId: String): HabitUi {
         TODO("Not yet implemented")
     }
 
@@ -202,11 +252,27 @@ object HabitRepositoryImpl : HabitRepository {
     }
 
     override suspend fun deleteHabit(habitId: String) {
-        TODO("Not yet implemented")
+        habitsStateFlow.update { oldList ->
+            oldList.map {
+                if (it.habitId == habitId){
+                    it.copy(isArchived = true)
+                } else {
+                    it
+                }
+            }
+        }
     }
 
     override suspend fun editHabit(habit: HabitUi) {
-        TODO("Not yet implemented")
+        habitsStateFlow.update { oldList ->
+            oldList.map {
+                if (it.habitId == habit.habitId && it.userId == habit.userId){
+                    habit
+                } else {
+                    it
+                }
+            }
+        }
     }
 
     override suspend fun addHabit(
@@ -215,15 +281,64 @@ object HabitRepositoryImpl : HabitRepository {
         createdAt: LocalDate,
         schedule: HabitSchedule
     ) {
-        TODO("Not yet implemented")
+        habitsStateFlow.update { oldList ->
+            val habit = HabitUi(
+                habitId = UUID.randomUUID().toString(),
+                userId = testUser.userId, //ИСПРАВВИТЬ!"!!!
+                emoji = emoji,
+                title = title,
+                createdAt = createdAt,
+                schedule = schedule,
+            )
+            oldList + habit
+        }
     }
 
+
+
     override suspend fun saveProgress(
-        habitId: String,
-        date: LocalDate,
-        isCompleted: Boolean,
-        progress: Float
+        habitProgress: HabitProgress
     ) {
-        TODO("Not yet implemented")
+        progressStateFlow.update { oldList ->
+            oldList.map {
+                if (it.habitId == habitProgress.habitId && it.date == habitProgress.date){
+                    habitProgress
+                } else {
+                    it
+                }
+            }
+        }
+    }
+
+    //Взятие прогресс для хобби на какой-то день,
+    //если он есть getProgress()
+    //если его нет возвращается null
+    //следовательно addProgressForHabit() создаем прогресс на текущую дату и возвращаем
+    override suspend fun getProgressForHabitInDate(
+        habitId: String,
+        date: LocalDate
+    ): HabitProgress {
+       return getProgress(habitId,date) ?: addProgressForHabit(habitId,date)
+    }
+
+    override suspend fun addProgressForHabit(
+        habitId: String,
+        date: LocalDate
+    ): HabitProgress {
+        val progress = HabitProgress(
+            habitId = habitId,
+            date = date
+        )
+        progressStateFlow.update { oldList ->
+
+            oldList + progress
+        }
+     return progress
+    }
+    override suspend fun getProgress(
+        habitId: String,
+        date: LocalDate
+    ): HabitProgress? {
+        return progressStateFlow.value.firstOrNull{it.habitId == habitId && it.date == date}
     }
 }

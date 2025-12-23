@@ -1,7 +1,7 @@
 package com.example.hubtrackerapp.presentation.screens.home
 
 import androidx.lifecycle.ViewModel
-import com.example.hubtrackerapp.domain.hubbit.models.CalendarDayUi
+import com.example.hubtrackerapp.domain.hubbit.models.forUi.CalendarDayUi
 import com.example.hubtrackerapp.domain.hubbit.models.ModeForSwitch
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow

@@ -1,4 +1,4 @@
-package com.example.hubtrackerapp.domain.hubbit.models
+package com.example.hubtrackerapp.domain.hubbit.models.forUi
 
 import java.time.LocalDate
 
