@@ -54,14 +54,10 @@ object HomeViewModel: ViewModel(){
 }
 //потом в реализации аватарок на urls заменить List<ImageBitmap>
 @Composable
-fun fakeParticipants(): ImageAvatarsSized {
+fun fakeParticipants(): List<ImageBitmap> {
     val avatar = ImageBitmap.imageResource(
         id = R.drawable.image_cat_test_avatar
     )
     Log.d("FAKE","GET AVATARS")
-    return ImageAvatarsSized(5,List(5) { avatar })
+    return List(5) { avatar }
 }
-data class ImageAvatarsSized(
-    val size: Int,
-    val avatars: List<ImageBitmap>
-)

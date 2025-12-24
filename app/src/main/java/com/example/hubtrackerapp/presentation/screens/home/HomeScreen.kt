@@ -26,7 +26,9 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -50,6 +52,7 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.ModifierLocalBeyondBoundsLayout
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
@@ -59,6 +62,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.hubtrackerapp.R
 import com.example.hubtrackerapp.domain.hubbit.models.forUi.CalendarDayUi
 import com.example.hubtrackerapp.domain.hubbit.models.ModeForSwitch
+import com.example.hubtrackerapp.domain.hubbit.models.forUi.HabitWithProgressUi
 import com.example.hubtrackerapp.presentation.theme.Black10
 import com.example.hubtrackerapp.presentation.theme.Black100
 import com.example.hubtrackerapp.presentation.theme.Black20
@@ -67,6 +71,7 @@ import com.example.hubtrackerapp.presentation.theme.Black60
 import com.example.hubtrackerapp.presentation.theme.Blue10
 import com.example.hubtrackerapp.presentation.theme.Blue100
 import com.example.hubtrackerapp.presentation.theme.Blue40
+import com.example.hubtrackerapp.presentation.theme.GreenSuccess100
 import com.example.hubtrackerapp.presentation.theme.White100
 import java.time.LocalDate
 
@@ -94,7 +99,7 @@ fun HomeScreen(
                 onModChange = viewModel::changeMode
             )
 
-
+            //gray line
             Box(
                 modifier = Modifier
                     .padding(top = 16.dp)
@@ -105,6 +110,7 @@ fun HomeScreen(
 
             LazyColumn(
                 modifier = Modifier
+                    .fillMaxSize() // глянуть потом насколько он тут вообще нужон
             ) {
                 //Date Boxes Row
                 item {
@@ -127,10 +133,22 @@ fun HomeScreen(
                         text = "Challenges",
                         style = MaterialTheme.typography.bodyMedium
                     )
-                    //переписать добавить ViewAll если будет надобность
+                    //переписать добавить кнопку ViewAll если будет надобность для обзора всех челенджей юзера
                 }
                 item {
                     ChallengesRow("Best Runners!", "5 days 13 hours left")
+                }
+                item {
+                    Text(
+                        modifier = Modifier
+                            .padding(horizontal = 24.dp)
+                            .padding(top = 16.dp),
+                        text = "Habits",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
+                item {
+                    HabitCard()
                 }
 
             }
@@ -138,6 +156,83 @@ fun HomeScreen(
     }
 }
 
+@Composable
+fun HabitCard(
+    //habitWithProgress: HabitWithProgressUi
+){
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 24.dp)
+            .padding(top = 12.dp)
+            .border(
+                width = 1.dp,
+                color = Black10,
+                shape = RoundedCornerShape(16.dp)
+            ),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        ProgressCircle(
+            modifier = Modifier
+                .padding(start = 16.dp, top = 12.dp, bottom = 12.dp),
+            progress = 0.2f,
+            colorBackground = Black10,
+            colorCompleted = Blue100,
+            size = 40.dp,
+            strokeWidth = 2.dp,
+            text = "\uD83D\uDE0E"
+        )
+        TextForChallengesAndHabits(
+            modifier = Modifier
+                .weight(1f),
+            cardName = "challengeName",
+            additionalInfo = "daysLeft"
+        )
+        ParticipantsRow(fakeParticipants(), size = 28.dp)
+        AddAndCompleteHabit(
+            habitIsCompleted = true,
+            onClick = {}
+        )
+    }
+}
+
+@Composable
+fun AddAndCompleteHabit(
+    habitIsCompleted: Boolean,
+    onClick: () -> Unit
+){
+    Box(
+        modifier = Modifier
+            .padding(end = 12.dp)
+            .size(36.dp)
+            .border(
+                width = 1.dp,
+                color = Black10,
+                shape = RoundedCornerShape(12.dp)
+            )
+            .clip(RoundedCornerShape(12.dp))
+            .clickable(enabled = habitIsCompleted, onClick = onClick),
+//            .clickable{
+//
+//                TODO("ДОБАВИТЬ ЛОГИКУ КНОПКУ ДОБАВЛЕНИЯ К ХОББИ ИЛИ ЕГО ЗАВЕРШЕНИЕ!")
+//                onClick()
+//            },
+        contentAlignment = Alignment.Center
+    ) {
+        if (habitIsCompleted){
+          Icon(
+               Icons.Default.Add,
+              contentDescription = "Add to habit"
+          )
+        } else {
+            Icon(
+                Icons.Default.Done,
+                contentDescription = "Add to habit",
+                tint = GreenSuccess100
+            )
+        }
+    }
+}
 @Composable
 fun ChallengesRow(
     challengeName: String,
@@ -153,7 +248,6 @@ fun ChallengesRow(
                 color = Black10,
                 shape = RoundedCornerShape(16.dp)
             )
-
     ) {
 
         Row(
@@ -166,29 +260,22 @@ fun ChallengesRow(
                 painter = painterResource(R.drawable.ic_clock),
                 contentDescription = "Clock icon"
             )
-            Column(
+            TextForChallengesAndHabits(
                 modifier = Modifier
-                    .padding(start = 8.dp)
-                    .weight(1f)
-            ) {
-                Text(
-                    text = challengeName,
-                    style = MaterialTheme.typography.bodyLarge
-                )
-                Text(
-                    text = daysLeft,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = Black40
-                )
-            }
+                    .weight(1f),
+                cardName = challengeName,
+                additionalInfo = daysLeft
+            )
+
             Column(
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.End
             ) {
-                ParticipantsRow(fakeParticipants())
+                val participants = fakeParticipants()
+                ParticipantsRow(participants)
                 Text(
                     modifier = Modifier.padding(top = 8.dp),
-                    text = "${fakeParticipants().size} friends joined",
+                    text = "${participants.size} friends joined",
                     style = MaterialTheme.typography.bodySmall,
                     color = Black40
                 )
@@ -205,25 +292,50 @@ fun ChallengesRow(
 }
 
 @Composable
+fun TextForChallengesAndHabits(
+    modifier: Modifier = Modifier,
+    cardName: String,
+    additionalInfo: String
+){
+
+    Column(
+        modifier = modifier
+            .padding(start = 8.dp)
+
+    ) {
+        Text(
+            text = cardName,
+            style = MaterialTheme.typography.bodyLarge
+        )
+        Text(
+            text = additionalInfo,
+            style = MaterialTheme.typography.bodySmall,
+            color = Black40
+        )
+    }
+}
+
+@Composable
 fun ParticipantsRow(
-    avatarSized: ImageAvatarsSized
+    avatars: List<ImageBitmap>,
+    size: Dp = 20.dp
 ) {
     Row {
-        avatarSized.avatars.take(3).forEachIndexed { index, avatar ->
+        avatars.take(3).forEachIndexed { index, avatar ->
 
             if (index < 2) {
-                AvatarImage(index, avatar)
+                AvatarImage(index, avatar, size)
             } else {
                 Box(
                     modifier = Modifier
-                        .size(20.dp)
+                        .size(size)
                         .offset(x = (-index * 8).dp)
                         .clip(CircleShape)
                         .background(Blue10),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = "+${avatarSized.size - 2}",
+                        text = "+${avatars.size - 2}",
                         style = MaterialTheme.typography.labelSmall,
                         color = Blue100
                     )
@@ -233,14 +345,18 @@ fun ParticipantsRow(
     }
 }
 
+///////////////////////////////////
+
+
 @Composable
 fun AvatarImage(
     index: Int,
-    avatar: ImageBitmap
+    avatar: ImageBitmap,
+    size: Dp = 20.dp
 ) {
     Image(
         modifier = Modifier
-            .size(20.dp)
+            .size(size)
             .offset(x = (-index * 8).dp)
             .clip(CircleShape)
             .border(1.dp, Color.White, CircleShape),
@@ -519,10 +635,15 @@ fun StatisticBox(
 fun ProgressCircle(
     modifier: Modifier = Modifier,
     progress: Float,
-    strokeWidth: Dp = 3.dp
+    strokeWidth: Dp = 3.dp,
+    size:Dp = 50.dp,
+    colorBackground: Color = Blue40,
+    colorCompleted: Color = White100,
+    text: String = "%${(progress * 100).toInt()}"
 ) {
+
     Box(
-        modifier = modifier.size(50.dp),
+        modifier = modifier.size(size),
         contentAlignment = Alignment.Center,
     ) {
         Canvas(
@@ -536,7 +657,7 @@ fun ProgressCircle(
             )
 
             drawArc(
-                color = Blue40,
+                color = colorBackground,
                 startAngle = -90f,
                 sweepAngle = 360f,
                 useCenter = false,
@@ -544,7 +665,7 @@ fun ProgressCircle(
             )
 
             drawArc(
-                color = White100,
+                color = colorCompleted,
                 startAngle = -90f,
                 sweepAngle = 360f * progress,
                 useCenter = false,
@@ -552,7 +673,7 @@ fun ProgressCircle(
             )
         }
         Text(
-            text = "%${(progress * 100).toInt()}",
+            text = text,
             style = MaterialTheme.typography.bodyLarge,
             color = White100
         )
