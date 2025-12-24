@@ -24,8 +24,8 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            NavGraph()
-           // HomeScreen()
+            //NavGraph()
+            HomeScreen()
         }
     }
 }

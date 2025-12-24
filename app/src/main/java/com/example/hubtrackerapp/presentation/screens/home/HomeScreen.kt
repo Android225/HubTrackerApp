@@ -2,7 +2,9 @@
 
 package com.example.hubtrackerapp.presentation.screens.home
 
+import android.graphics.Bitmap
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -15,6 +17,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -29,6 +32,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -41,15 +45,18 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.ModifierLocalBeyondBoundsLayout
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.hubtrackerapp.R
 import com.example.hubtrackerapp.domain.hubbit.models.forUi.CalendarDayUi
 import com.example.hubtrackerapp.domain.hubbit.models.ModeForSwitch
 import com.example.hubtrackerapp.presentation.theme.Black10
@@ -112,15 +119,165 @@ fun HomeScreen(
                         progress = 0.25f
                     )
                 }
+                item {
+                    Text(
+                        modifier = Modifier
+                            .padding(horizontal = 24.dp)
+                            .padding(top = 16.dp),
+                        text = "Challenges",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                    //переписать добавить ViewAll если будет надобность
+                }
+                item {
+                    ChallengesRow("Best Runners!", "5 days 13 hours left")
+                }
+
             }
         }
     }
 }
 
 @Composable
+fun ChallengesRow(
+    challengeName: String,
+    daysLeft: String
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 24.dp)
+            .padding(top = 12.dp)
+            .border(
+                width = 1.dp,
+                color = Black10,
+                shape = RoundedCornerShape(16.dp)
+            )
+
+    ) {
+
+        Row(
+            modifier = Modifier
+                .padding(horizontal = 16.dp, vertical = 16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Image(
+                modifier = Modifier.size(24.dp),
+                painter = painterResource(R.drawable.ic_clock),
+                contentDescription = "Clock icon"
+            )
+            Column(
+                modifier = Modifier
+                    .padding(start = 8.dp)
+                    .weight(1f)
+            ) {
+                Text(
+                    text = challengeName,
+                    style = MaterialTheme.typography.bodyLarge
+                )
+                Text(
+                    text = daysLeft,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = Black40
+                )
+            }
+            Column(
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.End
+            ) {
+                ParticipantsRow(fakeParticipants())
+                Text(
+                    modifier = Modifier.padding(top = 8.dp),
+                    text = "${fakeParticipants().size} friends joined",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = Black40
+                )
+            }
+        }
+        CustomLinearProgressIndicator(
+            modifier = Modifier
+                .padding(horizontal = 16.dp)
+                .padding(bottom = 8.dp),
+            progress = 0.5f
+        )
+
+    }
+}
+
+@Composable
+fun ParticipantsRow(
+    avatarSized: ImageAvatarsSized
+) {
+    Row {
+        avatarSized.avatars.take(3).forEachIndexed { index, avatar ->
+
+            if (index < 2) {
+                AvatarImage(index, avatar)
+            } else {
+                Box(
+                    modifier = Modifier
+                        .size(20.dp)
+                        .offset(x = (-index * 8).dp)
+                        .clip(CircleShape)
+                        .background(Blue10),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "+${avatarSized.size - 2}",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = Blue100
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun AvatarImage(
+    index: Int,
+    avatar: ImageBitmap
+) {
+    Image(
+        modifier = Modifier
+            .size(20.dp)
+            .offset(x = (-index * 8).dp)
+            .clip(CircleShape)
+            .border(1.dp, Color.White, CircleShape),
+        bitmap = avatar,
+        contentDescription = "avatar"
+    )
+}
+
+@Composable
+fun CustomLinearProgressIndicator(
+    modifier: Modifier = Modifier,
+    progress: Float,
+    height: Dp = 4.dp,
+    backgroundColor: Color = Black40,
+    progressColor: Color = Blue100
+) {
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(height)
+            .clip(RoundedCornerShape(8.dp))
+            .background(backgroundColor)
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxHeight()
+                .fillMaxWidth(progress.coerceIn(0f, 1f))
+                .background(progressColor, RoundedCornerShape(8.dp))
+        )
+    }
+}
+
+@Composable
 fun TopActionRow() {
     Row(
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier
+            .fillMaxWidth()
             .padding(horizontal = 24.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
@@ -230,7 +387,11 @@ private fun ModeItem(
     Box(
         modifier = modifier
             .padding(3.dp)
-            .background(if (selected) White100 else Color.Transparent,RoundedCornerShape(32.dp))
+            .background(
+                if (selected) White100 else Color.Transparent,
+                RoundedCornerShape(32.dp)
+            )
+            .clip(RoundedCornerShape(32.dp))
             .clickable(onClick = onClick)
             .padding(5.dp),
 
@@ -316,18 +477,16 @@ fun StatisticBox(
     onClick: () -> Unit,
     progress: Float
     //передавать количество выполненных habbits
-){
+) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 24.dp)
             .padding(top = 8.dp)
-            .background(Blue100,
-                shape = RoundedCornerShape(16.dp))
-
-
-
-
+            .background(
+                Blue100,
+                shape = RoundedCornerShape(16.dp)
+            )
     ) {
         Row(
             modifier = Modifier
@@ -361,13 +520,14 @@ fun ProgressCircle(
     modifier: Modifier = Modifier,
     progress: Float,
     strokeWidth: Dp = 3.dp
-){
+) {
     Box(
         modifier = modifier.size(50.dp),
         contentAlignment = Alignment.Center,
     ) {
         Canvas(
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier
+                .fillMaxSize()
                 .padding(2.dp)
         ) {
             val stroke = Stroke(
