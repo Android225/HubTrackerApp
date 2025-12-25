@@ -18,7 +18,7 @@ import java.util.UUID
 object HabitRepositoryImpl : HabitRepository {
 
 
-    private val testUser = User(
+    val testUser = User(
         userId = UUID.randomUUID().toString(),
         email = "Alifas@hub.com",
         password = "123",

@@ -3,6 +3,7 @@
 package com.example.hubtrackerapp.presentation.screens.home
 
 import android.graphics.Bitmap
+import android.util.Log
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -23,6 +24,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -41,6 +44,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -82,8 +86,10 @@ fun HomeScreen(
         HomeViewModel
     }
 ) {
-    val mode by viewModel.mode.collectAsState()
-    val daysInMonth by viewModel.calendarDays.collectAsState()
+    val state by viewModel.state.collectAsState()
+//    val mode by viewModel.mode.collectAsState()
+//    val daysInMonth by viewModel.calendarDays.collectAsState()
+//    val selectedDate by viewModel.selectedDate.collectAsState()
     Scaffold(
         modifier = modifier
     ) { innerPadding ->
@@ -95,7 +101,7 @@ fun HomeScreen(
             TopActionRow()
             ProfileRow()
             ModSwitcher(
-                selected = mode,
+                selected = state.mode,
                 onModChange = viewModel::changeMode
             )
 
@@ -115,14 +121,18 @@ fun HomeScreen(
                 //Date Boxes Row
                 item {
                     CalendarRow(
-                        dates = daysInMonth,
+                        dates = state.calendarDays,
+                        selectedDate = state.selectedDate,
                         onDateClick = {}
                     )
                 }
                 item {
                     StatisticBox(
-                        onClick = {},
-                        progress = 0.25f
+                        onClick = {
+                            Log.d("HomeScreen","onStaticBoxClick")
+                        },
+                        progress = state.completedCount,
+                        allHabitsCount = state.habits.size
                     )
                 }
                 item {
@@ -147,10 +157,13 @@ fun HomeScreen(
                         style = MaterialTheme.typography.bodyMedium
                     )
                 }
-                item {
-                    HabitCard()
-                }
+                itemsIndexed(
+                    items = state.habits,
+                    key = {_,habit: HabitWithProgressUi -> habit.habitId}
+                ){index, habits ->
 
+                    HabitCard(habits)
+                }
             }
         }
     }
@@ -158,7 +171,7 @@ fun HomeScreen(
 
 @Composable
 fun HabitCard(
-    //habitWithProgress: HabitWithProgressUi
+    habitWithProgress: HabitWithProgressUi
 ){
     Row(
         modifier = Modifier
@@ -175,22 +188,22 @@ fun HabitCard(
         ProgressCircle(
             modifier = Modifier
                 .padding(start = 16.dp, top = 12.dp, bottom = 12.dp),
-            progress = 0.2f,
+            progress = habitWithProgress.progress,
             colorBackground = Black10,
             colorCompleted = Blue100,
             size = 40.dp,
             strokeWidth = 2.dp,
-            text = "\uD83D\uDE0E"
+            text = habitWithProgress.emoji
         )
         TextForChallengesAndHabits(
             modifier = Modifier
                 .weight(1f),
-            cardName = "challengeName",
+            cardName = habitWithProgress.title,
             additionalInfo = "daysLeft"
         )
         ParticipantsRow(fakeParticipants(), size = 28.dp)
         AddAndCompleteHabit(
-            habitIsCompleted = true,
+            habitIsCompleted = habitWithProgress.isCompleted,
             onClick = {}
         )
     }
@@ -211,7 +224,7 @@ fun AddAndCompleteHabit(
                 shape = RoundedCornerShape(12.dp)
             )
             .clip(RoundedCornerShape(12.dp))
-            .clickable(enabled = habitIsCompleted, onClick = onClick),
+            .clickable(enabled = !habitIsCompleted, onClick = onClick),
 //            .clickable{
 //
 //                TODO("ДОБАВИТЬ ЛОГИКУ КНОПКУ ДОБАВЛЕНИЯ К ХОББИ ИЛИ ЕГО ЗАВЕРШЕНИЕ!")
@@ -403,10 +416,19 @@ fun TopActionRow() {
                 TODO("Calendar button")
             }
         ) {
-            Icon(
-                Icons.Default.DateRange,
-                contentDescription = "Calendar button"
-            )
+            Box(
+                modifier = Modifier
+                    .size(48.dp)
+                    .border(1.dp, Black10, RoundedCornerShape(16.dp))
+                    .clip(RoundedCornerShape(16.dp))
+            ){
+                Icon(
+                    Icons.Default.DateRange,
+                    contentDescription = "Calendar button"
+                )
+            }
+
+
         }
 
         IconButton(
@@ -414,10 +436,17 @@ fun TopActionRow() {
                 TODO("Notifications Button")
             }
         ) {
+            Box(
+                modifier = Modifier
+                    .size(48.dp)
+                    .border(1.dp, Black10, RoundedCornerShape(16.dp))
+                    .clip(RoundedCornerShape(16.dp))
+            ){
             Icon(
                 Icons.Default.Notifications,
                 contentDescription = "Notifications Button"
             )
+                }
         }
     }
 }
@@ -525,10 +554,19 @@ private fun ModeItem(
 @Composable
 fun CalendarRow(
     dates: List<CalendarDayUi>,
-    //selectedDate: LocalDate,
+    selectedDate: LocalDate,
     onDateClick: (LocalDate) -> Unit
 ) {
+    val listState = rememberLazyListState()
+    LaunchedEffect(dates) {
+        val todayIndex = dates.indexOfFirst { it.isToday }
+        if (todayIndex != -1) {
+            listState.scrollToItem(todayIndex)
+        }
+    }
+
     LazyRow(
+        state = listState,
         modifier = Modifier
             .fillMaxSize()
             .padding(top = 8.dp),
@@ -537,10 +575,11 @@ fun CalendarRow(
     ) {
         items(
             items = dates,
-            key = { it.dayNumber }
+            key = { it.date }
         ) { day ->
             DateCard(
                 day = day,
+                isSelected = day.date == selectedDate,
                 onClick = onDateClick
             )
         }
@@ -550,30 +589,31 @@ fun CalendarRow(
 @Composable
 fun DateCard(
     day: CalendarDayUi,
+    isSelected: Boolean,
     onClick: (LocalDate) -> Unit
 ) {
     //УБРАТЬ ЛОГИКУ В VIEWMODEL!!!
-    val colorInBox = if (day.isToday) Blue100 else Black20
-    val colorInBoxNumbers = if (day.isToday) Blue100 else Black100
-    val borderWidth = if (day.isToday) 2.dp else 1.dp
+    val colorInBox = if (isSelected) Blue100 else Black20
+    val colorInBoxNumbers = if (isSelected) Blue100 else Black100
+    val borderWidth = if (isSelected) 2.dp else 1.dp
     Box(
         modifier = Modifier
             .size(width = 48.dp, height = 64.dp)
             .clip(RoundedCornerShape(16.dp))
-            .clickable { onClick(day.date) } // выбор дня в списке
             .border(
                 width = borderWidth,
                 color = colorInBox,
                 shape = RoundedCornerShape(16.dp)
-            ),
+            )
+            .clickable { onClick(day.date) }, // выбор дня в списке
         contentAlignment = Alignment.Center
     ) {
         Column(
-            verticalArrangement = Arrangement.Center,
+            //verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text = (day.dayNumber).toString(),
+                text = day.dayNumber.toString(),
                 style = MaterialTheme.typography.headlineSmall,
                 color = colorInBoxNumbers
             )
@@ -591,7 +631,8 @@ fun DateCard(
 fun StatisticBox(
     modifier: Modifier = Modifier,
     onClick: () -> Unit,
-    progress: Float
+    progress: Int,
+    allHabitsCount: Int
     //передавать количество выполненных habbits
 ) {
     Box(
@@ -609,7 +650,7 @@ fun StatisticBox(
                 .padding(horizontal = 16.dp, vertical = 16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            ProgressCircle(progress = progress)
+            ProgressCircle(progress = (progress / 100).toFloat())
             Column(
                 modifier = Modifier
                     .padding(start = 8.dp)
@@ -620,7 +661,7 @@ fun StatisticBox(
                     color = White100
                 )
                 Text(
-                    text = "1 of 4 completed",
+                    text = "$progress of $allHabitsCount completed",
                     style = MaterialTheme.typography.bodySmall,
                     color = Blue40
                 )
