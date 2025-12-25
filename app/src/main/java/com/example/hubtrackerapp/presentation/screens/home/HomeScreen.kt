@@ -82,9 +82,9 @@ import java.time.LocalDate
 @Composable
 fun HomeScreen(
     modifier: Modifier = Modifier,
-    viewModel: HomeViewModel = viewModel {
-        HomeViewModel
-    }
+    viewModel: HomeViewModel = viewModel (
+      //  HomeViewModel()
+        )
 ) {
     val state by viewModel.state.collectAsState()
 //    val mode by viewModel.mode.collectAsState()

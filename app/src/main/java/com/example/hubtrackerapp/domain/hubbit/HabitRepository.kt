@@ -9,7 +9,7 @@ import java.time.LocalDate
 
 interface HabitRepository {
 
-    suspend fun getHabitsWithScheduleForDate(userId: String, date: LocalDate): Flow<List<HabitWithProgressUi>>
+    fun getHabitsWithScheduleForDate(userId: String, date: LocalDate): Flow<List<HabitWithProgressUi>>
 
 
     suspend fun getHabit(userId: String,habitId: String): HabitUi

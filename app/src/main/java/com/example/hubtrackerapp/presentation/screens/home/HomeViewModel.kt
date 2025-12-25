@@ -26,7 +26,7 @@ import java.time.format.TextStyle
 import java.time.temporal.TemporalAdjusters
 import java.util.Locale
 
-object HomeViewModel: ViewModel(){
+class HomeViewModel: ViewModel(){
 
     private val repository = HabitRepositoryImpl
     private val getHabitsWithScheduleForDateUseCase = GetHabitsWithScheduleForDateUseCase(repository = repository)
@@ -48,27 +48,44 @@ object HomeViewModel: ViewModel(){
     init {
 
         generateMonth()
-        viewModelScope.launch {
-            loadingInitialData()
-        }
-    }
-    private val _modeSwitcher = MutableStateFlow(ModeForSwitch.HOBBIES)
-    val mode = _modeSwitcher.asStateFlow()
-    private suspend fun loadingInitialData(){
         getHabitsWithScheduleForDateUseCase(repository.testUser.userId, selectedDate.value)
             .onEach { habits ->
-                _state.update {
-                    it.copy(
-                        selectedDate = selectedDate.value,
-                        calendarDays = calendarDays.value,
+
+                _state.update { habit ->
+                    habit.copy(
+                        selectedDate = _selectedDate.value,
+                        calendarDays = _calendarDays.value,
                         habits = habits,
                         completedCount = habits.count{it.isCompleted},
-                        mode = mode.value,
+                        mode = ModeForSwitch.HOBBIES,
                         isLoading = false
                     )
                 }
             }.launchIn(viewModelScope)
+
+
+
+//        viewModelScope.launch {
+//            loadingInitialData()
+//        }
     }
+    private val _modeSwitcher = MutableStateFlow(ModeForSwitch.HOBBIES)
+    val mode = _modeSwitcher.asStateFlow()
+//    private suspend fun loadingInitialData(){
+//        getHabitsWithScheduleForDateUseCase(repository.testUser.userId, selectedDate.value)
+//            .onEach { habits ->
+//                _state.update {
+//                    it.copy(
+//                        selectedDate = selectedDate.value,
+//                        calendarDays = calendarDays.value,
+//                        habits = habits,
+//                        completedCount = habits.count{it.isCompleted},
+//                        mode = mode.value,
+//                        isLoading = false
+//                    )
+//                }
+//            }.launchIn(viewModelScope)
+//    }
     fun changeMode(newMode: ModeForSwitch){
         _modeSwitcher.value = newMode
     }

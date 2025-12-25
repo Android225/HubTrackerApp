@@ -184,6 +184,16 @@ object HabitRepositoryImpl : HabitRepository {
                 schedule = HabitSchedule.EveryDay,
             )
         )
+        add(
+            HabitUi(
+                habitId = UUID.randomUUID().toString(),
+                userId = usersListFlow.value[8].userId,
+                emoji = "🌿",
+                title = "Waterasd plant",
+                createdAt = LocalDate.now(),
+                schedule = HabitSchedule.EveryDay,
+            )
+        )
     }
 
     private val habitsStateFlow = MutableStateFlow<List<HabitUi>>(habitsUsersList)
@@ -213,10 +223,16 @@ object HabitRepositoryImpl : HabitRepository {
                 date = LocalDate.now()
             )
         )
+        add(
+            HabitProgress(
+                habitId = habitsStateFlow.value[13].habitId,
+                date = LocalDate.now()
+            )
+        )
     }
     private val progressStateFlow = MutableStateFlow<List<HabitProgress>>(progressHabitsList)
 
-    override suspend fun getHabitsWithScheduleForDate(
+    override fun getHabitsWithScheduleForDate(
         userId: String,
         date: LocalDate
     ): Flow<List<HabitWithProgressUi>> {

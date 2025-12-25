@@ -7,7 +7,7 @@ import java.time.LocalDate
 class GetHabitsWithScheduleForDateUseCase (
     private val repository: HabitRepository
 ){
-    suspend operator fun invoke(
+    operator fun invoke(
         userId: String,
         date: LocalDate
     ): Flow<List<HabitWithProgressUi>>{
