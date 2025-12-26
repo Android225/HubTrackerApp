@@ -43,4 +43,9 @@ interface HabitRepository {
         habitId: String,
         date: LocalDate
     ): HabitProgress?
+
+    suspend fun switchCompleteStatus(
+        habitId: String,
+        date: LocalDate
+    )
 }

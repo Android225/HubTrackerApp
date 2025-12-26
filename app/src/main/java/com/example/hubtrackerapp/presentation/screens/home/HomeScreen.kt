@@ -123,7 +123,11 @@ fun HomeScreen(
                     CalendarRow(
                         dates = state.calendarDays,
                         selectedDate = state.selectedDate,
-                        onDateClick = {}
+                        onDateClick = {
+                            viewModel.processCommand(
+                                HabitCommands.ChangeDate(it)
+                            )
+                        }
                     )
                 }
                 item {
@@ -162,7 +166,11 @@ fun HomeScreen(
                     key = {_,habit: HabitWithProgressUi -> habit.habitId}
                 ){index, habits ->
 
-                    HabitCard(habits)
+                    HabitCard(habits,
+                        onPlusBoxClick = {
+                            viewModel.processCommand(HabitCommands.SwitchCompletedStatus(it))
+                        }
+                    )
                 }
             }
         }
@@ -171,7 +179,8 @@ fun HomeScreen(
 
 @Composable
 fun HabitCard(
-    habitWithProgress: HabitWithProgressUi
+    habitWithProgress: HabitWithProgressUi,
+    onPlusBoxClick: (String) -> Unit
 ){
     Row(
         modifier = Modifier
@@ -203,16 +212,18 @@ fun HabitCard(
         )
         ParticipantsRow(fakeParticipants(), size = 28.dp)
         AddAndCompleteHabit(
+            habitId = habitWithProgress.habitId,
             habitIsCompleted = habitWithProgress.isCompleted,
-            onClick = {}
+            onPlusBoxClick = onPlusBoxClick
         )
     }
 }
 
 @Composable
 fun AddAndCompleteHabit(
+    habitId: String,
     habitIsCompleted: Boolean,
-    onClick: () -> Unit
+    onPlusBoxClick: (String) -> Unit
 ){
     Box(
         modifier = Modifier
@@ -224,7 +235,7 @@ fun AddAndCompleteHabit(
                 shape = RoundedCornerShape(12.dp)
             )
             .clip(RoundedCornerShape(12.dp))
-            .clickable(enabled = !habitIsCompleted, onClick = onClick),
+            .clickable(enabled = !habitIsCompleted, onClick = { onPlusBoxClick(habitId) }),
 //            .clickable{
 //
 //                TODO("ДОБАВИТЬ ЛОГИКУ КНОПКУ ДОБАВЛЕНИЯ К ХОББИ ИЛИ ЕГО ЗАВЕРШЕНИЕ!")
@@ -232,7 +243,7 @@ fun AddAndCompleteHabit(
 //            },
         contentAlignment = Alignment.Center
     ) {
-        if (habitIsCompleted){
+        if (!habitIsCompleted){
           Icon(
                Icons.Default.Add,
               contentDescription = "Add to habit"

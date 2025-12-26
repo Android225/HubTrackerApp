@@ -11,11 +11,13 @@ import androidx.lifecycle.viewModelScope
 import com.example.hubtrackerapp.R
 import com.example.hubtrackerapp.data.HabitRepositoryImpl
 import com.example.hubtrackerapp.domain.hubbit.GetHabitsWithScheduleForDateUseCase
+import com.example.hubtrackerapp.domain.hubbit.SwitchCompleteStatusUseCase
 import com.example.hubtrackerapp.domain.hubbit.models.forUi.CalendarDayUi
 import com.example.hubtrackerapp.domain.hubbit.models.ModeForSwitch
 import com.example.hubtrackerapp.domain.hubbit.models.forUi.HabitWithProgressUi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.toList
@@ -26,11 +28,13 @@ import java.time.format.TextStyle
 import java.time.temporal.TemporalAdjusters
 import java.util.Locale
 
-class HomeViewModel: ViewModel(){
+class HomeViewModel : ViewModel() {
 
     private val repository = HabitRepositoryImpl
-    private val getHabitsWithScheduleForDateUseCase = GetHabitsWithScheduleForDateUseCase(repository = repository)
-
+    private val getHabitsWithScheduleForDateUseCase =
+        GetHabitsWithScheduleForDateUseCase(repository = repository)
+    private val switchCompleteStatusUseCase =
+        SwitchCompleteStatusUseCase(repository)
     private val _state = MutableStateFlow(HomeUiState())
     val state = _state.asStateFlow()
 
@@ -38,7 +42,7 @@ class HomeViewModel: ViewModel(){
     //текущая дата
     private val today: LocalDate = LocalDate.now()
 
-    //выбранная дата в списке
+    //выбранная дата в списке от нее обновление UI
     private val _selectedDate = MutableStateFlow(LocalDate.now())
     val selectedDate = _selectedDate.asStateFlow()
 
@@ -48,53 +52,64 @@ class HomeViewModel: ViewModel(){
     init {
 
         generateMonth()
-        getHabitsWithScheduleForDateUseCase(repository.testUser.userId, selectedDate.value)
-            .onEach { habits ->
+//        getHabitsWithScheduleForDateUseCase(repository.testUser.userId, selectedDate.value)
+//            .onEach { habits ->
+//
+//                _state.update { habit ->
+//                    habit.copy(
+//                        selectedDate = _selectedDate.value,
+//                        calendarDays = _calendarDays.value,
+//                        habits = habits,
+//                        completedCount = habits.count { it.isCompleted },
+//                        mode = ModeForSwitch.HOBBIES,
+//                        isLoading = false
+//                    )
+//                }
+//            }.launchIn(viewModelScope)
 
-                _state.update { habit ->
-                    habit.copy(
-                        selectedDate = _selectedDate.value,
+
+        selectedDate
+            .onEach { date ->
+                _state.update {
+                    it.copy(
+                        selectedDate = date,
                         calendarDays = _calendarDays.value,
+                        isLoading = true
+                    )
+                }
+            }
+            .flatMapLatest { date ->
+                getHabitsWithScheduleForDateUseCase(
+                    repository.testUser.userId,
+                    date
+                )
+            }
+            .onEach { habits ->
+                _state.update {
+                    it.copy(
                         habits = habits,
-                        completedCount = habits.count{it.isCompleted},
-                        mode = ModeForSwitch.HOBBIES,
+                        completedCount = habits.count { it.isCompleted },
                         isLoading = false
                     )
                 }
             }.launchIn(viewModelScope)
 
-
-
-//        viewModelScope.launch {
-//            loadingInitialData()
-//        }
     }
+
     private val _modeSwitcher = MutableStateFlow(ModeForSwitch.HOBBIES)
     val mode = _modeSwitcher.asStateFlow()
-//    private suspend fun loadingInitialData(){
-//        getHabitsWithScheduleForDateUseCase(repository.testUser.userId, selectedDate.value)
-//            .onEach { habits ->
-//                _state.update {
-//                    it.copy(
-//                        selectedDate = selectedDate.value,
-//                        calendarDays = calendarDays.value,
-//                        habits = habits,
-//                        completedCount = habits.count{it.isCompleted},
-//                        mode = mode.value,
-//                        isLoading = false
-//                    )
-//                }
-//            }.launchIn(viewModelScope)
-//    }
-    fun changeMode(newMode: ModeForSwitch){
+
+
+    fun changeMode(newMode: ModeForSwitch) {
         _modeSwitcher.value = newMode
     }
 
 
-    fun onDateSelected(date: LocalDate){
+    private fun onDateChanged(date: LocalDate) {
         _selectedDate.value = date
     }
-    private fun generateMonth(){
+
+    private fun generateMonth() {
         val firstDayInMonth = today.withDayOfMonth(1)
         val lastDayInMonth = today.with(TemporalAdjusters.lastDayOfMonth())
 
@@ -110,6 +125,21 @@ class HomeViewModel: ViewModel(){
 
     }
 
+    fun processCommand(command: HabitCommands) {
+        viewModelScope.launch {
+            when (command) {
+                is HabitCommands.FailHabitInThisDay -> TODO()
+                is HabitCommands.SkipHabitInThisDay -> TODO()
+                is HabitCommands.SwitchCompletedStatus -> {
+                    switchCompleteStatusUseCase(command.habitId, _selectedDate.value)
+                }
+
+                is HabitCommands.ChangeDate -> {
+                    onDateChanged(command.date)
+                }
+            }
+        }
+    }
 
 }
 
@@ -122,12 +152,23 @@ data class HomeUiState(
     val isLoading: Boolean = false // состояние загружены ли данные true = загружаются false = загружены
 )
 
+sealed interface HabitCommands {
+    data class ChangeDate(val date: LocalDate) : HabitCommands
+    data class SwitchCompletedStatus(override val habitId: String) : HabitAction
+    data class SkipHabitInThisDay(override val habitId: String) : HabitAction
+    data class FailHabitInThisDay(override val habitId: String) : HabitAction
+}
+
+sealed interface HabitAction : HabitCommands {
+    val habitId: String
+}
+
 //потом в реализации аватарок на urls заменить List<ImageBitmap>
 @Composable
 fun fakeParticipants(): List<ImageBitmap> {
     val avatar = ImageBitmap.imageResource(
         id = R.drawable.image_cat_test_avatar
     )
-    Log.d("FAKE","GET AVATARS")
+    Log.d("FAKE", "GET AVATARS")
     return List(5) { avatar }
 }

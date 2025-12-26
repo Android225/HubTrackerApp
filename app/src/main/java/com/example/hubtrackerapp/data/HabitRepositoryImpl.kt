@@ -9,6 +9,7 @@ import com.example.hubtrackerapp.domain.hubbit.models.isActive
 import com.example.hubtrackerapp.domain.user.User
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.last
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
@@ -191,7 +192,7 @@ object HabitRepositoryImpl : HabitRepository {
                 emoji = "🌿",
                 title = "Waterasd plant",
                 createdAt = LocalDate.now(),
-                schedule = HabitSchedule.EveryDay,
+                schedule = HabitSchedule.EveryNDays(2),
             )
         )
     }
@@ -220,7 +221,8 @@ object HabitRepositoryImpl : HabitRepository {
         add(
             HabitProgress(
                 habitId = habitsStateFlow.value[12].habitId,
-                date = LocalDate.now()
+                date = LocalDate.now(),
+                isCompleted = true
             )
         )
         add(
@@ -236,24 +238,50 @@ object HabitRepositoryImpl : HabitRepository {
         userId: String,
         date: LocalDate
     ): Flow<List<HabitWithProgressUi>> {
-        val x = habitsStateFlow.map{oldList ->
-            oldList.filter {
-            it.userId == userId && it.schedule.isActive(createdAt = it.createdAt, date = date)
-            }
-        }.map {habits ->
-            habits.map {habit ->
-                val temp = progressStateFlow.value.first { it.habitId == habit.habitId }
+
+        return combine(
+            habitsStateFlow,
+            progressStateFlow
+        ){ habits, progresses ->
+
+            habits.filter { it.userId == userId &&
+                    it.schedule.isActive(createdAt = it.createdAt, date = date)
+            }.map { habit ->
+                val progress = getProgressForHabitInDate(habit.habitId,date)
+
                 HabitWithProgressUi(
                     habitId = habit.habitId,
                     emoji = habit.emoji,
                     title = habit.title,
-                    isCompleted = temp.isCompleted,
-                    progress = temp.progress
+                    isCompleted = progress.isCompleted,
+                    progress = progress.progress
                 )
             }
         }
-        return x
     }
+
+//    override fun getHabitsWithScheduleForDate(
+//        userId: String,
+//        date: LocalDate
+//    ): Flow<List<HabitWithProgressUi>> {
+//        val x = habitsStateFlow.map{oldList ->
+//            oldList.filter {
+//                it.userId == userId && it.schedule.isActive(createdAt = it.createdAt, date = date)
+//            }
+//        }.map {habits ->
+//            habits.map {habit ->
+//                val temp = progressStateFlow.value.first { it.habitId == habit.habitId }
+//                HabitWithProgressUi(
+//                    habitId = habit.habitId,
+//                    emoji = habit.emoji,
+//                    title = habit.title,
+//                    isCompleted = temp.isCompleted,
+//                    progress = temp.progress
+//                )
+//            }
+//        }
+//        return x
+//    }
 
 
     override suspend fun getHabit(userId: String, habitId: String): HabitUi {
@@ -312,6 +340,7 @@ object HabitRepositoryImpl : HabitRepository {
 
 
 
+    //скорей всего удалить не нужен будет.!!!!!!
     override suspend fun saveProgress(
         habitProgress: HabitProgress
     ) {
@@ -356,5 +385,17 @@ object HabitRepositoryImpl : HabitRepository {
         date: LocalDate
     ): HabitProgress? {
         return progressStateFlow.value.firstOrNull{it.habitId == habitId && it.date == date}
+    }
+
+    override suspend fun switchCompleteStatus(habitId: String, date: LocalDate) {
+        progressStateFlow.update { oldList->
+            oldList.map {
+                if (it.habitId == habitId && it.date == date){
+                    it.copy(isCompleted = !it.isCompleted)
+                }else {
+                    it
+                }
+            }
+        }
     }
 }
