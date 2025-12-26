@@ -3,6 +3,7 @@
 package com.example.hubtrackerapp.presentation.screens.home
 
 import android.graphics.Bitmap
+import android.media.Image
 import android.util.Log
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
@@ -14,6 +15,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -29,16 +31,25 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Done
+import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -54,6 +65,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ModifierLocalBeyondBoundsLayout
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
@@ -62,11 +74,13 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.zIndex
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.hubtrackerapp.R
 import com.example.hubtrackerapp.domain.hubbit.models.forUi.CalendarDayUi
 import com.example.hubtrackerapp.domain.hubbit.models.ModeForSwitch
 import com.example.hubtrackerapp.domain.hubbit.models.forUi.HabitWithProgressUi
+import com.example.hubtrackerapp.presentation.navigation.BottomTab
 import com.example.hubtrackerapp.presentation.theme.Black10
 import com.example.hubtrackerapp.presentation.theme.Black100
 import com.example.hubtrackerapp.presentation.theme.Black20
@@ -82,9 +96,9 @@ import java.time.LocalDate
 @Composable
 fun HomeScreen(
     modifier: Modifier = Modifier,
-    viewModel: HomeViewModel = viewModel (
-      //  HomeViewModel()
-        )
+    viewModel: HomeViewModel = viewModel(
+        //  HomeViewModel()
+    )
 ) {
     val state by viewModel.state.collectAsState()
 //    val mode by viewModel.mode.collectAsState()
@@ -94,6 +108,11 @@ fun HomeScreen(
         modifier = modifier
     ) { innerPadding ->
 
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+        ) {
         Column(
             modifier = Modifier
                 .padding(innerPadding)
@@ -116,7 +135,10 @@ fun HomeScreen(
 
             LazyColumn(
                 modifier = Modifier
-                    .fillMaxSize() // глянуть потом насколько он тут вообще нужон
+                    .fillMaxSize(),
+                contentPadding = PaddingValues(
+                    bottom = 60.dp
+                )// глянуть потом насколько он тут вообще нужон
             ) {
                 //Date Boxes Row
                 item {
@@ -133,7 +155,7 @@ fun HomeScreen(
                 item {
                     StatisticBox(
                         onClick = {
-                            Log.d("HomeScreen","onStaticBoxClick")
+                            Log.d("HomeScreen", "onStaticBoxClick")
                         },
                         progress = state.completedCount,
                         allHabitsCount = state.habits.size
@@ -163,10 +185,11 @@ fun HomeScreen(
                 }
                 itemsIndexed(
                     items = state.habits,
-                    key = {_,habit: HabitWithProgressUi -> habit.habitId}
-                ){index, habits ->
+                    key = { _, habit: HabitWithProgressUi -> habit.habitId }
+                ) { index, habits ->
 
-                    HabitCard(habits,
+                    HabitCard(
+                        habits,
                         onPlusBoxClick = {
                             viewModel.processCommand(HabitCommands.SwitchCompletedStatus(it))
                         }
@@ -174,6 +197,93 @@ fun HomeScreen(
                 }
             }
         }
+        CustomBottomBar(
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(horizontal = 16.dp, vertical = 12.dp)
+                .zIndex(1f),
+            selected = BottomTab.HOME,
+            onTabClick = { TODO() }
+        )
+    }
+    }
+}
+
+@Composable
+fun CustomBottomBar(
+    modifier: Modifier = Modifier,
+    selected: BottomTab,
+    onTabClick: (BottomTab) -> Unit
+) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(64.dp)
+            .clip(RoundedCornerShape(32.dp))
+            .border(
+                1.dp,
+                Black10,
+                RoundedCornerShape(32.dp)
+            )
+            .background(White100),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceAround
+    ) {
+            BottomBarItem(
+                icon = Icons.Default.Home,
+                selected = selected == BottomTab.HOME,
+                onClick = { onTabClick(BottomTab.HOME) }
+            )
+            BottomBarItem(
+                icon = Icons.Default.Search,
+                selected = selected == BottomTab.EXPLORE,
+                onClick = { onTabClick(BottomTab.EXPLORE) }
+            )
+            BottomBarItem(
+                icon = Icons.Default.AddCircle,
+                selected = selected == BottomTab.CREATE,
+                isCenter = true,
+                onClick = { onTabClick(BottomTab.CREATE) }
+            )
+            BottomBarItem(
+                icon = Icons.Default.Star,
+                selected = selected == BottomTab.ACTIVITY,
+                onClick = { onTabClick(BottomTab.ACTIVITY) }
+            )
+            BottomBarItem(
+                icon = Icons.Default.AccountCircle,
+                selected = selected == BottomTab.PROFILE,
+                onClick = { onTabClick(BottomTab.PROFILE) }
+            )
+    }
+}
+
+@Composable
+fun BottomBarItem(
+    icon: ImageVector,
+    selected: Boolean,
+    isCenter: Boolean = false,
+    onClick: () -> Unit
+) {
+    val size = if (isCenter) 48.dp else 36.dp
+    val bg = Color.Transparent
+    val tint = if (selected || isCenter) Blue100 else Black40
+    val iconSize = if (isCenter) 48.dp else 24.dp
+    Box(
+        modifier = Modifier
+            .size(size)
+            .clip(CircleShape)
+            .background(bg)
+            .clickable(onClick = onClick),
+        contentAlignment = Alignment.Center
+    ) {
+        Icon(
+            modifier = Modifier
+                .size(iconSize),
+            imageVector = icon,
+            contentDescription = null,
+            tint = tint
+        )
     }
 }
 
@@ -181,7 +291,7 @@ fun HomeScreen(
 fun HabitCard(
     habitWithProgress: HabitWithProgressUi,
     onPlusBoxClick: (String) -> Unit
-){
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -224,7 +334,7 @@ fun AddAndCompleteHabit(
     habitId: String,
     habitIsCompleted: Boolean,
     onPlusBoxClick: (String) -> Unit
-){
+) {
     Box(
         modifier = Modifier
             .padding(end = 12.dp)
@@ -243,11 +353,11 @@ fun AddAndCompleteHabit(
 //            },
         contentAlignment = Alignment.Center
     ) {
-        if (!habitIsCompleted){
-          Icon(
-               Icons.Default.Add,
-              contentDescription = "Add to habit"
-          )
+        if (!habitIsCompleted) {
+            Icon(
+                Icons.Default.Add,
+                contentDescription = "Add to habit"
+            )
         } else {
             Icon(
                 Icons.Default.Done,
@@ -257,6 +367,7 @@ fun AddAndCompleteHabit(
         }
     }
 }
+
 @Composable
 fun ChallengesRow(
     challengeName: String,
@@ -320,7 +431,7 @@ fun TextForChallengesAndHabits(
     modifier: Modifier = Modifier,
     cardName: String,
     additionalInfo: String
-){
+) {
 
     Column(
         modifier = modifier
@@ -432,7 +543,7 @@ fun TopActionRow() {
                     .size(48.dp)
                     .border(1.dp, Black10, RoundedCornerShape(16.dp))
                     .clip(RoundedCornerShape(16.dp))
-            ){
+            ) {
                 Icon(
                     Icons.Default.DateRange,
                     contentDescription = "Calendar button"
@@ -452,12 +563,12 @@ fun TopActionRow() {
                     .size(48.dp)
                     .border(1.dp, Black10, RoundedCornerShape(16.dp))
                     .clip(RoundedCornerShape(16.dp))
-            ){
-            Icon(
-                Icons.Default.Notifications,
-                contentDescription = "Notifications Button"
-            )
-                }
+            ) {
+                Icon(
+                    Icons.Default.Notifications,
+                    contentDescription = "Notifications Button"
+                )
+            }
         }
     }
 }
@@ -688,7 +799,7 @@ fun ProgressCircle(
     modifier: Modifier = Modifier,
     progress: Float,
     strokeWidth: Dp = 3.dp,
-    size:Dp = 50.dp,
+    size: Dp = 50.dp,
     colorBackground: Color = Blue40,
     colorCompleted: Color = White100,
     text: String = "%${(progress * 100).toInt()}"
