@@ -5,17 +5,24 @@ package com.example.hubtrackerapp.presentation.screens.home
 import android.graphics.Bitmap
 import android.media.Image
 import android.util.Log
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -34,6 +41,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AddCircle
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.Home
@@ -58,6 +66,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -80,7 +89,9 @@ import com.example.hubtrackerapp.R
 import com.example.hubtrackerapp.domain.hubbit.models.forUi.CalendarDayUi
 import com.example.hubtrackerapp.domain.hubbit.models.ModeForSwitch
 import com.example.hubtrackerapp.domain.hubbit.models.forUi.HabitWithProgressUi
+import com.example.hubtrackerapp.domain.hubbit.models.forUi.Mood
 import com.example.hubtrackerapp.presentation.navigation.BottomTab
+import com.example.hubtrackerapp.presentation.screens.components.ModSwitcher
 import com.example.hubtrackerapp.presentation.theme.Black10
 import com.example.hubtrackerapp.presentation.theme.Black100
 import com.example.hubtrackerapp.presentation.theme.Black20
@@ -113,99 +124,207 @@ fun HomeScreen(
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
-        Column(
-            modifier = Modifier
-                .padding(innerPadding)
-        ) {
-            TopActionRow()
-            ProfileRow()
-            ModSwitcher(
-                selected = state.mode,
-                onModChange = viewModel::changeMode
-            )
-
-            //gray line
-            Box(
+            Column(
                 modifier = Modifier
-                    .padding(top = 16.dp)
-                    .fillMaxWidth()
-                    .height(1.dp)
-                    .background(Black20)
-            )
-
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize(),
-                contentPadding = PaddingValues(
-                    bottom = 60.dp
-                )// глянуть потом насколько он тут вообще нужон
+                    .padding(innerPadding)
             ) {
-                //Date Boxes Row
-                item {
-                    CalendarRow(
-                        dates = state.calendarDays,
-                        selectedDate = state.selectedDate,
-                        onDateClick = {
-                            viewModel.processCommand(
-                                HabitCommands.ChangeDate(it)
-                            )
-                        }
-                    )
-                }
-                item {
-                    StatisticBox(
-                        onClick = {
-                            Log.d("HomeScreen", "onStaticBoxClick")
-                        },
-                        progress = state.completedCount,
-                        allHabitsCount = state.habits.size
-                    )
-                }
-                item {
-                    Text(
-                        modifier = Modifier
-                            .padding(horizontal = 24.dp)
-                            .padding(top = 16.dp),
-                        text = "Challenges",
-                        style = MaterialTheme.typography.bodyMedium
-                    )
-                    //переписать добавить кнопку ViewAll если будет надобность для обзора всех челенджей юзера
-                }
-                item {
-                    ChallengesRow("Best Runners!", "5 days 13 hours left")
-                }
-                item {
-                    Text(
-                        modifier = Modifier
-                            .padding(horizontal = 24.dp)
-                            .padding(top = 16.dp),
-                        text = "Habits",
-                        style = MaterialTheme.typography.bodyMedium
-                    )
-                }
-                itemsIndexed(
-                    items = state.habits,
-                    key = { _, habit: HabitWithProgressUi -> habit.habitId }
-                ) { index, habits ->
+                TopActionRow()
+                ProfileRow()
+                ModSwitcher(
+                    selected = state.mode,
+                    onModChange = viewModel::changeMode
+                )
 
-                    HabitCard(
-                        habits,
-                        onPlusBoxClick = {
-                            viewModel.processCommand(HabitCommands.SwitchCompletedStatus(it))
-                        }
-                    )
+                //gray line
+                Box(
+                    modifier = Modifier
+                        .padding(top = 16.dp)
+                        .fillMaxWidth()
+                        .height(1.dp)
+                        .background(Black20)
+                )
+
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxSize(),
+                    contentPadding = PaddingValues(
+                        bottom = 60.dp
+                    )// глянуть потом насколько он тут вообще нужон
+                ) {
+                    //Date Boxes Row
+                    item {
+                        CalendarRow(
+                            dates = state.calendarDays,
+                            selectedDate = state.selectedDate,
+                            onDateClick = {
+                                viewModel.processCommand(
+                                    HabitCommands.ChangeDate(it)
+                                )
+                            }
+                        )
+                    }
+                    item {
+                        StatisticBox(
+                            onClick = {
+                                Log.d("HomeScreen", "onStaticBoxClick")
+                            },
+                            progress = state.completedCount,
+                            allHabitsCount = state.habits.size
+                        )
+                    }
+                    item {
+                        Text(
+                            modifier = Modifier
+                                .padding(horizontal = 24.dp)
+                                .padding(top = 16.dp),
+                            text = "Challenges",
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                        //переписать добавить кнопку ViewAll если будет надобность для обзора всех челенджей юзера
+                    }
+                    item {
+                        ChallengesRow("Best Runners!", "5 days 13 hours left")
+                    }
+                    item {
+                        Text(
+                            modifier = Modifier
+                                .padding(horizontal = 24.dp)
+                                .padding(top = 16.dp),
+                            text = "Habits",
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    }
+                    itemsIndexed(
+                        items = state.habits,
+                        key = { _, habit: HabitWithProgressUi -> habit.habitId }
+                    ) { index, habits ->
+
+                        HabitCard(
+                            habits,
+                            onPlusBoxClick = {
+                                viewModel.processCommand(HabitCommands.SwitchCompletedStatus(it))
+                            }
+                        )
+                    }
                 }
             }
+            CustomBottomBar(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .zIndex(0f)
+                    .padding(horizontal = 16.dp, vertical = 12.dp),
+                selected = BottomTab.HOME,
+                onTabClick = { viewModel.onEvent(HomeEvent.AddClicked) } //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            )
+
+            AnimatedVisibility(
+                visible = state.addMenuVisible,
+                enter = fadeIn(),
+                exit = fadeOut()
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .zIndex(2f)
+                        .background(Black100.copy(alpha = 0.4f))
+                        .clickable(
+                            indication = null,
+                            interactionSource = remember{ MutableInteractionSource() }
+                        ){
+                            viewModel.onEvent(HomeEvent.DismissAddMenu)
+                        }
+                )
+            }
+            AnimatedVisibility(
+                modifier = Modifier
+                    .zIndex(3f)
+                    .align(Alignment.BottomCenter)
+                    .padding(bottom = 76.dp),
+                visible = state.addMenuVisible,
+                enter = slideInVertically { it } + fadeIn(),
+                exit = slideOutVertically { it } + fadeOut()
+            ) {
+                AddMenu()
+            }
+
         }
-        CustomBottomBar(
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .padding(horizontal = 16.dp, vertical = 12.dp)
-                .zIndex(1f),
-            selected = BottomTab.HOME,
-            onTabClick = { TODO() }
-        )
     }
+}
+
+@Composable
+fun AddMenu(
+
+){
+    Column(
+        modifier = Modifier
+            .padding(16.dp)
+            .clip(RoundedCornerShape(16.dp))
+            //.background(Color.Transparent)
+            .padding(16.dp)
+    ) {
+        Row() {
+            AddHabitCard("Quit Bad Habit","Never too late", Icons.Default.Done)
+            Spacer(Modifier.height(8.dp))
+            AddHabitCard("Quit Bad Habit","Never too late", Icons.Default.Close)
+            Spacer(Modifier.height(12.dp))
+        }
+
+        AddMoodRow()
+    }
+}
+@Composable
+fun AddMoodRow(
+
+){
+    Row {
+        TextForChallengesAndHabits(
+            cardName = "Add Mood",
+            additionalInfo = "How're you feeling?"
+        )
+        Mood.entries.forEach { mood->
+            Box(
+                modifier = Modifier
+                    .size(44.dp)
+                    .clip(CircleShape)
+                    .background(Color(0xFFF5F5F5))
+                    .clickable { /*onMoodSelected(mood)*/ },
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = mood.emoji,
+                    fontSize = 22.sp
+                )
+            }
+        }
+    }
+
+}
+
+@Composable
+fun AddHabitCard(
+    textHabitFirst: String,
+    textHabitSecond: String,
+    imageVector: ImageVector
+){
+    Row(
+        modifier = Modifier
+            .clip(RoundedCornerShape(16.dp))
+            .background(White100)
+            .padding(16.dp)
+
+    ) {
+        Column() {
+            Text(
+                text = textHabitFirst
+            )
+            Text(
+                text = textHabitSecond
+            )
+        }
+        Icon(
+            imageVector = imageVector,
+            contentDescription = null
+        )
     }
 }
 
@@ -229,37 +348,38 @@ fun CustomBottomBar(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceAround
     ) {
-            BottomBarItem(
-                icon = Icons.Default.Home,
-                selected = selected == BottomTab.HOME,
-                onClick = { onTabClick(BottomTab.HOME) }
-            )
-            BottomBarItem(
-                icon = Icons.Default.Search,
-                selected = selected == BottomTab.EXPLORE,
-                onClick = { onTabClick(BottomTab.EXPLORE) }
-            )
-            BottomBarItem(
-                icon = Icons.Default.AddCircle,
-                selected = selected == BottomTab.CREATE,
-                isCenter = true,
-                onClick = { onTabClick(BottomTab.CREATE) }
-            )
-            BottomBarItem(
-                icon = Icons.Default.Star,
-                selected = selected == BottomTab.ACTIVITY,
-                onClick = { onTabClick(BottomTab.ACTIVITY) }
-            )
-            BottomBarItem(
-                icon = Icons.Default.AccountCircle,
-                selected = selected == BottomTab.PROFILE,
-                onClick = { onTabClick(BottomTab.PROFILE) }
-            )
+        BottomBarItem(
+            icon = Icons.Default.Home,
+            selected = selected == BottomTab.HOME,
+            onClick = { onTabClick(BottomTab.HOME) }
+        )
+        BottomBarItem(
+            icon = Icons.Default.Search,
+            selected = selected == BottomTab.EXPLORE,
+            onClick = { onTabClick(BottomTab.EXPLORE) }
+        )
+        BottomBarItem(
+            icon = Icons.Default.AddCircle,
+            selected = selected == BottomTab.CREATE,
+            isCenter = true,
+            onClick = { onTabClick(BottomTab.CREATE) }
+        )
+        BottomBarItem(
+            icon = Icons.Default.Star,
+            selected = selected == BottomTab.ACTIVITY,
+            onClick = { onTabClick(BottomTab.ACTIVITY) }
+        )
+        BottomBarItem(
+            icon = Icons.Default.AccountCircle,
+            selected = selected == BottomTab.PROFILE,
+            onClick = { onTabClick(BottomTab.PROFILE) }
+        )
     }
 }
 
 @Composable
 fun BottomBarItem(
+    modifier: Modifier = Modifier,
     icon: ImageVector,
     selected: Boolean,
     isCenter: Boolean = false,
@@ -270,7 +390,7 @@ fun BottomBarItem(
     val tint = if (selected || isCenter) Blue100 else Black40
     val iconSize = if (isCenter) 48.dp else 24.dp
     Box(
-        modifier = Modifier
+        modifier = modifier
             .size(size)
             .clip(CircleShape)
             .background(bg)
@@ -613,63 +733,6 @@ fun ProfileRow() {
 }
 
 
-@Composable
-private fun ModSwitcher(
-    selected: ModeForSwitch,
-    onModChange: (ModeForSwitch) -> Unit
-) {
-    Row(
-        modifier = Modifier
-            .padding(horizontal = 24.dp)
-            .padding(top = 16.dp)
-            .clip(RoundedCornerShape(16.dp))
-            .background(Black10)
-            .fillMaxWidth(),
-        horizontalArrangement = Arrangement.Center
-    ) {
-        ModeItem(
-            modifier = Modifier.weight(1f),
-            text = "Today",
-            selected = selected == ModeForSwitch.HOBBIES,
-            onClick = { onModChange(ModeForSwitch.HOBBIES) }
-        )
-        ModeItem(
-            modifier = Modifier.weight(1f),
-            text = "Clubs",
-            selected = selected == ModeForSwitch.CLUBS,
-            onClick = { onModChange(ModeForSwitch.CLUBS) }
-        )
-
-    }
-}
-
-
-@Composable
-private fun ModeItem(
-    modifier: Modifier = Modifier,
-    text: String,
-    selected: Boolean,
-    onClick: () -> Unit
-) {
-    Box(
-        modifier = modifier
-            .padding(3.dp)
-            .background(
-                if (selected) White100 else Color.Transparent,
-                RoundedCornerShape(32.dp)
-            )
-            .clip(RoundedCornerShape(32.dp))
-            .clickable(onClick = onClick)
-            .padding(5.dp),
-
-        contentAlignment = Alignment.Center
-    ) {
-        Text(
-            text = text,
-            color = if (selected) Blue100 else Black60
-        )
-    }
-}
 // Habbits screen composables
 
 

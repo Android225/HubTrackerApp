@@ -12,6 +12,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.hubtrackerapp.presentation.navigation.NavGraph
+import com.example.hubtrackerapp.presentation.screens.add.AddHabit
 import com.example.hubtrackerapp.presentation.screens.authorization.AuthorizationHubScreen
 import com.example.hubtrackerapp.presentation.screens.home.HomeScreen
 import com.example.hubtrackerapp.presentation.screens.registration.RegistrationChooseHabbitsScreen
@@ -25,7 +26,9 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             //NavGraph()
-            HomeScreen()
+           // HomeScreen()
+            AddHabit(onBackClick = {},
+                onAddHabit = {})
         }
     }
 }

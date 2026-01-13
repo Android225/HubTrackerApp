@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalCoroutinesApi::class)
+
 package com.example.hubtrackerapp.presentation.screens.home
 
 import android.util.Log
@@ -15,6 +17,7 @@ import com.example.hubtrackerapp.domain.hubbit.SwitchCompleteStatusUseCase
 import com.example.hubtrackerapp.domain.hubbit.models.forUi.CalendarDayUi
 import com.example.hubtrackerapp.domain.hubbit.models.ModeForSwitch
 import com.example.hubtrackerapp.domain.hubbit.models.forUi.HabitWithProgressUi
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.flatMapLatest
@@ -133,7 +136,6 @@ class HomeViewModel : ViewModel() {
                 is HabitCommands.SwitchCompletedStatus -> {
                     switchCompleteStatusUseCase(command.habitId, _selectedDate.value)
                 }
-
                 is HabitCommands.ChangeDate -> {
                     onDateChanged(command.date)
                 }
@@ -141,6 +143,16 @@ class HomeViewModel : ViewModel() {
         }
     }
 
+    fun onEvent(event: HomeEvent){
+        when(event) {
+            HomeEvent.AddClicked -> {
+                _state.update { it.copy(addMenuVisible = true) }
+            }
+            HomeEvent.DismissAddMenu -> {
+                _state.update { it.copy(addMenuVisible = false) }
+            }
+        }
+    }
 }
 
 data class HomeUiState(
@@ -149,7 +161,8 @@ data class HomeUiState(
     val habits: List<HabitWithProgressUi> = emptyList(),
     val completedCount: Int = 0,
     val mode: ModeForSwitch = ModeForSwitch.HOBBIES,
-    val isLoading: Boolean = false // состояние загружены ли данные true = загружаются false = загружены
+    val isLoading: Boolean = false, // состояние загружены ли данные true = загружаются false = загружены
+    val addMenuVisible: Boolean = false
 )
 
 sealed interface HabitCommands {
@@ -157,6 +170,10 @@ sealed interface HabitCommands {
     data class SwitchCompletedStatus(override val habitId: String) : HabitAction
     data class SkipHabitInThisDay(override val habitId: String) : HabitAction
     data class FailHabitInThisDay(override val habitId: String) : HabitAction
+}
+sealed interface HomeEvent{
+    data object AddClicked: HomeEvent
+    data object DismissAddMenu: HomeEvent
 }
 
 sealed interface HabitAction : HabitCommands {

@@ -1,0 +1,19 @@
+package com.example.hubtrackerapp.domain.hubbit.models
+
+import HabitMetric
+import androidx.compose.ui.graphics.Color
+import java.time.LocalTime
+
+data class PredefinedHabit(
+    val habitName: String,// название хобби
+    val icon: String, // иконка к хобби
+    val color: Color, //цвет для хобби
+    val metricForHabit: HabitMetric,
+    val target: Int, // целевая велечина
+    val habitSchedule: HabitSchedule, //дни в которые будут отображаться задачи и приходить уведомления
+    val reminderTime: LocalTime, // время во сколько будет приходить уведомление
+    val reminderDate: HabitSchedule, //дни в которые будут приходить уведомления для данной задачи
+    val reminderIsActive: Boolean = false, // напоминания включены или выключены
+    val habitType: ModeForSwitch,
+    val habitCustom: Boolean = false
+)
