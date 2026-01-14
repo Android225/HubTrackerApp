@@ -41,14 +41,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import com.example.hubtrackerapp.presentation.theme.*
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.hubtrackerapp.presentation.theme.Black10
-import com.example.hubtrackerapp.presentation.theme.Black20
-import com.example.hubtrackerapp.presentation.theme.Black60
-import com.example.hubtrackerapp.presentation.theme.White100
 
 @Composable
 fun RegistrationChooseHabbitsScreen(

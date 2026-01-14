@@ -30,6 +30,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -57,6 +62,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import com.example.hubtrackerapp.presentation.theme.*
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -73,22 +79,8 @@ import com.example.hubtrackerapp.domain.hubbit.models.ModeForSwitch
 import com.example.hubtrackerapp.domain.hubbit.models.PredefinedHabit
 import com.example.hubtrackerapp.presentation.screens.components.ModSwitcher
 import com.example.hubtrackerapp.presentation.screens.registration.RegistrationViewModel
-import com.example.hubtrackerapp.presentation.theme.Black10
-import com.example.hubtrackerapp.presentation.theme.Black20
-import com.example.hubtrackerapp.presentation.theme.Black40
-import com.example.hubtrackerapp.presentation.theme.Black60
-import com.example.hubtrackerapp.presentation.theme.Blue10
-import com.example.hubtrackerapp.presentation.theme.Blue100
-import com.example.hubtrackerapp.presentation.theme.Blue20
-import com.example.hubtrackerapp.presentation.theme.Blue40
-import com.example.hubtrackerapp.presentation.theme.DarkBlue10
-import com.example.hubtrackerapp.presentation.theme.GreenSuccess100
-import com.example.hubtrackerapp.presentation.theme.Orange100
-import com.example.hubtrackerapp.presentation.theme.Orange20
-import com.example.hubtrackerapp.presentation.theme.Orange40
-import com.example.hubtrackerapp.presentation.theme.White100
-import com.example.hubtrackerapp.presentation.theme.Yellow20
-import com.example.hubtrackerapp.presentation.theme.Yellow40
+import com.example.hubtrackerapp.presentation.ui.theme.ColorGroup
+import com.example.hubtrackerapp.presentation.ui.theme.colorGroups
 import java.time.LocalTime
 
 
@@ -249,11 +241,26 @@ fun AddHabit(
     }
     when (uiState.activePicker) {
         PickerType.Close -> {}
-        PickerType.Color -> TODO()
+        PickerType.Color -> {
+            UniversalAnimatedPicker(
+                pickerType = PickerType.Color,
+                onDismissClick = {
+                    viewModel.onEventAddHabit(AddHabitEvent.ClosePicker)
+                },
+                title = "Выбор цвета",
+                content =
+                    {
+                        ColorPickerContent(
+                            colorGroups = colorGroups,
+                            selectedColor = state.color,
+                            onColorSelected = {viewModel.onEventAddHabit(AddHabitEvent.SelectColor(it))}
+                        )
+                    }
+            )
+        }
         PickerType.Goal -> TODO()
         PickerType.Icon -> {
             UniversalAnimatedPicker(
-                modifier = Modifier.zIndex(10f),
                 pickerType = PickerType.Icon,
                 onDismissClick = {
                     viewModel.onEventAddHabit(AddHabitEvent.ClosePicker)
@@ -265,7 +272,11 @@ fun AddHabit(
                             text = state.icon,
                             predefinedHabits = predefinedHabits,
                             onTextChanged = { viewModel.onEventAddHabit(AddHabitEvent.SelectIcon(it)) },
-                            onAddHabit = {viewModel.onEventAddHabit(AddHabitEvent.ApplyPredefinedHabit(it))}
+                            onAddHabit = {viewModel.onEventAddHabit(AddHabitEvent.ApplyPredefinedHabit(it))
+                                viewModel.onEventAddHabit(AddHabitEvent.ClosePicker)},
+                            onSaveIconClick = {
+                                viewModel.onEventAddHabit(AddHabitEvent.ClosePicker)
+                            }
                         )
                     }
             )
@@ -278,12 +289,11 @@ fun AddHabit(
 
 @Composable
 private fun UniversalAnimatedPicker(
-    modifier: Modifier = Modifier,
     pickerType: PickerType,
     isVisible: Boolean = pickerType !is PickerType.Close,
     onDismissClick: () -> Unit,
     content: @Composable () -> Unit,
-    title: String
+    title: String // Название пикера сверху
 ) {
     // Фон (отдельная анимация)
     AnimatedVisibility(
@@ -316,7 +326,7 @@ private fun UniversalAnimatedPicker(
                     .padding(horizontal = 32.dp)
                     .height(500.dp)
                     .clip(RoundedCornerShape(16.dp))
-                    .background(Blue20)
+                    .background(White100)
                     .clickable(enabled = false) {}
             ) {
                 Box(
@@ -337,12 +347,67 @@ private fun UniversalAnimatedPicker(
 }
 
 @Composable
+private fun ColorPickerContent(
+    colorGroups: List<ColorGroup>,
+    selectedColor: Color,
+    onColorSelected: (Color) -> Unit
+) {
+    LazyVerticalGrid(
+        columns = GridCells.Fixed(6),
+        modifier = Modifier.padding(16.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        colorGroups.forEach { group ->
+
+            // Заголовок группы на всю ширину
+            item(span = { GridItemSpan(maxLineSpan) }) {
+                Text(
+                    text = group.name,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = Black60,
+                    modifier = Modifier.padding(vertical = 8.dp)
+                )
+            }
+
+            // Цвета группы
+            items(group.colors) { color ->
+                ColorItem(
+                    color = color,
+                    isSelected = color == selectedColor,
+                    onClick = { onColorSelected(color) }
+                )
+            }
+        }
+    }
+}
+@Composable
+fun ColorItem(
+    color: Color,
+    isSelected: Boolean,
+    onClick: () -> Unit
+) {
+    Box(
+        modifier = Modifier
+            .size(36.dp)
+            .clip(CircleShape)
+            .background(color)
+            .border(
+                width = if (isSelected) 3.dp else 1.dp,
+                color = if (isSelected) Black100 else Black20,
+                shape = CircleShape
+            )
+            .clickable { onClick() }
+    )
+}
+@Composable
 private fun IconPickerContent(
     modifier: Modifier = Modifier,
     predefinedHabits: List<PredefinedHabit>,
     text: String,
     onTextChanged: (String) -> Unit,
-    onAddHabit: (PredefinedHabit) -> Unit
+    onAddHabit: (PredefinedHabit) -> Unit,
+    onSaveIconClick: () -> Unit
 ) {
     LazyColumn(
         modifier = Modifier
@@ -372,8 +437,9 @@ private fun IconPickerContent(
                 Box(
                     modifier = Modifier
                         .clip(RoundedCornerShape(16.dp))
-                        .background(Blue100)
+                        .background(Blue80)
                         .padding(horizontal = 12.dp, vertical = 16.dp)
+                        .clickable { onSaveIconClick() }
                 ) {
                     Text(
                         text = "Сохранить иконку",
@@ -418,21 +484,21 @@ private fun CreateHabitIconCard(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 24.dp)
-            .padding(top = 12.dp)
+            .padding(top = 8.dp)
             .clip(RoundedCornerShape(16.dp))
-            .background(Blue40)
+            .background(Blue10)
             .border(
                 width = 1.dp,
                 color = Black40,
                 shape = RoundedCornerShape(16.dp)
             )
-            .clickable{onAddHabit()},
+            .clickable { onAddHabit() },
             verticalAlignment = Alignment.CenterVertically
 
     ) {
         Box(
             modifier = Modifier
-                .padding(16.dp)
+                .padding(12.dp)
                 .clip(CircleShape)
                 .background(Blue20)
                 .padding(horizontal = 12.dp)
@@ -683,7 +749,7 @@ private fun ChoiceIconAndColor(
         ChoiceParametersForHabit(
             modifier = Modifier
                 .weight(1f),
-            habitName = "Orange", //  подправить отображение названия цвета
+            habitName = "None", //  подправить отображение названия цвета
             choiceName = "Color",
             color = habitColor,
             onClick = { onColorClick() }
@@ -731,10 +797,12 @@ private fun ChoiceParametersForHabit(
         Column(
 
         ) {
-            Text(
-                text = habitName,
-                style = MaterialTheme.typography.bodyMedium
-            )
+            if (habitName != "None"){
+                Text(
+                    text = habitName,
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            }
             Text(
                 text = choiceName,
                 style = MaterialTheme.typography.bodySmall,

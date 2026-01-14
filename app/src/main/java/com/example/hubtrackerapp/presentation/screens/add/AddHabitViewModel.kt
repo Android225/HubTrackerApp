@@ -47,8 +47,14 @@ class AddHabitViewModel : ViewModel() {
             }
 
             is AddHabitEvent.SelectIcon -> {
-                _state.update { it.copy(icon = event.icon, habitCustom = true) }
-                _addHabitUiState.update { it.copy(activePicker = PickerType.Close) }
+                val newIcon = event.icon
+                    .trim()
+                    .let { text ->
+                        if (text.isEmpty()) ""
+                        else text.codePoints().limit(1).toArray()
+                            .let { String(it, 0, it.size) }
+                    }
+                _state.update { it.copy(icon = newIcon, habitCustom = true) }
             }
 
             is AddHabitEvent.SelectMetric -> {

@@ -71,6 +71,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import com.example.hubtrackerapp.presentation.theme.*
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
@@ -92,16 +93,6 @@ import com.example.hubtrackerapp.domain.hubbit.models.forUi.HabitWithProgressUi
 import com.example.hubtrackerapp.domain.hubbit.models.forUi.Mood
 import com.example.hubtrackerapp.presentation.navigation.BottomTab
 import com.example.hubtrackerapp.presentation.screens.components.ModSwitcher
-import com.example.hubtrackerapp.presentation.theme.Black10
-import com.example.hubtrackerapp.presentation.theme.Black100
-import com.example.hubtrackerapp.presentation.theme.Black20
-import com.example.hubtrackerapp.presentation.theme.Black40
-import com.example.hubtrackerapp.presentation.theme.Black60
-import com.example.hubtrackerapp.presentation.theme.Blue10
-import com.example.hubtrackerapp.presentation.theme.Blue100
-import com.example.hubtrackerapp.presentation.theme.Blue40
-import com.example.hubtrackerapp.presentation.theme.GreenSuccess100
-import com.example.hubtrackerapp.presentation.theme.White100
 import java.time.LocalDate
 
 @Composable
