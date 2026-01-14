@@ -29,58 +29,47 @@ class AddHabitViewModel : ViewModel() {
         _state.value = _state.value.copy(habitType = newMode)
     }
 
-    fun onEventAddHabit(event: AddHabitEvent){
-        when(event) {
-            AddHabitEvent.OpenColorPicker -> {
-                _addHabitUiState.update { it.copy(isColorPickerVisible = true) }
-            }
-            AddHabitEvent.OpenGoalEditPicker -> {
-                _addHabitUiState.update { it.copy(isGoalEditPickerVisible = true) }
-            }
-            AddHabitEvent.OpenIconPicker -> {
-                _addHabitUiState.update { it.copy(isIconPickerVisible = true) }
-            }
-            AddHabitEvent.OpenSchedulePicker -> {
-                _addHabitUiState.update { it.copy(isSchedulePickerVisible = true) }
-            }
-            AddHabitEvent.ReminderTimeAndDatePicker -> {
-                _addHabitUiState.update { it.copy(isReminderTimeAndDatePickerVisible = true) }
-            }
-            AddHabitEvent.ClosePickers -> {
-                _addHabitUiState.update { it.copy(
-                    isColorPickerVisible = false,
-                    isIconPickerVisible = false,
-                    isGoalEditPickerVisible = false,
-                    isSchedulePickerVisible = false,
-                    isReminderTimeAndDatePickerVisible = false
-                ) }
-            }
+    fun onEventAddHabit(event: AddHabitEvent) {
+        when (event) {
+
             is AddHabitEvent.NameChanged -> {
                 _state.update { it.copy(habitName = event.habitName) }
             }
+
             is AddHabitEvent.SelectColor -> {
                 _state.update { it.copy(color = event.color) }
-                _addHabitUiState.update { it.copy(isColorPickerVisible = false) }
+                _addHabitUiState.update { it.copy(activePicker = PickerType.Close) }
             }
+
             is AddHabitEvent.SelectHabitSchedule -> {
                 _state.update { it.copy(habitSchedule = event.habitSchedule) }
-                _addHabitUiState.update { it.copy(isSchedulePickerVisible = false) }
+                _addHabitUiState.update { it.copy(activePicker = PickerType.Close) }
             }
+
             is AddHabitEvent.SelectIcon -> {
                 _state.update { it.copy(icon = event.icon, habitCustom = true) }
-                _addHabitUiState.update { it.copy(isIconPickerVisible = false) }
+                _addHabitUiState.update { it.copy(activePicker = PickerType.Close) }
             }
+
             is AddHabitEvent.SelectMetric -> {
                 _state.update { it.copy(metricForHabit = event.metric, target = event.target) }
-                _addHabitUiState.update { it.copy(isGoalEditPickerVisible = false) }
+                _addHabitUiState.update { it.copy(activePicker = PickerType.Close) }
             }
+
             is AddHabitEvent.SelectTimeAndDate -> {
-                _state.update { it.copy(reminderTime = event.reminderTime, reminderDate = event.reminderDate) }
-                _addHabitUiState.update { it.copy(isReminderTimeAndDatePickerVisible = false) }
+                _state.update {
+                    it.copy(
+                        reminderTime = event.reminderTime,
+                        reminderDate = event.reminderDate
+                    )
+                }
+                _addHabitUiState.update { it.copy(activePicker = PickerType.Close) }
             }
+
             is AddHabitEvent.ApplyPredefinedHabit -> {
                 _state.value = event.habit
             }
+
             is AddHabitEvent.SelectHabitType -> {
                 _state.update { it.copy(habitType = event.habitType) }
             }
@@ -89,38 +78,49 @@ class AddHabitViewModel : ViewModel() {
                 _state.update { it.copy(reminderIsActive = !it.reminderIsActive) }
             }
 
+            is AddHabitEvent.OpenPicker -> {
+                _addHabitUiState.update { it.copy(activePicker = event.pickerType) }
+            }
 
+            AddHabitEvent.ClosePicker -> {
+                _addHabitUiState.update {
+                    it.copy(activePicker = PickerType.Close)
+                }
+            }
         }
+
+    }
+}
+
+    sealed class PickerType {
+        object Close : PickerType()
+        object Icon : PickerType()
+        object Color : PickerType()
+        object Goal : PickerType()
+        object Schedule : PickerType()
+        object Reminder : PickerType()
     }
 
-}
+    data class AddHabitUiState(
+        val activePicker: PickerType = PickerType.Close
+    )
 
-data class AddHabitUiState(
-    val isColorPickerVisible: Boolean = false, // всплывающий списко выбора цвета
-    val isIconPickerVisible: Boolean = false, // всплывающий список выбора иконок и готовых пресетов хобби
-    val isGoalEditPickerVisible: Boolean = false, // всплывающий список выбора метрики и цели которой надо достигать в данном хобби
-    val isSchedulePickerVisible: Boolean = false, // всплывающий список выбор в какие дни показывать
-    val isReminderTimeAndDatePickerVisible: Boolean = false // всплывающий список выбора даты и времени уведомлений
-)
+    sealed interface AddHabitEvent {
 
-sealed interface AddHabitEvent {
-    object OpenIconPicker : AddHabitEvent
-    object OpenColorPicker : AddHabitEvent
-    object ClosePickers : AddHabitEvent
-    object OpenGoalEditPicker : AddHabitEvent
-    object OpenSchedulePicker : AddHabitEvent
-    object ReminderTimeAndDatePicker : AddHabitEvent
-    object SwitchReminder : AddHabitEvent
+        object SwitchReminder : AddHabitEvent
+        object ClosePicker : AddHabitEvent
 
+        data class OpenPicker(val pickerType: PickerType) : AddHabitEvent
+        data class NameChanged(val habitName: String) : AddHabitEvent
+        data class SelectIcon(val icon: String) : AddHabitEvent
+        data class SelectColor(val color: Color) : AddHabitEvent
 
-    data class NameChanged(val habitName: String) : AddHabitEvent
-    data class SelectIcon(val icon: String) : AddHabitEvent
-    data class SelectColor(val color: Color) : AddHabitEvent
+        data class ApplyPredefinedHabit(val habit: PredefinedHabit) : AddHabitEvent
 
-    data class ApplyPredefinedHabit(val habit: PredefinedHabit) : AddHabitEvent
+        data class SelectMetric(val metric: HabitMetric, val target: Int) : AddHabitEvent
+        data class SelectHabitSchedule(val habitSchedule: HabitSchedule) : AddHabitEvent
+        data class SelectTimeAndDate(val reminderTime: LocalTime, val reminderDate: HabitSchedule) :
+            AddHabitEvent
 
-    data class SelectMetric(val metric: HabitMetric,val target: Int) : AddHabitEvent
-    data class SelectHabitSchedule(val habitSchedule: HabitSchedule) : AddHabitEvent
-    data class SelectTimeAndDate(val reminderTime: LocalTime, val reminderDate: HabitSchedule) : AddHabitEvent
-    data class SelectHabitType(val habitType: ModeForSwitch): AddHabitEvent
-}
+        data class SelectHabitType(val habitType: ModeForSwitch) : AddHabitEvent
+    }

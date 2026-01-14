@@ -6,6 +6,11 @@ import HabitMetric
 import android.R
 import android.content.Context
 import android.util.Log
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -16,16 +21,22 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -46,6 +57,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -53,6 +65,8 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation.Companion
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.zIndex
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.hubtrackerapp.domain.hubbit.models.HabitSchedule
 import com.example.hubtrackerapp.domain.hubbit.models.ModeForSwitch
@@ -65,10 +79,16 @@ import com.example.hubtrackerapp.presentation.theme.Black40
 import com.example.hubtrackerapp.presentation.theme.Black60
 import com.example.hubtrackerapp.presentation.theme.Blue10
 import com.example.hubtrackerapp.presentation.theme.Blue100
+import com.example.hubtrackerapp.presentation.theme.Blue20
+import com.example.hubtrackerapp.presentation.theme.Blue40
 import com.example.hubtrackerapp.presentation.theme.DarkBlue10
 import com.example.hubtrackerapp.presentation.theme.GreenSuccess100
 import com.example.hubtrackerapp.presentation.theme.Orange100
+import com.example.hubtrackerapp.presentation.theme.Orange20
+import com.example.hubtrackerapp.presentation.theme.Orange40
 import com.example.hubtrackerapp.presentation.theme.White100
+import com.example.hubtrackerapp.presentation.theme.Yellow20
+import com.example.hubtrackerapp.presentation.theme.Yellow40
 import java.time.LocalTime
 
 
@@ -82,141 +102,404 @@ fun AddHabit(
     onAddHabit: () -> Unit
 ) {
     val state by viewModel.state.collectAsState()
-    val predifinedHabits = viewModel.predifinedHabits
-    Scaffold(
-        modifier = modifier,
-        topBar = {
-            TopAppBar(
-                modifier = Modifier.padding(
-                    start = 24.dp,
-                    end = 24.dp,
-                    top = 8.dp,
-                    bottom = 16.dp
-                ),
-                title = {
-                    Text(
-                        text = "Create Custom Habit",
-                        style = MaterialTheme.typography.headlineMedium,
-                        color = MaterialTheme.colorScheme.onBackground,
-                        textAlign = TextAlign.Center
-                    )
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.Transparent,
-                    navigationIconContentColor = MaterialTheme.colorScheme.onSurface,
-                    actionIconContentColor = MaterialTheme.colorScheme.onSurface
-                ),
-                navigationIcon = {
-                    Box(
-                        modifier = Modifier
-                            .size(48.dp)
-                            .clip(RoundedCornerShape(16.dp))
-                            .background(
-                                color = Black10
-                            )
-                            .clickable {
-                                onBackClick()
-                            },
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
+    val predefinedHabits = viewModel.predifinedHabits
+    val uiState by viewModel.addHabitUiState.collectAsState()
+
+    Box(modifier = Modifier.fillMaxSize()) {
+        Scaffold(
+            modifier = modifier,
+            topBar = {
+                TopAppBar(
+                    modifier = Modifier.padding(
+                        start = 24.dp,
+                        end = 24.dp,
+                        top = 8.dp,
+                        bottom = 16.dp
+                    ),
+                    title = {
+                        Text(
+                            text = "Create Custom Habit",
+                            style = MaterialTheme.typography.headlineMedium,
+                            color = MaterialTheme.colorScheme.onBackground,
+                            textAlign = TextAlign.Center
+                        )
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = Color.Transparent,
+                        navigationIconContentColor = MaterialTheme.colorScheme.onSurface,
+                        actionIconContentColor = MaterialTheme.colorScheme.onSurface
+                    ),
+                    navigationIcon = {
+                        Box(
                             modifier = Modifier
-                                .background(White100),
-                            imageVector = Icons.AutoMirrored.Filled.KeyboardArrowLeft,
-                            contentDescription = "button back"
+                                .size(48.dp)
+                                .clip(RoundedCornerShape(16.dp))
+                                .background(
+                                    color = Black10
+                                )
+                                .clickable {
+                                    onBackClick()
+                                },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                modifier = Modifier
+                                    .background(Color.Transparent),
+                                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowLeft,
+                                contentDescription = "button back"
+                            )
+                        }
+                    }
+                )
+            },
+            bottomBar = {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .imePadding()
+                        .padding(horizontal = 24.dp)
+                        .padding(bottom = 24.dp, top = 16.dp)
+                ) {
+                    Button(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 20.dp),
+                        onClick = {
+                            onAddHabit()
+                        },
+                        shape = RoundedCornerShape(40.dp),
+
+                        ) {
+                        Text(
+                            text = "Add Habit"
                         )
                     }
                 }
+            }
+        ) { innerPadding ->
+            Box(
+                modifier = Modifier
+                    .padding(innerPadding)
+                    .fillMaxWidth()
+                    .height(1.dp)
+                    .background(Black20)
             )
-        },
-        bottomBar = {
+
+            Column(
+                modifier = Modifier
+                    .padding(innerPadding)
+                    .padding(horizontal = 24.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                Spacer(modifier = Modifier.padding(4.dp))
+
+                TextStr(text = "NAME")
+                TextContent(
+                    text = state.habitName,
+                    textPlace = "Enter habit name",
+                    onTextChanged = {
+                        Log.d("habitName", "name - $it")
+                        viewModel.setHabitName(it)
+                    }
+                )
+                TextStr(text = "ICON AND COLOR")
+                ChoiceIconAndColor(
+                    modifier = Modifier.offset(y = (-12).dp),
+                    habitName = state.habitName,
+                    habitIcon = state.icon,
+                    habitColor = state.color,
+                    onColorClick = { viewModel.onEventAddHabit(AddHabitEvent.OpenPicker(PickerType.Color)) },
+                    onIconClick = { viewModel.onEventAddHabit(AddHabitEvent.OpenPicker(PickerType.Icon)) }
+                )
+                TextStr(modifier = Modifier.offset(y = (-12).dp), text = "GOAL")
+                ChoiceGoal(
+                    modifier = Modifier.offset(y = (-24).dp),
+                    metricForHabit = state.metricForHabit,
+                    target = state.target,
+                    onEditClick = {},
+                    onChoiceSchedule = {}
+                )
+                TextStr(modifier = Modifier.offset(y = (-24).dp), text = "REMINDERS")
+                ReminderBlock(
+                    modifier = Modifier.offset(y = (-32).dp),
+                    isEnabled = state.reminderIsActive,
+                    reminderTime = state.reminderTime,
+                    reminderDate = state.reminderDate,
+                    onSwitchClick = {},
+                    onChoiceSchedule = {}
+                )
+                TextStr(modifier = Modifier.offset(y = (-40).dp), text = "HABIT TYPE")
+                ModSwitcher(
+                    modifier = Modifier.offset(y = (-64).dp),
+                    selected = state.habitType,
+                    onModChange = viewModel::changeMode,
+                    textFirstSwitch = "Build",
+                    textSecondSwitch = "Quit",
+                    selectedFirst = ModeForSwitch.BUILD,
+                    selectedSecond = ModeForSwitch.QUIT,
+                    horizontalPadding = 0.dp
+                )
+            }
+//        AnimatedPickerVisibility(
+//            isVisible = uiState.isIconPickerVisible,
+//            onDismiss = {},
+//            onIconSelected = {}
+//        )
+        }
+    }
+    when (uiState.activePicker) {
+        PickerType.Close -> {}
+        PickerType.Color -> TODO()
+        PickerType.Goal -> TODO()
+        PickerType.Icon -> {
+            UniversalAnimatedPicker(
+                modifier = Modifier.zIndex(10f),
+                pickerType = PickerType.Icon,
+                onDismissClick = {
+                    viewModel.onEventAddHabit(AddHabitEvent.ClosePicker)
+                },
+                title = "Выбор своей иконки или готового хобби",
+                content =
+                    {
+                        IconPickerContent(
+                            text = state.icon,
+                            predefinedHabits = predefinedHabits,
+                            onTextChanged = { viewModel.onEventAddHabit(AddHabitEvent.SelectIcon(it)) },
+                            onAddHabit = {viewModel.onEventAddHabit(AddHabitEvent.ApplyPredefinedHabit(it))}
+                        )
+                    }
+            )
+        }
+        PickerType.Reminder -> TODO()
+        PickerType.Schedule -> TODO()
+    }
+
+}
+
+@Composable
+private fun UniversalAnimatedPicker(
+    modifier: Modifier = Modifier,
+    pickerType: PickerType,
+    isVisible: Boolean = pickerType !is PickerType.Close,
+    onDismissClick: () -> Unit,
+    content: @Composable () -> Unit,
+    title: String
+) {
+    // Фон (отдельная анимация)
+    AnimatedVisibility(
+        visible = isVisible,
+        enter = fadeIn(),
+        exit = fadeOut()
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.Black.copy(alpha = 0.4f))
+                .clickable { onDismissClick() }
+        )
+    }
+
+    // Карточка (отдельная анимация)
+    AnimatedVisibility(
+        visible = isVisible,
+        enter = slideInVertically { it } + fadeIn(),
+        exit = slideOutVertically { it } + fadeOut()
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .imePadding()
-                    .padding(horizontal = 24.dp)
-                    .padding(bottom = 24.dp, top = 16.dp)
+                    .padding(horizontal = 32.dp)
+                    .height(500.dp)
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(Blue20)
+                    .clickable(enabled = false) {}
             ) {
-                Button(
+                Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 20.dp),
-                    onClick = {
-                        onAddHabit()
-                    },
-                    shape = RoundedCornerShape(40.dp),
-
-                    ) {
+                        .padding(vertical = 16.dp),
+                    contentAlignment = Alignment.Center
+                ) {
                     Text(
-                        text = "Add Habit"
+                        text = title,
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                }
+                content()
+            }
+        }
+    }
+}
+
+@Composable
+private fun IconPickerContent(
+    modifier: Modifier = Modifier,
+    predefinedHabits: List<PredefinedHabit>,
+    text: String,
+    onTextChanged: (String) -> Unit,
+    onAddHabit: (PredefinedHabit) -> Unit
+) {
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize(),
+        contentPadding = PaddingValues(
+            bottom = 24.dp
+        )
+    ) {
+        item {
+            Row(
+                modifier = Modifier
+                    .padding(horizontal = 24.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                CustomTextFieldForPicker(
+                    modifier = Modifier
+                        .weight(1f),
+                    text = text,
+                    textPlace = "Enter Icon",
+                    onTextChanged = {
+                        Log.d("Icon", "iconess - $it")
+                        onTextChanged(it)
+                    }
+
+                )
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(Blue100)
+                        .padding(horizontal = 12.dp, vertical = 16.dp)
+                ) {
+                    Text(
+                        text = "Сохранить иконку",
+                        color = Blue10,
+                        style = MaterialTheme.typography.bodySmall
                     )
                 }
             }
         }
-    ) { innerPadding ->
-        Box(
-            modifier = Modifier
-                .padding(innerPadding)
-                .fillMaxWidth()
-                .height(1.dp)
-                .background(Black20)
-        )
-
-        Column(
-            modifier = Modifier
-                .padding(innerPadding)
-                .padding(horizontal = 24.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            Spacer(modifier = Modifier.padding(4.dp))
-
-            TextStr(text = "NAME")
-            TextContent(
-                text = state.habitName,
-                textPlace = "Enter habit name",
-                onTextChanged = {
-                    Log.d("habitName", "name - $it")
-                    viewModel.setHabitName(it)
-                }
+        item {
+            Box(
+                modifier = Modifier
+                    .padding(top = 16.dp)
+                    .fillMaxWidth()
+                    .height(1.dp)
+                    .background(Black20)
             )
-            TextStr(text = "ICON AND COLOR")
-            ChoiceIconAndColor(
-                modifier = Modifier.offset(y = (-12).dp),
-                habitName = state.habitName,
-                habitIcon = state.icon,
-                habitColor = state.color
-            )
-            TextStr(modifier = Modifier.offset(y = (-12).dp), text = "GOAL")
-            ChoiceGoal(
-                modifier = Modifier.offset(y = (-24).dp),
-                metricForHabit = state.metricForHabit,
-                target = state.target,
-                onEditClick = {},
-                onChoiceSchedule = {}
-            )
-            TextStr(modifier = Modifier.offset(y = (-24).dp), text = "REMINDERS")
-            ReminderBlock(
-                modifier = Modifier.offset(y = (-32).dp),
-                isEnabled = state.reminderIsActive,
-                reminderTime = state.reminderTime,
-                reminderDate = state.reminderDate,
-                onSwitchClick = {},
-                onChoiceSchedule = {}
-            )
-            TextStr(modifier = Modifier.offset(y = (-40).dp), text = "HABIT TYPE")
-            ModSwitcher(
-                modifier = Modifier.offset(y = (-64).dp),
-                selected = state.habitType,
-                onModChange = viewModel::changeMode,
-                textFirstSwitch = "Build",
-                textSecondSwitch = "Quit",
-                selectedFirst = ModeForSwitch.BUILD,
-                selectedSecond = ModeForSwitch.QUIT,
-                horizontalPadding = 0.dp
+        }
+        item {
+            TextStr(modifier = Modifier
+                .padding(top = 8.dp)
+                .padding(start = 24.dp)
+                ,text = "Ready-made hobbies")
+        }
+        itemsIndexed(
+            items = predefinedHabits,
+            key = {_,habit: PredefinedHabit -> habit.habitName}
+        ){index,habit ->
+            CreateHabitIconCard(
+                predefinedHabit = habit,
+                onAddHabit = {onAddHabit(habit)}
             )
         }
     }
 }
+@Composable
+private fun CreateHabitIconCard(
+    predefinedHabit: PredefinedHabit,
+    onAddHabit: () -> Unit
+){
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 24.dp)
+            .padding(top = 12.dp)
+            .clip(RoundedCornerShape(16.dp))
+            .background(Blue40)
+            .border(
+                width = 1.dp,
+                color = Black40,
+                shape = RoundedCornerShape(16.dp)
+            )
+            .clickable{onAddHabit()},
+            verticalAlignment = Alignment.CenterVertically
+
+    ) {
+        Box(
+            modifier = Modifier
+                .padding(16.dp)
+                .clip(CircleShape)
+                .background(Blue20)
+                .padding(horizontal = 12.dp)
+                .padding(vertical = 12.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = predefinedHabit.icon,
+                fontSize = 16.sp
+            )
+        }
+
+        Text(
+            text = predefinedHabit.habitName
+        )
+
+    }
+}
+
+@Composable
+private fun CustomTextFieldForPicker(
+    modifier: Modifier = Modifier,
+    text: String,
+    textPlace: String,
+    onTextChanged: (String) -> Unit,
+    visualTransformation: VisualTransformation = VisualTransformation.None
+) {
+    TextField(
+        modifier = modifier
+            .fillMaxWidth()
+            .border(
+                1.dp,
+                Black60,
+                RoundedCornerShape(16.dp)
+            )
+            .clip(RoundedCornerShape(16.dp)),
+        value = text,
+        onValueChange = onTextChanged,
+        colors = TextFieldDefaults.colors(
+            focusedContainerColor = Color.Transparent,
+            unfocusedContainerColor = Color.Transparent
+            //Доделать цвета
+            //focusedIndicatorColor = Color.Transparent,
+            //unfocusedIndicatorColor = Color.Transparent
+        ),
+        visualTransformation = visualTransformation,
+        textStyle = MaterialTheme.typography.titleLarge,
+        placeholder = {
+            Text(
+                modifier = Modifier,
+                text = textPlace,
+                textAlign = TextAlign.Center,
+                style = MaterialTheme.typography.bodyMedium,
+                color = Black60
+            )
+        }
+    )
+}
+//@Composable
+//private fun AnimatedPickerVisibility(
+//    modifier: Modifier = Modifier,
+//    isVisible: Boolean,
+//    onDismissClick: () -> Unit,
+//    onIconSelected: () -> Unit
+//    ) {
+//
+//}
 
 @Composable
 private fun ReminderBlock(
@@ -251,7 +534,7 @@ private fun ReminderBlock(
 
             Switch(
                 checked = isEnabled,
-                onCheckedChange = {onSwitchClick()},
+                onCheckedChange = { onSwitchClick() },
                 colors = SwitchDefaults.colors(
                     checkedThumbColor = Color.White,
                     checkedTrackColor = GreenSuccess100,
@@ -380,7 +663,9 @@ private fun ChoiceIconAndColor(
     modifier: Modifier = Modifier,
     habitName: String,
     habitIcon: String,
-    habitColor: Color
+    habitColor: Color,
+    onIconClick: () -> Unit,
+    onColorClick: () -> Unit
 ) {
     Row(
         modifier = modifier
@@ -393,7 +678,7 @@ private fun ChoiceIconAndColor(
             habitName = habitName,
             choiceName = "Icon",
             icon = habitIcon,
-            onClick = { }
+            onClick = { onIconClick() }
         )
         ChoiceParametersForHabit(
             modifier = Modifier
@@ -401,7 +686,7 @@ private fun ChoiceIconAndColor(
             habitName = "Orange", //  подправить отображение названия цвета
             choiceName = "Color",
             color = habitColor,
-            onClick = {}
+            onClick = { onColorClick() }
         )
     }
 }
@@ -423,6 +708,7 @@ private fun ChoiceParametersForHabit(
                 Black10,
                 RoundedCornerShape(16.dp)
             )
+            .clip(RoundedCornerShape(16.dp))
             .clickable { onClick() }, //click on open list icons or color
         horizontalArrangement = Arrangement.spacedBy(12.dp),
         verticalAlignment = Alignment.CenterVertically
