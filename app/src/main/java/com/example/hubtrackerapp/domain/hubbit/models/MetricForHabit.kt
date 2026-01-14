@@ -21,9 +21,15 @@ enum class HabitMetric(
     CALORIES("Калории", "калория", "калорий", MetricCategory.HEALTH, "🍎");
 
     // Логика склонения
-    fun getUnitForm(quantity: Int): String {
-        val mod10 = quantity % 10
-        val mod100 = quantity % 100
+    fun getUnitForm(quantity: String): String {
+        if (quantity == "" ){
+            return displayName
+        }
+
+        val quantityInt = quantity.toInt()
+
+        val mod10 = quantityInt % 10
+        val mod100 = quantityInt % 100
 
         return when {
             mod10 == 1 && mod100 != 11 -> unit
@@ -32,7 +38,7 @@ enum class HabitMetric(
         }
     }
 
-    fun formatWithQuantity(quantity: Int): String = "$quantity ${getUnitForm(quantity)}"
+    fun formatWithQuantity(quantity: String): String = "$quantity ${getUnitForm(quantity)}"
 }
 
 // Категории

@@ -9,7 +9,7 @@ data class PredefinedHabit(
     val icon: String, // иконка к хобби
     val color: Color, //цвет для хобби
     val metricForHabit: HabitMetric,
-    val target: Int, // целевая велечина
+    val target: String, // целевая велечина
     val habitSchedule: HabitSchedule, //дни в которые будут отображаться задачи и приходить уведомления
     val reminderTime: LocalTime, // время во сколько будет приходить уведомление
     val reminderDate: HabitSchedule, //дни в которые будут приходить уведомления для данной задачи

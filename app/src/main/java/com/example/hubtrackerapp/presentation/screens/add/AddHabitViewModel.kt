@@ -58,8 +58,12 @@ class AddHabitViewModel : ViewModel() {
             }
 
             is AddHabitEvent.SelectMetric -> {
-                _state.update { it.copy(metricForHabit = event.metric, target = event.target) }
-                _addHabitUiState.update { it.copy(activePicker = PickerType.Close) }
+                val filteredTarget = event.target
+                    .filter { it.isDigit() }          // оставляем только цифры
+                    .take(3)                          // не больше 3 символов
+                    .trimStart('0')                   // убираем ведущие нули
+                    _state.update { it.copy(metricForHabit = event.metric, target = filteredTarget) }
+
             }
 
             is AddHabitEvent.SelectTimeAndDate -> {
@@ -123,10 +127,9 @@ class AddHabitViewModel : ViewModel() {
 
         data class ApplyPredefinedHabit(val habit: PredefinedHabit) : AddHabitEvent
 
-        data class SelectMetric(val metric: HabitMetric, val target: Int) : AddHabitEvent
+        data class SelectMetric(val metric: HabitMetric, val target: String) : AddHabitEvent
         data class SelectHabitSchedule(val habitSchedule: HabitSchedule) : AddHabitEvent
-        data class SelectTimeAndDate(val reminderTime: LocalTime, val reminderDate: HabitSchedule) :
-            AddHabitEvent
+        data class SelectTimeAndDate(val reminderTime: LocalTime, val reminderDate: HabitSchedule) : AddHabitEvent
 
         data class SelectHabitType(val habitType: ModeForSwitch) : AddHabitEvent
     }

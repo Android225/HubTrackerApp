@@ -47,7 +47,7 @@ object PredefinedHabitData {
                 DayOfWeek.MONDAY, DayOfWeek.WEDNESDAY, DayOfWeek.FRIDAY
             )),
             habitType = ModeForSwitch.BUILD,
-            target = 5 // км
+            target = "5" // км
         ),
         PredefinedHabit(
             habitName = "Зарядка",
@@ -58,7 +58,7 @@ object PredefinedHabitData {
             reminderTime = LocalTime.of(8, 0),
             reminderDate = HabitSchedule.EveryDay,
             habitType = ModeForSwitch.BUILD,
-            target = 15 // минут
+            target = "15" // минут
         ),
         PredefinedHabit(
             habitName = "Тренировка в зале",
@@ -73,7 +73,7 @@ object PredefinedHabitData {
                 DayOfWeek.TUESDAY, DayOfWeek.THURSDAY, DayOfWeek.SATURDAY
             )),
             habitType = ModeForSwitch.BUILD,
-            target = 4 // подхода
+            target = "4" // подхода
         ),
         PredefinedHabit(
             habitName = "Йога / Растяжка",
@@ -88,7 +88,7 @@ object PredefinedHabitData {
                 DayOfWeek.MONDAY, DayOfWeek.WEDNESDAY, DayOfWeek.FRIDAY
             )),
             habitType = ModeForSwitch.BUILD,
-            target = 20 // минут
+            target = "20" // минут
         ),
 
         // 📚 ОБУЧЕНИЕ И РАЗВИТИЕ
@@ -101,7 +101,7 @@ object PredefinedHabitData {
             reminderTime = LocalTime.of(21, 0),
             reminderDate = HabitSchedule.EveryDay,
             habitType = ModeForSwitch.BUILD,
-            target = 30 // страниц
+            target = "30" // страниц
         ),
         PredefinedHabit(
             habitName = "Изучение языка",
@@ -112,7 +112,7 @@ object PredefinedHabitData {
             reminderTime = LocalTime.of(19, 0),
             reminderDate = HabitSchedule.EveryDay,
             habitType = ModeForSwitch.BUILD,
-            target = 30 // минут
+            target = "30" // минут
         ),
         PredefinedHabit(
             habitName = "Программирование",
@@ -129,7 +129,7 @@ object PredefinedHabitData {
                 DayOfWeek.THURSDAY, DayOfWeek.FRIDAY
             )),
             habitType = ModeForSwitch.BUILD,
-            target = 2 // часа
+            target = "2" // часа
         ),
 
         // 💧 ЗДОРОВЬЕ
@@ -142,7 +142,7 @@ object PredefinedHabitData {
             reminderTime = LocalTime.of(9, 0),
             reminderDate = HabitSchedule.EveryDay,
             habitType = ModeForSwitch.BUILD,
-            target = 8 // стаканов
+            target = "8" // стаканов
         ),
         PredefinedHabit(
             habitName = "Ранний отход ко сну",
@@ -153,7 +153,7 @@ object PredefinedHabitData {
             reminderTime = LocalTime.of(22, 30),
             reminderDate = HabitSchedule.EveryDay,
             habitType = ModeForSwitch.BUILD,
-            target = 1 // раз
+            target = "1" // раз
         ),
         PredefinedHabit(
             habitName = "Здоровый завтрак",
@@ -164,7 +164,7 @@ object PredefinedHabitData {
             reminderTime = LocalTime.of(8, 0),
             reminderDate = HabitSchedule.EveryDay,
             habitType = ModeForSwitch.BUILD,
-            target = 1 // раз
+            target = "1" // раз
         ),
         PredefinedHabit(
             habitName = "Медитация",
@@ -175,7 +175,7 @@ object PredefinedHabitData {
             reminderTime = LocalTime.of(7, 0),
             reminderDate = HabitSchedule.EveryDay,
             habitType = ModeForSwitch.BUILD,
-            target = 10 // минут
+            target = "10" // минут
         ),
 
         // 💰 ФИНАНСЫ
@@ -188,7 +188,7 @@ object PredefinedHabitData {
             reminderTime = LocalTime.of(20, 0),
             reminderDate = HabitSchedule.SpecificDays(setOf(DayOfWeek.SUNDAY)),
             habitType = ModeForSwitch.BUILD,
-            target = 1 // раз
+            target = "1" // раз
         ),
         PredefinedHabit(
             habitName = "Откладывать деньги",
@@ -203,7 +203,7 @@ object PredefinedHabitData {
                 DayOfWeek.MONDAY, DayOfWeek.FRIDAY
             )),
             habitType = ModeForSwitch.BUILD,
-            target = 2 // раза в неделю
+            target = "2" // раза в неделю
         ),
 
         // 🏠 БЫТ И ОТНОШЕНИЯ
@@ -216,7 +216,7 @@ object PredefinedHabitData {
             reminderTime = LocalTime.of(11, 0),
             reminderDate = HabitSchedule.SpecificDays(setOf(DayOfWeek.SATURDAY)),
             habitType = ModeForSwitch.BUILD,
-            target = 30 // минут
+            target = "30" // минут
         ),
         PredefinedHabit(
             habitName = "Звонок родителям",
@@ -227,7 +227,7 @@ object PredefinedHabitData {
             reminderTime = LocalTime.of(19, 0),
             reminderDate = HabitSchedule.SpecificDays(setOf(DayOfWeek.SUNDAY)),
             habitType = ModeForSwitch.BUILD,
-            target = 15 // минут
+            target = "15" // минут
         ),
         PredefinedHabit(
             habitName = "Готовить еду дома",
@@ -242,7 +242,7 @@ object PredefinedHabitData {
                 DayOfWeek.MONDAY, DayOfWeek.WEDNESDAY, DayOfWeek.FRIDAY
             )),
             habitType = ModeForSwitch.BUILD,
-            target = 3 // раза в неделю
+            target = "3" // раза в неделю
         ),
 
         // 🎨 ХОББИ И ТВОРЧЕСТВО
@@ -259,7 +259,7 @@ object PredefinedHabitData {
                 DayOfWeek.TUESDAY, DayOfWeek.THURSDAY, DayOfWeek.SATURDAY
             )),
             habitType = ModeForSwitch.BUILD,
-            target = 45 // минут
+            target = "45" // минут
         ),
         PredefinedHabit(
             habitName = "Игра на инструменте",
@@ -274,7 +274,7 @@ object PredefinedHabitData {
                 DayOfWeek.MONDAY, DayOfWeek.WEDNESDAY, DayOfWeek.FRIDAY
             )),
             habitType = ModeForSwitch.BUILD,
-            target = 40 // минут
+            target = "40" // минут
         ),
         PredefinedHabit(
             habitName = "Ведение дневника",
@@ -285,7 +285,7 @@ object PredefinedHabitData {
             reminderTime = LocalTime.of(22, 0),
             reminderDate = HabitSchedule.EveryDay,
             habitType = ModeForSwitch.QUIT,
-            target = 2 // страницы
+            target = "2" // страницы
         ),
 
         // 🎯 ПРОДУКТИВНОСТЬ
@@ -298,7 +298,7 @@ object PredefinedHabitData {
             reminderTime = LocalTime.of(8, 30),
             reminderDate = HabitSchedule.EveryDay,
             habitType = ModeForSwitch.BUILD,
-            target = 10 // минут
+            target = "10" // минут
         ),
         PredefinedHabit(
             habitName = "Изучение нового навыка",
@@ -313,7 +313,7 @@ object PredefinedHabitData {
                 DayOfWeek.TUESDAY, DayOfWeek.THURSDAY
             )),
             habitType = ModeForSwitch.BUILD,
-            target = 60 // минут
+            target = "60" // минут
         ),
 
         // 🎮 ОТДЫХ И РАЗВЛЕЧЕНИЯ
@@ -330,7 +330,7 @@ object PredefinedHabitData {
                 DayOfWeek.SATURDAY, DayOfWeek.SUNDAY
             )),
             habitType = ModeForSwitch.BUILD,
-            target = 60 // минут
+            target = "60" // минут
         )
     )
 }

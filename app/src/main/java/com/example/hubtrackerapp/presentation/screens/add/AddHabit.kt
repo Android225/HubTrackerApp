@@ -15,6 +15,8 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.indication
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -58,6 +60,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -150,7 +153,7 @@ fun AddHabit(
                         .fillMaxWidth()
                         .imePadding()
                         .padding(horizontal = 24.dp)
-                        .padding(bottom = 24.dp, top = 16.dp)
+                        .padding(bottom = 50.dp, top = 16.dp)
                 ) {
                     Button(
                         modifier = Modifier
@@ -208,8 +211,10 @@ fun AddHabit(
                     modifier = Modifier.offset(y = (-24).dp),
                     metricForHabit = state.metricForHabit,
                     target = state.target,
-                    onEditClick = {},
-                    onChoiceSchedule = {}
+                    onEditClick = {
+                        viewModel.onEventAddHabit(AddHabitEvent.OpenPicker(PickerType.Goal))
+                    },
+                    onChoiceSchedule = {viewModel.onEventAddHabit(AddHabitEvent.OpenPicker(PickerType.Schedule))}
                 )
                 TextStr(modifier = Modifier.offset(y = (-24).dp), text = "REMINDERS")
                 ReminderBlock(
@@ -217,7 +222,9 @@ fun AddHabit(
                     isEnabled = state.reminderIsActive,
                     reminderTime = state.reminderTime,
                     reminderDate = state.reminderDate,
-                    onSwitchClick = {},
+                    onSwitchClick = {
+                        viewModel.onEventAddHabit(AddHabitEvent.SwitchReminder)
+                    },
                     onChoiceSchedule = {}
                 )
                 TextStr(modifier = Modifier.offset(y = (-40).dp), text = "HABIT TYPE")
@@ -253,12 +260,47 @@ fun AddHabit(
                         ColorPickerContent(
                             colorGroups = colorGroups,
                             selectedColor = state.color,
-                            onColorSelected = {viewModel.onEventAddHabit(AddHabitEvent.SelectColor(it))}
+                            onColorSelected = {
+                                viewModel.onEventAddHabit(
+                                    AddHabitEvent.SelectColor(
+                                        it
+                                    )
+                                )
+                            }
                         )
                     }
             )
         }
-        PickerType.Goal -> TODO()
+
+        PickerType.Goal -> {
+            UniversalAnimatedPicker(
+                pickerType = PickerType.Goal,
+                onDismissClick = {
+                    if (state.target == "") {
+                        viewModel.onEventAddHabit(AddHabitEvent.SelectMetric(metric = state.metricForHabit, target = "1"))
+                    }
+                    viewModel.onEventAddHabit(AddHabitEvent.ClosePicker)
+                },
+                title = "Выбор метрик для хобби",
+                content =
+                    {
+                        MetricPicker(
+                            habitMetric = state.metricForHabit,
+                            target = state.target,
+                            onTargetChanged = { metric,target ->
+                                viewModel.onEventAddHabit(AddHabitEvent.SelectMetric(metric = metric, target = target))
+                            },
+                            onSaveClick = {
+                                if (state.target == "") {
+                                    viewModel.onEventAddHabit(AddHabitEvent.SelectMetric(metric = state.metricForHabit, target = "1"))
+                                }
+                                viewModel.onEventAddHabit(AddHabitEvent.ClosePicker)
+                            }
+                        )
+                    }
+            )
+        }
+
         PickerType.Icon -> {
             UniversalAnimatedPicker(
                 pickerType = PickerType.Icon,
@@ -272,8 +314,10 @@ fun AddHabit(
                             text = state.icon,
                             predefinedHabits = predefinedHabits,
                             onTextChanged = { viewModel.onEventAddHabit(AddHabitEvent.SelectIcon(it)) },
-                            onAddHabit = {viewModel.onEventAddHabit(AddHabitEvent.ApplyPredefinedHabit(it))
-                                viewModel.onEventAddHabit(AddHabitEvent.ClosePicker)},
+                            onAddHabit = {
+                                viewModel.onEventAddHabit(AddHabitEvent.ApplyPredefinedHabit(it))
+                                viewModel.onEventAddHabit(AddHabitEvent.ClosePicker)
+                            },
                             onSaveIconClick = {
                                 viewModel.onEventAddHabit(AddHabitEvent.ClosePicker)
                             }
@@ -281,11 +325,13 @@ fun AddHabit(
                     }
             )
         }
+
         PickerType.Reminder -> TODO()
         PickerType.Schedule -> TODO()
     }
 
 }
+
 
 @Composable
 private fun UniversalAnimatedPicker(
@@ -324,7 +370,7 @@ private fun UniversalAnimatedPicker(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 32.dp)
-                    .height(500.dp)
+                    .height(600.dp)
                     .clip(RoundedCornerShape(16.dp))
                     .background(White100)
                     .clickable(enabled = false) {}
@@ -381,6 +427,7 @@ private fun ColorPickerContent(
         }
     }
 }
+
 @Composable
 fun ColorItem(
     color: Color,
@@ -400,6 +447,99 @@ fun ColorItem(
             .clickable { onClick() }
     )
 }
+
+@Composable
+private fun MetricPicker(
+    habitMetric: HabitMetric,
+    target: String,
+    onTargetChanged: (HabitMetric, String) -> Unit,
+    onSaveClick: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .padding(horizontal = 24.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        CustomTextFieldForPicker(
+            modifier = Modifier
+                .weight(0.5f),
+            text = target,
+            textPlace = "Enter target",
+            onTextChanged = {
+                Log.d("Metric", "target - $it")
+                    onTargetChanged(habitMetric,it)
+            }
+        )
+        Column(
+            modifier = Modifier
+                .weight(1f),
+            verticalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            Text(
+                text = habitMetric.formatWithQuantity(target),
+                style = MaterialTheme.typography.headlineSmall
+            )
+            Text(
+                text = "1 - ${habitMetric.getUnitForm("1")}"
+            )
+            Text(
+                text = "50 - ${habitMetric.getUnitForm("50")}"
+            )
+        }
+    }
+    Box(
+        modifier = Modifier
+            .padding(horizontal = 32.dp)
+            .padding(top = 8.dp)
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(16.dp))
+            .background(Blue80)
+            .padding(vertical = 12.dp)
+            .clickable { onSaveClick() },
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = "Сохранить цель",
+            color = Blue10,
+            style = MaterialTheme.typography.bodySmall
+        )
+    }
+    Box(
+        modifier = Modifier
+            .padding(top = 16.dp)
+            .fillMaxWidth()
+            .height(1.dp)
+            .background(Black20)
+    )
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize(),
+        contentPadding = PaddingValues(
+            bottom = 24.dp
+        )
+    ) {
+        item {
+            TextStr(
+                modifier = Modifier
+                    .padding(top = 8.dp)
+                    .padding(start = 24.dp),
+                text = "Metrics"
+            )
+        }
+        itemsIndexed(
+            items = HabitMetric.entries,
+            key = { _, metric: HabitMetric -> metric.displayName }
+        ) { index, metric ->
+            CreateHabitCard(
+                onCardClick = {onTargetChanged(metric,target)},
+                icon = metric.iconEmoji,
+                name = metric.displayName,
+            )
+        }
+    }
+}
+
 @Composable
 private fun IconPickerContent(
     modifier: Modifier = Modifier,
@@ -459,27 +599,31 @@ private fun IconPickerContent(
             )
         }
         item {
-            TextStr(modifier = Modifier
-                .padding(top = 8.dp)
-                .padding(start = 24.dp)
-                ,text = "Ready-made hobbies")
+            TextStr(
+                modifier = Modifier
+                    .padding(top = 8.dp)
+                    .padding(start = 24.dp), text = "Ready-made hobbies"
+            )
         }
         itemsIndexed(
             items = predefinedHabits,
-            key = {_,habit: PredefinedHabit -> habit.habitName}
-        ){index,habit ->
-            CreateHabitIconCard(
-                predefinedHabit = habit,
-                onAddHabit = {onAddHabit(habit)}
+            key = { _, habit: PredefinedHabit -> habit.habitName }
+        ) { index, habit ->
+            CreateHabitCard(
+                icon = habit.icon,
+                name = habit.habitName,
+                onCardClick = { onAddHabit(habit) }
             )
         }
     }
 }
+
 @Composable
-private fun CreateHabitIconCard(
-    predefinedHabit: PredefinedHabit,
-    onAddHabit: () -> Unit
-){
+private fun CreateHabitCard(
+    icon: String,
+    name: String,
+    onCardClick: () -> Unit
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -492,8 +636,8 @@ private fun CreateHabitIconCard(
                 color = Black40,
                 shape = RoundedCornerShape(16.dp)
             )
-            .clickable { onAddHabit() },
-            verticalAlignment = Alignment.CenterVertically
+            .clickable { onCardClick() },
+        verticalAlignment = Alignment.CenterVertically
 
     ) {
         Box(
@@ -506,13 +650,13 @@ private fun CreateHabitIconCard(
             contentAlignment = Alignment.Center
         ) {
             Text(
-                text = predefinedHabit.icon,
+                text = icon,
                 fontSize = 16.sp
             )
         }
 
         Text(
-            text = predefinedHabit.habitName
+            text = name
         )
 
     }
@@ -642,7 +786,7 @@ private fun ReminderBlock(
 private fun ChoiceGoal(
     modifier: Modifier = Modifier,
     metricForHabit: HabitMetric,
-    target: Int,
+    target: String,
     onEditClick: () -> Unit,
     onChoiceSchedule: () -> Unit
 ) {
@@ -664,7 +808,7 @@ private fun ChoiceGoal(
                     .weight(1f)
             ) {
                 Text(
-                    text = "$target ${metricForHabit.getUnitForm(target)}",
+                    text = metricForHabit.formatWithQuantity(target),
                     style = MaterialTheme.typography.bodyMedium
                 )
                 Text(
@@ -797,7 +941,7 @@ private fun ChoiceParametersForHabit(
         Column(
 
         ) {
-            if (habitName != "None"){
+            if (habitName != "None") {
                 Text(
                     text = habitName,
                     style = MaterialTheme.typography.bodyMedium
