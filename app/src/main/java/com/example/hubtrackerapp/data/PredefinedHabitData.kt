@@ -54,7 +54,7 @@ object PredefinedHabitData {
             icon = "💪",
             color = Orange80,
             metricForHabit = HabitMetric.MINUTES,
-            habitSchedule = HabitSchedule.EveryDay,
+            habitSchedule = HabitSchedule.EveryNDays(2),
             reminderTime = LocalTime.of(8, 0),
             reminderDate = HabitSchedule.EveryDay,
             habitType = ModeForSwitch.BUILD,

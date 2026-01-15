@@ -15,6 +15,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
 import androidx.compose.foundation.indication
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -23,6 +24,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -32,12 +34,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -58,9 +62,13 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -80,11 +88,15 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.hubtrackerapp.domain.hubbit.models.HabitSchedule
 import com.example.hubtrackerapp.domain.hubbit.models.ModeForSwitch
 import com.example.hubtrackerapp.domain.hubbit.models.PredefinedHabit
+import com.example.hubtrackerapp.domain.hubbit.models.toDisplayText
 import com.example.hubtrackerapp.presentation.screens.components.ModSwitcher
 import com.example.hubtrackerapp.presentation.screens.registration.RegistrationViewModel
 import com.example.hubtrackerapp.presentation.ui.theme.ColorGroup
 import com.example.hubtrackerapp.presentation.ui.theme.colorGroups
+import java.time.DayOfWeek
 import java.time.LocalTime
+import java.time.format.TextStyle
+import java.util.Locale
 
 
 @Composable
@@ -214,7 +226,14 @@ fun AddHabit(
                     onEditClick = {
                         viewModel.onEventAddHabit(AddHabitEvent.OpenPicker(PickerType.Goal))
                     },
-                    onChoiceSchedule = {viewModel.onEventAddHabit(AddHabitEvent.OpenPicker(PickerType.Schedule))}
+                    onChoiceSchedule = {
+                        viewModel.onEventAddHabit(
+                            AddHabitEvent.OpenPicker(
+                                PickerType.Schedule
+                            )
+                        )
+                    },
+                    habitSchedule = state.habitSchedule.toDisplayText()
                 )
                 TextStr(modifier = Modifier.offset(y = (-24).dp), text = "REMINDERS")
                 ReminderBlock(
@@ -277,7 +296,12 @@ fun AddHabit(
                 pickerType = PickerType.Goal,
                 onDismissClick = {
                     if (state.target == "") {
-                        viewModel.onEventAddHabit(AddHabitEvent.SelectMetric(metric = state.metricForHabit, target = "1"))
+                        viewModel.onEventAddHabit(
+                            AddHabitEvent.SelectMetric(
+                                metric = state.metricForHabit,
+                                target = "1"
+                            )
+                        )
                     }
                     viewModel.onEventAddHabit(AddHabitEvent.ClosePicker)
                 },
@@ -287,12 +311,22 @@ fun AddHabit(
                         MetricPicker(
                             habitMetric = state.metricForHabit,
                             target = state.target,
-                            onTargetChanged = { metric,target ->
-                                viewModel.onEventAddHabit(AddHabitEvent.SelectMetric(metric = metric, target = target))
+                            onTargetChanged = { metric, target ->
+                                viewModel.onEventAddHabit(
+                                    AddHabitEvent.SelectMetric(
+                                        metric = metric,
+                                        target = target
+                                    )
+                                )
                             },
                             onSaveClick = {
                                 if (state.target == "") {
-                                    viewModel.onEventAddHabit(AddHabitEvent.SelectMetric(metric = state.metricForHabit, target = "1"))
+                                    viewModel.onEventAddHabit(
+                                        AddHabitEvent.SelectMetric(
+                                            metric = state.metricForHabit,
+                                            target = "1"
+                                        )
+                                    )
                                 }
                                 viewModel.onEventAddHabit(AddHabitEvent.ClosePicker)
                             }
@@ -326,13 +360,323 @@ fun AddHabit(
             )
         }
 
+        PickerType.Schedule -> {
+            UniversalAnimatedPicker(
+                pickerType = PickerType.Schedule,
+                onDismissClick = {
+                    viewModel.onEventAddHabit(AddHabitEvent.ClosePicker)
+                },
+                title = "График хобби",
+                content =
+                    {
+                        SchedulePicker(
+                            selectedValue = state.habitSchedule,
+                            onValueChange = { value ->
+                                viewModel.onEventAddHabit(
+                                    AddHabitEvent.SelectHabitSchedule(value)
+                                )
+                            },
+                            onCardClick = {
+                                viewModel.onEventAddHabit(AddHabitEvent.ClosePicker)
+                            }
+                        )
+                    }
+            )
+        }
+
         PickerType.Reminder -> TODO()
-        PickerType.Schedule -> TODO()
+
     }
 
 }
 
+@Composable
+private fun IconPickerContent(
+    modifier: Modifier = Modifier,
+    predefinedHabits: List<PredefinedHabit>,
+    text: String,
+    onTextChanged: (String) -> Unit,
+    onAddHabit: (PredefinedHabit) -> Unit,
+    onSaveIconClick: () -> Unit
+) {
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize(),
+        contentPadding = PaddingValues(
+            bottom = 24.dp
+        )
+    ) {
+        item {
+            Row(
+                modifier = Modifier
+                    .padding(horizontal = 24.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                CustomTextFieldForPicker(
+                    modifier = Modifier
+                        .weight(1f),
+                    text = text,
+                    textPlace = "Enter Icon",
+                    onTextChanged = {
+                        Log.d("Icon", "iconess - $it")
+                        onTextChanged(it)
+                    }
 
+                )
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(Blue80)
+                        .padding(horizontal = 12.dp, vertical = 16.dp)
+                        .clickable { onSaveIconClick() }
+                ) {
+                    Text(
+                        text = "Сохранить иконку",
+                        color = Blue10,
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                }
+            }
+        }
+        item {
+            Box(
+                modifier = Modifier
+                    .padding(top = 16.dp)
+                    .fillMaxWidth()
+                    .height(1.dp)
+                    .background(Black20)
+            )
+        }
+        item {
+            TextStr(
+                modifier = Modifier
+                    .padding(top = 8.dp)
+                    .padding(start = 24.dp), text = "Ready-made hobbies"
+            )
+        }
+        itemsIndexed(
+            items = predefinedHabits,
+            key = { _, habit: PredefinedHabit -> habit.habitName }
+        ) { index, habit ->
+            CreateHabitCard(
+                icon = habit.icon,
+                name = habit.habitName,
+                onCardClick = { onAddHabit(habit) }
+            )
+        }
+    }
+}
+
+@Composable
+private fun SchedulePicker(
+    selectedValue: HabitSchedule,
+    onValueChange: (HabitSchedule) -> Unit,
+    onCardClick: () -> Unit
+) {
+    var localSchedule by remember { mutableStateOf(selectedValue) }
+
+    val selectedNumber = (localSchedule as? HabitSchedule.EveryNDays)?.n ?: 2
+    val pinnedSetOfWeeks =
+        ((localSchedule as? HabitSchedule.SpecificDays)?.daysOfWeek ?: emptySet()).toMutableSet()
+    val numbers = (2..31).toList()
+    val listState = rememberLazyListState(initialFirstVisibleItemIndex = selectedNumber)
+
+    val snapBehavior = rememberSnapFlingBehavior(lazyListState = listState)
+
+    val onDayClick = { day: DayOfWeek ->
+        val newSet = pinnedSetOfWeeks.toMutableSet()
+        if (newSet.contains(day)) {
+            newSet.remove(day)
+        } else {
+            newSet.add(day)
+        }
+        localSchedule = HabitSchedule.SpecificDays(newSet)
+    }
+
+    val onCardClickWithSave = {
+        onValueChange(localSchedule)
+        onCardClick()
+    }
+    //Every day
+    Column(
+        modifier = Modifier
+            .fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        Box(
+            modifier = Modifier
+                .padding(horizontal = 24.dp)
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(16.dp))
+                .border(
+                    width = 1.dp,
+                    color = Black40,
+                    shape = RoundedCornerShape(16.dp)
+                )
+                .background(Blue20)
+                .clickable {
+                    localSchedule = HabitSchedule.EveryDay
+                    onCardClickWithSave()
+                           },
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                "Every Day",
+                style = MaterialTheme.typography.headlineMedium
+            )
+        }
+
+        //Every N Days
+        Row(
+            modifier = Modifier
+                .padding(horizontal = 24.dp)
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(16.dp))
+                .border(
+                    width = 1.dp,
+                    color = Black40,
+                    shape = RoundedCornerShape(16.dp)
+                )
+                .background(Blue20)
+                .height(220.dp)
+                .clickable{
+                    onCardClickWithSave()
+                },
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(vertical = 8.dp, horizontal = 12.dp),
+                text = "Every $selectedNumber Days",
+                style = MaterialTheme.typography.headlineSmall
+            )
+            LazyColumn(
+                modifier = Modifier
+                    .width(140.dp) // Фиксированная ширина для чисел
+                    .fillMaxHeight()
+                    .padding(vertical = 8.dp, horizontal = 24.dp)
+                    .border(
+                        width = 1.dp,
+                        color = Black40,
+                        shape = RoundedCornerShape(4.dp)
+                    ),
+                state = listState,
+                flingBehavior = snapBehavior,
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(2.dp),
+                contentPadding = PaddingValues(vertical = 90.dp)
+            ) {
+                items(numbers) { number ->
+                    val isSelected = number == selectedNumber
+
+                    Text(
+                        modifier = Modifier
+                            .padding(vertical = 2.dp, horizontal = 24.dp)
+                            .clickable {
+                                localSchedule = HabitSchedule.EveryNDays(number)
+                            },
+                        text = number.toString(),
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = if (isSelected) Blue100 else Black40
+                    )
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(1.dp)
+                            .background(Black20)
+                    )
+                }
+            }
+
+
+        }
+
+        //SpecificDays
+        Column(
+            modifier = Modifier
+                .padding(horizontal = 24.dp)
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(16.dp))
+                .border(
+                    width = 1.dp,
+                    color = Black40,
+                    shape = RoundedCornerShape(16.dp)
+                )
+                .background(Blue20)
+                .clickable {
+                    // Клик по всей карточке сохраняет выбор
+                    onCardClickWithSave()
+                }
+        ) {
+            // Заголовок
+            Text(
+                text = "Specific Days",
+                style = MaterialTheme.typography.headlineMedium,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 16.dp)
+                    .padding(start = 16.dp)
+            )
+
+            // Дни недели
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 12.dp)
+                    .padding(bottom = 16.dp),
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
+                DayOfWeek.entries.forEach { day ->
+                    DayOfWeekItem(
+                        day = day,
+                        isSelected = pinnedSetOfWeeks.contains(day),
+                        onClick = { onDayClick(day) }
+                    )
+                }
+            }
+        }
+
+    }
+    // Следим за прокруткой и автоматически выбираем элемент в центре
+    LaunchedEffect(listState) {
+        snapshotFlow { listState.firstVisibleItemIndex }
+            .collect { index ->
+                val value = numbers.getOrNull(index) ?: return@collect
+                localSchedule = HabitSchedule.EveryNDays(value)
+            }
+    }
+}
+@Composable
+private fun DayOfWeekItem(
+    day: DayOfWeek,
+    isSelected: Boolean,
+    onClick: () -> Unit
+) {
+    Box(
+        modifier = Modifier
+            .size(44.dp)
+            .clip(CircleShape)
+            .clickable(onClick = onClick)
+            .background(
+                color = if (isSelected) Blue100 else Color.Transparent,
+                shape = CircleShape
+            )
+            .border(
+                width = 1.dp,
+                color = if (isSelected) Blue100 else Black40,
+                shape = CircleShape
+            ),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = day.getDisplayName(TextStyle.SHORT, Locale.getDefault()),
+            style = MaterialTheme.typography.bodyLarge,
+            color = if (isSelected) Color.White else Black60
+        )
+    }
+}
 @Composable
 private fun UniversalAnimatedPicker(
     pickerType: PickerType,
@@ -350,6 +694,7 @@ private fun UniversalAnimatedPicker(
         Box(
             modifier = Modifier
                 .fillMaxSize()
+                .zIndex(10f)
                 .background(Color.Black.copy(alpha = 0.4f))
                 .clickable { onDismissClick() }
         )
@@ -363,7 +708,8 @@ private fun UniversalAnimatedPicker(
     ) {
         Box(
             modifier = Modifier
-                .fillMaxSize(),
+                .fillMaxSize()
+                .zIndex(11f),
             contentAlignment = Alignment.Center
         ) {
             Column(
@@ -373,7 +719,9 @@ private fun UniversalAnimatedPicker(
                     .height(600.dp)
                     .clip(RoundedCornerShape(16.dp))
                     .background(White100)
-                    .clickable(enabled = false) {}
+                    .clickable(
+                        indication = null,
+                        interactionSource = remember { MutableInteractionSource() }) {}
             ) {
                 Box(
                     modifier = Modifier
@@ -468,7 +816,7 @@ private fun MetricPicker(
             textPlace = "Enter target",
             onTextChanged = {
                 Log.d("Metric", "target - $it")
-                    onTargetChanged(habitMetric,it)
+                onTargetChanged(habitMetric, it)
             }
         )
         Column(
@@ -532,7 +880,7 @@ private fun MetricPicker(
             key = { _, metric: HabitMetric -> metric.displayName }
         ) { index, metric ->
             CreateHabitCard(
-                onCardClick = {onTargetChanged(metric,target)},
+                onCardClick = { onTargetChanged(metric, target) },
                 icon = metric.iconEmoji,
                 name = metric.displayName,
             )
@@ -540,83 +888,6 @@ private fun MetricPicker(
     }
 }
 
-@Composable
-private fun IconPickerContent(
-    modifier: Modifier = Modifier,
-    predefinedHabits: List<PredefinedHabit>,
-    text: String,
-    onTextChanged: (String) -> Unit,
-    onAddHabit: (PredefinedHabit) -> Unit,
-    onSaveIconClick: () -> Unit
-) {
-    LazyColumn(
-        modifier = Modifier
-            .fillMaxSize(),
-        contentPadding = PaddingValues(
-            bottom = 24.dp
-        )
-    ) {
-        item {
-            Row(
-                modifier = Modifier
-                    .padding(horizontal = 24.dp),
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                CustomTextFieldForPicker(
-                    modifier = Modifier
-                        .weight(1f),
-                    text = text,
-                    textPlace = "Enter Icon",
-                    onTextChanged = {
-                        Log.d("Icon", "iconess - $it")
-                        onTextChanged(it)
-                    }
-
-                )
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(16.dp))
-                        .background(Blue80)
-                        .padding(horizontal = 12.dp, vertical = 16.dp)
-                        .clickable { onSaveIconClick() }
-                ) {
-                    Text(
-                        text = "Сохранить иконку",
-                        color = Blue10,
-                        style = MaterialTheme.typography.bodySmall
-                    )
-                }
-            }
-        }
-        item {
-            Box(
-                modifier = Modifier
-                    .padding(top = 16.dp)
-                    .fillMaxWidth()
-                    .height(1.dp)
-                    .background(Black20)
-            )
-        }
-        item {
-            TextStr(
-                modifier = Modifier
-                    .padding(top = 8.dp)
-                    .padding(start = 24.dp), text = "Ready-made hobbies"
-            )
-        }
-        itemsIndexed(
-            items = predefinedHabits,
-            key = { _, habit: PredefinedHabit -> habit.habitName }
-        ) { index, habit ->
-            CreateHabitCard(
-                icon = habit.icon,
-                name = habit.habitName,
-                onCardClick = { onAddHabit(habit) }
-            )
-        }
-    }
-}
 
 @Composable
 private fun CreateHabitCard(
@@ -785,6 +1056,7 @@ private fun ReminderBlock(
 @Composable
 private fun ChoiceGoal(
     modifier: Modifier = Modifier,
+    habitSchedule: String,
     metricForHabit: HabitMetric,
     target: String,
     onEditClick: () -> Unit,
@@ -842,7 +1114,7 @@ private fun ChoiceGoal(
                 painter = painterResource(com.example.hubtrackerapp.R.drawable.ic_paper),
                 contentDescription = "arrow clock icon"
             )
-            Text(text = "Every day")
+            Text(text = habitSchedule)
         }
     }
 }

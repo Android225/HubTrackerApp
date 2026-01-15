@@ -43,7 +43,7 @@ class AddHabitViewModel : ViewModel() {
 
             is AddHabitEvent.SelectHabitSchedule -> {
                 _state.update { it.copy(habitSchedule = event.habitSchedule) }
-                _addHabitUiState.update { it.copy(activePicker = PickerType.Close) }
+
             }
 
             is AddHabitEvent.SelectIcon -> {
