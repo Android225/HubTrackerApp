@@ -244,7 +244,13 @@ fun AddHabit(
                     onSwitchClick = {
                         viewModel.onEventAddHabit(AddHabitEvent.SwitchReminder)
                     },
-                    onChoiceSchedule = {}
+                    onChoiceScheduleReminder = {
+                        viewModel.onEventAddHabit(
+                            AddHabitEvent.OpenPicker(
+                                PickerType.Reminder
+                            )
+                        )
+                    }
                 )
                 TextStr(modifier = Modifier.offset(y = (-40).dp), text = "HABIT TYPE")
                 ModSwitcher(
@@ -384,7 +390,33 @@ fun AddHabit(
             )
         }
 
-        PickerType.Reminder -> TODO()
+        PickerType.Reminder -> {
+            UniversalAnimatedPicker(
+                pickerType = PickerType.Reminder,
+                onDismissClick = {
+                    viewModel.onEventAddHabit(AddHabitEvent.ClosePicker)
+                },
+                title = "График хобби",
+                content =
+                    {
+                        TimePicker(
+                            selectedValue = state.reminderDate,
+                            selectedTime = state.reminderTime,
+                            onValueChange = { date, time ->
+                                viewModel.onEventAddHabit(
+                                    AddHabitEvent.SelectTimeAndDate(
+                                        reminderTime = time,
+                                        reminderDate = date
+                                    )
+                                )
+                            },
+                            onCardClick = {
+                                viewModel.onEventAddHabit(AddHabitEvent.ClosePicker)
+                            }
+                        )
+                    }
+            )
+        }
 
     }
 
@@ -467,7 +499,131 @@ private fun IconPickerContent(
         }
     }
 }
+@Composable
+private fun TimePicker(
+    selectedValue: HabitSchedule,
+    selectedTime: LocalTime,
+    onValueChange: (HabitSchedule, LocalTime) -> Unit,
+    onCardClick: () -> Unit
+){
+    var hour by remember { mutableStateOf(selectedTime.hour) }
+    var minute by remember { mutableStateOf(selectedTime.minute) }
+    val tempTime = remember(hour, minute) {
+        LocalTime.of(hour, minute)
+    }
+    Column(
+        verticalArrangement = Arrangement.spacedBy(4.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(160.dp),
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            ColumnPickerWheel(
+                selectedValue = hour,
+                onValueChange = {
+                    hour = it
+                },
+                firstNumber = 0,
+                lastNumber = 23
+            )
 
+            Spacer(Modifier.width(4.dp))
+
+            Text(
+                text = ":",
+                style = MaterialTheme.typography.headlineMedium,
+                modifier = Modifier.padding(horizontal = 4.dp)
+            )
+
+            Spacer(Modifier.width(4.dp))
+
+            ColumnPickerWheel(
+                selectedValue = minute,
+                onValueChange = {
+                    minute = it
+                },
+                firstNumber = 0,
+                lastNumber = 59
+            )
+        }
+        Box(
+            modifier = Modifier
+                .padding(bottom = 8.dp)
+                .fillMaxWidth()
+                .height(1.dp)
+                .background(Black20)
+        )
+        SchedulePicker(
+            selectedValue = selectedValue,
+            onValueChange = {habitSchedule ->
+                onValueChange(habitSchedule,tempTime)
+            },
+            onCardClick = onCardClick
+        )
+    }
+}
+@Composable
+private fun ColumnPickerWheel(
+    selectedValue: Int,
+    onValueChange: (Int) -> Unit,
+    firstNumber: Int,
+    lastNumber: Int,
+    modifier: Modifier = Modifier
+) {
+    val numbers = remember { (firstNumber..lastNumber).toList() }
+    val listState = rememberLazyListState(
+        initialFirstVisibleItemIndex = numbers.indexOf(selectedValue).coerceAtLeast(0)
+    )
+    val snapBehavior = rememberSnapFlingBehavior(listState)
+
+    LazyColumn(
+        modifier = modifier
+            .width(140.dp) // Фиксированная ширина для чисел
+            .fillMaxHeight()
+            .padding(vertical = 8.dp, horizontal = 8.dp)
+            .border(
+                width = 1.dp,
+                color = Black40,
+                shape = RoundedCornerShape(4.dp)
+            ),
+        state = listState,
+        flingBehavior = snapBehavior,
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(2.dp),
+        contentPadding = PaddingValues(vertical = 70.dp)
+    ) {
+        items(numbers) { number ->
+            val isSelected = number == selectedValue
+
+            Text(
+                modifier = Modifier
+                    .padding(vertical = 2.dp, horizontal = 24.dp)
+                    .clickable {
+                        onValueChange(number)
+                    },
+                text = number.toString(),
+                style = MaterialTheme.typography.bodyLarge,
+                color = if (isSelected) Blue100 else Black40
+            )
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(1.dp)
+                    .background(Black20)
+            )
+        }
+    }
+    // Следим за прокруткой и автоматически выбираем элемент в центре
+    LaunchedEffect(listState) {
+        snapshotFlow { listState.firstVisibleItemIndex }
+            .collect { index ->
+                numbers.getOrNull(index)?.let { onValueChange(it) }
+            }
+    }
+}
 @Composable
 private fun SchedulePicker(
     selectedValue: HabitSchedule,
@@ -475,14 +631,9 @@ private fun SchedulePicker(
     onCardClick: () -> Unit
 ) {
     var localSchedule by remember { mutableStateOf(selectedValue) }
-
     val selectedNumber = (localSchedule as? HabitSchedule.EveryNDays)?.n ?: 2
     val pinnedSetOfWeeks =
         ((localSchedule as? HabitSchedule.SpecificDays)?.daysOfWeek ?: emptySet()).toMutableSet()
-    val numbers = (2..31).toList()
-    val listState = rememberLazyListState(initialFirstVisibleItemIndex = selectedNumber)
-
-    val snapBehavior = rememberSnapFlingBehavior(lazyListState = listState)
 
     val onDayClick = { day: DayOfWeek ->
         val newSet = pinnedSetOfWeeks.toMutableSet()
@@ -509,16 +660,11 @@ private fun SchedulePicker(
                 .padding(horizontal = 24.dp)
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(16.dp))
-                .border(
-                    width = 1.dp,
-                    color = Black40,
-                    shape = RoundedCornerShape(16.dp)
-                )
-                .background(Blue20)
+                .background(Blue10)
                 .clickable {
                     localSchedule = HabitSchedule.EveryDay
                     onCardClickWithSave()
-                           },
+                },
             contentAlignment = Alignment.Center
         ) {
             Text(
@@ -533,14 +679,9 @@ private fun SchedulePicker(
                 .padding(horizontal = 24.dp)
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(16.dp))
-                .border(
-                    width = 1.dp,
-                    color = Black40,
-                    shape = RoundedCornerShape(16.dp)
-                )
-                .background(Blue20)
-                .height(220.dp)
-                .clickable{
+                .background(Blue10)
+                .height(160.dp)
+                .clickable {
                     onCardClickWithSave()
                 },
             verticalAlignment = Alignment.CenterVertically
@@ -550,47 +691,17 @@ private fun SchedulePicker(
                     .weight(1f)
                     .padding(vertical = 8.dp, horizontal = 12.dp),
                 text = "Every $selectedNumber Days",
-                style = MaterialTheme.typography.headlineSmall
+                style = MaterialTheme.typography.headlineSmall,
+                textAlign = TextAlign.Center
             )
-            LazyColumn(
-                modifier = Modifier
-                    .width(140.dp) // Фиксированная ширина для чисел
-                    .fillMaxHeight()
-                    .padding(vertical = 8.dp, horizontal = 24.dp)
-                    .border(
-                        width = 1.dp,
-                        color = Black40,
-                        shape = RoundedCornerShape(4.dp)
-                    ),
-                state = listState,
-                flingBehavior = snapBehavior,
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(2.dp),
-                contentPadding = PaddingValues(vertical = 90.dp)
-            ) {
-                items(numbers) { number ->
-                    val isSelected = number == selectedNumber
-
-                    Text(
-                        modifier = Modifier
-                            .padding(vertical = 2.dp, horizontal = 24.dp)
-                            .clickable {
-                                localSchedule = HabitSchedule.EveryNDays(number)
-                            },
-                        text = number.toString(),
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = if (isSelected) Blue100 else Black40
-                    )
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(1.dp)
-                            .background(Black20)
-                    )
-                }
-            }
-
-
+            ColumnPickerWheel(
+                selectedValue = selectedNumber,
+                onValueChange = { number ->
+                    localSchedule = HabitSchedule.EveryNDays(number)
+                },
+                firstNumber = 2,
+                lastNumber = 31
+            )
         }
 
         //SpecificDays
@@ -599,12 +710,7 @@ private fun SchedulePicker(
                 .padding(horizontal = 24.dp)
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(16.dp))
-                .border(
-                    width = 1.dp,
-                    color = Black40,
-                    shape = RoundedCornerShape(16.dp)
-                )
-                .background(Blue20)
+                .background(Blue10)
                 .clickable {
                     // Клик по всей карточке сохраняет выбор
                     onCardClickWithSave()
@@ -617,7 +723,8 @@ private fun SchedulePicker(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(vertical = 16.dp)
-                    .padding(start = 16.dp)
+                    .padding(start = 16.dp),
+                textAlign = TextAlign.Center
             )
 
             // Дни недели
@@ -626,10 +733,12 @@ private fun SchedulePicker(
                     .fillMaxWidth()
                     .padding(horizontal = 12.dp)
                     .padding(bottom = 16.dp),
-                horizontalArrangement = Arrangement.SpaceEvenly
+                horizontalArrangement = Arrangement.spacedBy(4.dp)
             ) {
                 DayOfWeek.entries.forEach { day ->
                     DayOfWeekItem(
+                        modifier = Modifier
+                            .weight(1f),
                         day = day,
                         isSelected = pinnedSetOfWeeks.contains(day),
                         onClick = { onDayClick(day) }
@@ -639,24 +748,17 @@ private fun SchedulePicker(
         }
 
     }
-    // Следим за прокруткой и автоматически выбираем элемент в центре
-    LaunchedEffect(listState) {
-        snapshotFlow { listState.firstVisibleItemIndex }
-            .collect { index ->
-                val value = numbers.getOrNull(index) ?: return@collect
-                localSchedule = HabitSchedule.EveryNDays(value)
-            }
-    }
 }
 @Composable
 private fun DayOfWeekItem(
+    modifier: Modifier = Modifier,
     day: DayOfWeek,
     isSelected: Boolean,
     onClick: () -> Unit
 ) {
     Box(
-        modifier = Modifier
-            .size(44.dp)
+        modifier = modifier
+            .size(40.dp)
             .clip(CircleShape)
             .clickable(onClick = onClick)
             .background(
@@ -989,7 +1091,7 @@ private fun ReminderBlock(
     reminderTime: LocalTime,
     reminderDate: HabitSchedule,
     onSwitchClick: () -> Unit,
-    onChoiceSchedule: () -> Unit
+    onChoiceScheduleReminder: () -> Unit
 ) {
     Column(
         modifier = modifier
@@ -1031,7 +1133,7 @@ private fun ReminderBlock(
                 .padding(bottom = 16.dp)
                 .clip(RoundedCornerShape(12.dp))
                 .background(DarkBlue10)
-                .clickable { onChoiceSchedule() }
+                .clickable { onChoiceScheduleReminder() }
                 .padding(vertical = 8.dp)
                 .padding(start = 12.dp)
                 .fillMaxWidth(),
@@ -1048,7 +1150,7 @@ private fun ReminderBlock(
                 imageVector = Icons.Default.Notifications,
                 contentDescription = "arrow clock icon"
             )
-            Text(text = "Every day")//Подправить на Enum
+            Text(text = reminderDate.toDisplayText())
         }
     }
 }
