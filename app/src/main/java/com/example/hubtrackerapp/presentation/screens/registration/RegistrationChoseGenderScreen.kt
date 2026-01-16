@@ -62,7 +62,6 @@ fun RegistrationChoseGenderScreen(
         RegistrationViewModel
     }
 ) {
-    val draft by viewModel.draft.collectAsState()
     Scaffold(
         modifier = modifier,
         topBar = {

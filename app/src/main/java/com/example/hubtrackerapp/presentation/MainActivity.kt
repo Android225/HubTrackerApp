@@ -26,9 +26,9 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             //NavGraph()
-           // HomeScreen()
-            AddHabit(onBackClick = {},
-                onAddHabit = {})
+            HomeScreen()
+//            AddHabit(onBackClick = {},
+//                onAddHabit = {})
         }
     }
 }

@@ -4,7 +4,9 @@ import HabitMetric
 import androidx.compose.runtime.isTraceInProgress
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
-import com.example.hubtrackerapp.data.PredefinedHabitData
+import com.example.hubtrackerapp.data.HabitRepositoryImpl
+import com.example.hubtrackerapp.data.predefined.PredefinedHabitData
+import com.example.hubtrackerapp.domain.hubbit.AddHabitUseCase
 import com.example.hubtrackerapp.domain.hubbit.models.HabitSchedule
 import com.example.hubtrackerapp.domain.hubbit.models.ModeForSwitch
 import com.example.hubtrackerapp.domain.hubbit.models.PredefinedHabit
@@ -14,6 +16,9 @@ import kotlinx.coroutines.flow.update
 import java.time.LocalTime
 
 class AddHabitViewModel : ViewModel() {
+
+    private val repository = HabitRepositoryImpl
+    private val addHabitUseCase = AddHabitUseCase(repository)
     val predifinedHabits = PredefinedHabitData.habits
 
     private val _state = MutableStateFlow(predifinedHabits.first())

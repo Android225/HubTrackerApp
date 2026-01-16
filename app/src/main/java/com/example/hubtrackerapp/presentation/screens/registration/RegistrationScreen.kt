@@ -155,7 +155,7 @@ fun RegistrationScreen(
                 text = draft.firstName,
                 textPlace = "Enter your name",
                 onTextChanged = {
-                    viewModel.setFirtsName(it)
+                    viewModel.setFirstName(it)
                 }
             )
             TextStr(text = "SURNAME")

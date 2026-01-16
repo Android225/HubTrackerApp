@@ -1,6 +1,9 @@
 package com.example.hubtrackerapp.domain.hubbit.models
 
+import HabitMetric
+import androidx.compose.ui.graphics.Color
 import java.time.LocalDate
+import java.time.LocalTime
 
 data class HabitUi(
     val habitId: String,
@@ -9,5 +12,13 @@ data class HabitUi(
     val title: String,
     val createdAt: LocalDate,
     val schedule: HabitSchedule,
-    val isArchived: Boolean = false
+    val isArchived: Boolean = false,
+    val color: Color,
+    val target: String,
+    val metric: HabitMetric,
+    val reminderTime: LocalTime,
+    val reminderDate: HabitSchedule,
+    val reminderIsActive: Boolean = false,
+    val habitType: ModeForSwitch,
+    val habitCustom: Boolean = false
 )

@@ -1,5 +1,7 @@
 package com.example.hubtrackerapp.presentation.screens.registration.model
 
+import com.example.hubtrackerapp.domain.hubbit.models.HabitUi
+import com.example.hubtrackerapp.domain.hubbit.models.PredefinedHabit
 import com.example.hubtrackerapp.presentation.screens.registration.RegisterHabits
 
 data class RegistrationDraft(
@@ -9,5 +11,5 @@ data class RegistrationDraft(
     val lastName: String = "",
     val birthDate: String = "",
     val gender: String = "", // сделать enum класс
-    val habbies: List<RegisterHabits> = emptyList()
+    val habbies: List<PredefinedHabit> = emptyList()
 )

@@ -1,12 +1,9 @@
-package com.example.hubtrackerapp.data
+package com.example.hubtrackerapp.data.predefined
 
-import HabitMetric
 import com.example.hubtrackerapp.domain.hubbit.models.HabitSchedule
 import com.example.hubtrackerapp.domain.hubbit.models.ModeForSwitch
 import com.example.hubtrackerapp.domain.hubbit.models.PredefinedHabit
-import com.example.hubtrackerapp.presentation.theme.Black100
 import com.example.hubtrackerapp.presentation.theme.Blue100
-import com.example.hubtrackerapp.presentation.theme.Blue40
 import com.example.hubtrackerapp.presentation.theme.Blue60
 import com.example.hubtrackerapp.presentation.theme.Blue80
 import com.example.hubtrackerapp.presentation.theme.DarkBlue100
@@ -39,13 +36,17 @@ object PredefinedHabitData {
             icon = "🏃",
             color = Orange100,
             metricForHabit = HabitMetric.KILOMETERS,
-            habitSchedule = HabitSchedule.SpecificDays(setOf(
-                DayOfWeek.MONDAY, DayOfWeek.WEDNESDAY, DayOfWeek.FRIDAY
-            )),
+            habitSchedule = HabitSchedule.SpecificDays(
+                setOf(
+                    DayOfWeek.MONDAY, DayOfWeek.WEDNESDAY, DayOfWeek.FRIDAY
+                )
+            ),
             reminderTime = LocalTime.of(7, 30),
-            reminderDate = HabitSchedule.SpecificDays(setOf(
-                DayOfWeek.MONDAY, DayOfWeek.WEDNESDAY, DayOfWeek.FRIDAY
-            )),
+            reminderDate = HabitSchedule.SpecificDays(
+                setOf(
+                    DayOfWeek.MONDAY, DayOfWeek.WEDNESDAY, DayOfWeek.FRIDAY
+                )
+            ),
             habitType = ModeForSwitch.BUILD,
             target = "5" // км
         ),
@@ -65,13 +66,17 @@ object PredefinedHabitData {
             icon = "🏋️",
             color = Orange60,
             metricForHabit = HabitMetric.SETS,
-            habitSchedule = HabitSchedule.SpecificDays(setOf(
-                DayOfWeek.TUESDAY, DayOfWeek.THURSDAY, DayOfWeek.SATURDAY
-            )),
+            habitSchedule = HabitSchedule.SpecificDays(
+                setOf(
+                    DayOfWeek.TUESDAY, DayOfWeek.THURSDAY, DayOfWeek.SATURDAY
+                )
+            ),
             reminderTime = LocalTime.of(18, 0),
-            reminderDate = HabitSchedule.SpecificDays(setOf(
-                DayOfWeek.TUESDAY, DayOfWeek.THURSDAY, DayOfWeek.SATURDAY
-            )),
+            reminderDate = HabitSchedule.SpecificDays(
+                setOf(
+                    DayOfWeek.TUESDAY, DayOfWeek.THURSDAY, DayOfWeek.SATURDAY
+                )
+            ),
             habitType = ModeForSwitch.BUILD,
             target = "4" // подхода
         ),
@@ -80,13 +85,17 @@ object PredefinedHabitData {
             icon = "🧘",
             color = Orange40,
             metricForHabit = HabitMetric.MINUTES,
-            habitSchedule = HabitSchedule.SpecificDays(setOf(
-                DayOfWeek.MONDAY, DayOfWeek.WEDNESDAY, DayOfWeek.FRIDAY
-            )),
+            habitSchedule = HabitSchedule.SpecificDays(
+                setOf(
+                    DayOfWeek.MONDAY, DayOfWeek.WEDNESDAY, DayOfWeek.FRIDAY
+                )
+            ),
             reminderTime = LocalTime.of(9, 0),
-            reminderDate = HabitSchedule.SpecificDays(setOf(
-                DayOfWeek.MONDAY, DayOfWeek.WEDNESDAY, DayOfWeek.FRIDAY
-            )),
+            reminderDate = HabitSchedule.SpecificDays(
+                setOf(
+                    DayOfWeek.MONDAY, DayOfWeek.WEDNESDAY, DayOfWeek.FRIDAY
+                )
+            ),
             habitType = ModeForSwitch.BUILD,
             target = "20" // минут
         ),
@@ -119,15 +128,19 @@ object PredefinedHabitData {
             icon = "💻",
             color = Blue60,
             metricForHabit = HabitMetric.HOURS,
-            habitSchedule = HabitSchedule.SpecificDays(setOf(
-                DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY,
-                DayOfWeek.THURSDAY, DayOfWeek.FRIDAY
-            )),
+            habitSchedule = HabitSchedule.SpecificDays(
+                setOf(
+                    DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY,
+                    DayOfWeek.THURSDAY, DayOfWeek.FRIDAY
+                )
+            ),
             reminderTime = LocalTime.of(10, 0),
-            reminderDate = HabitSchedule.SpecificDays(setOf(
-                DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY,
-                DayOfWeek.THURSDAY, DayOfWeek.FRIDAY
-            )),
+            reminderDate = HabitSchedule.SpecificDays(
+                setOf(
+                    DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY,
+                    DayOfWeek.THURSDAY, DayOfWeek.FRIDAY
+                )
+            ),
             habitType = ModeForSwitch.BUILD,
             target = "2" // часа
         ),
@@ -195,13 +208,17 @@ object PredefinedHabitData {
             icon = "🏦",
             color = Yellow80,
             metricForHabit = HabitMetric.TIMES,
-            habitSchedule = HabitSchedule.SpecificDays(setOf(
-                DayOfWeek.MONDAY, DayOfWeek.FRIDAY
-            )),
+            habitSchedule = HabitSchedule.SpecificDays(
+                setOf(
+                    DayOfWeek.MONDAY, DayOfWeek.FRIDAY
+                )
+            ),
             reminderTime = LocalTime.of(18, 0),
-            reminderDate = HabitSchedule.SpecificDays(setOf(
-                DayOfWeek.MONDAY, DayOfWeek.FRIDAY
-            )),
+            reminderDate = HabitSchedule.SpecificDays(
+                setOf(
+                    DayOfWeek.MONDAY, DayOfWeek.FRIDAY
+                )
+            ),
             habitType = ModeForSwitch.BUILD,
             target = "2" // раза в неделю
         ),
@@ -234,13 +251,17 @@ object PredefinedHabitData {
             icon = "🍳",
             color = Purple60,
             metricForHabit = HabitMetric.TIMES,
-            habitSchedule = HabitSchedule.SpecificDays(setOf(
-                DayOfWeek.MONDAY, DayOfWeek.WEDNESDAY, DayOfWeek.FRIDAY
-            )),
+            habitSchedule = HabitSchedule.SpecificDays(
+                setOf(
+                    DayOfWeek.MONDAY, DayOfWeek.WEDNESDAY, DayOfWeek.FRIDAY
+                )
+            ),
             reminderTime = LocalTime.of(18, 30),
-            reminderDate = HabitSchedule.SpecificDays(setOf(
-                DayOfWeek.MONDAY, DayOfWeek.WEDNESDAY, DayOfWeek.FRIDAY
-            )),
+            reminderDate = HabitSchedule.SpecificDays(
+                setOf(
+                    DayOfWeek.MONDAY, DayOfWeek.WEDNESDAY, DayOfWeek.FRIDAY
+                )
+            ),
             habitType = ModeForSwitch.BUILD,
             target = "3" // раза в неделю
         ),
@@ -251,13 +272,17 @@ object PredefinedHabitData {
             icon = "🎨",
             color = Pink100,
             metricForHabit = HabitMetric.MINUTES,
-            habitSchedule = HabitSchedule.SpecificDays(setOf(
-                DayOfWeek.TUESDAY, DayOfWeek.THURSDAY, DayOfWeek.SATURDAY
-            )),
+            habitSchedule = HabitSchedule.SpecificDays(
+                setOf(
+                    DayOfWeek.TUESDAY, DayOfWeek.THURSDAY, DayOfWeek.SATURDAY
+                )
+            ),
             reminderTime = LocalTime.of(20, 0),
-            reminderDate = HabitSchedule.SpecificDays(setOf(
-                DayOfWeek.TUESDAY, DayOfWeek.THURSDAY, DayOfWeek.SATURDAY
-            )),
+            reminderDate = HabitSchedule.SpecificDays(
+                setOf(
+                    DayOfWeek.TUESDAY, DayOfWeek.THURSDAY, DayOfWeek.SATURDAY
+                )
+            ),
             habitType = ModeForSwitch.BUILD,
             target = "45" // минут
         ),
@@ -266,13 +291,17 @@ object PredefinedHabitData {
             icon = "🎸",
             color = Pink80,
             metricForHabit = HabitMetric.MINUTES,
-            habitSchedule = HabitSchedule.SpecificDays(setOf(
-                DayOfWeek.MONDAY, DayOfWeek.WEDNESDAY, DayOfWeek.FRIDAY
-            )),
+            habitSchedule = HabitSchedule.SpecificDays(
+                setOf(
+                    DayOfWeek.MONDAY, DayOfWeek.WEDNESDAY, DayOfWeek.FRIDAY
+                )
+            ),
             reminderTime = LocalTime.of(19, 0),
-            reminderDate = HabitSchedule.SpecificDays(setOf(
-                DayOfWeek.MONDAY, DayOfWeek.WEDNESDAY, DayOfWeek.FRIDAY
-            )),
+            reminderDate = HabitSchedule.SpecificDays(
+                setOf(
+                    DayOfWeek.MONDAY, DayOfWeek.WEDNESDAY, DayOfWeek.FRIDAY
+                )
+            ),
             habitType = ModeForSwitch.BUILD,
             target = "40" // минут
         ),
@@ -305,13 +334,17 @@ object PredefinedHabitData {
             icon = "🚀",
             color = Teal80,
             metricForHabit = HabitMetric.MINUTES,
-            habitSchedule = HabitSchedule.SpecificDays(setOf(
-                DayOfWeek.TUESDAY, DayOfWeek.THURSDAY
-            )),
+            habitSchedule = HabitSchedule.SpecificDays(
+                setOf(
+                    DayOfWeek.TUESDAY, DayOfWeek.THURSDAY
+                )
+            ),
             reminderTime = LocalTime.of(17, 0),
-            reminderDate = HabitSchedule.SpecificDays(setOf(
-                DayOfWeek.TUESDAY, DayOfWeek.THURSDAY
-            )),
+            reminderDate = HabitSchedule.SpecificDays(
+                setOf(
+                    DayOfWeek.TUESDAY, DayOfWeek.THURSDAY
+                )
+            ),
             habitType = ModeForSwitch.BUILD,
             target = "60" // минут
         ),
@@ -322,13 +355,17 @@ object PredefinedHabitData {
             icon = "🌳",
             color = DarkBlue100,
             metricForHabit = HabitMetric.MINUTES,
-            habitSchedule = HabitSchedule.SpecificDays(setOf(
-                DayOfWeek.SATURDAY, DayOfWeek.SUNDAY
-            )),
+            habitSchedule = HabitSchedule.SpecificDays(
+                setOf(
+                    DayOfWeek.SATURDAY, DayOfWeek.SUNDAY
+                )
+            ),
             reminderTime = LocalTime.of(15, 0),
-            reminderDate = HabitSchedule.SpecificDays(setOf(
-                DayOfWeek.SATURDAY, DayOfWeek.SUNDAY
-            )),
+            reminderDate = HabitSchedule.SpecificDays(
+                setOf(
+                    DayOfWeek.SATURDAY, DayOfWeek.SUNDAY
+                )
+            ),
             habitType = ModeForSwitch.BUILD,
             target = "60" // минут
         )

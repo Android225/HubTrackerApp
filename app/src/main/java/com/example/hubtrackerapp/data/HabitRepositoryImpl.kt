@@ -1,9 +1,12 @@
 package com.example.hubtrackerapp.data
 
+import HabitMetric
+import androidx.compose.ui.graphics.Color
 import com.example.hubtrackerapp.domain.hubbit.HabitRepository
 import com.example.hubtrackerapp.domain.hubbit.models.HabitProgress
 import com.example.hubtrackerapp.domain.hubbit.models.HabitSchedule
 import com.example.hubtrackerapp.domain.hubbit.models.HabitUi
+import com.example.hubtrackerapp.domain.hubbit.models.ModeForSwitch
 import com.example.hubtrackerapp.domain.hubbit.models.forUi.HabitWithProgressUi
 import com.example.hubtrackerapp.domain.hubbit.models.isActive
 import com.example.hubtrackerapp.domain.user.User
@@ -14,6 +17,7 @@ import kotlinx.coroutines.flow.last
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import java.time.LocalDate
+import java.time.LocalTime
 import java.util.UUID
 
 object HabitRepositoryImpl : HabitRepository {
@@ -61,6 +65,12 @@ object HabitRepositoryImpl : HabitRepository {
                 title = "Drink water",
                 createdAt = LocalDate.now(),
                 schedule = HabitSchedule.EveryDay,
+                color = Color(0xFF64B5F6),
+                target = "8",
+                metric = HabitMetric.GLASSES,
+                reminderTime = LocalTime.of(9, 0),
+                reminderDate = HabitSchedule.EveryDay,
+                habitType = ModeForSwitch.BUILD
             )
         )
         add(
@@ -71,6 +81,12 @@ object HabitRepositoryImpl : HabitRepository {
                 title = "Run",
                 createdAt = LocalDate.now(),
                 schedule = HabitSchedule.EveryDay,
+                color = Color(0xFF64B5F6),
+                target = "8",
+                metric = HabitMetric.KILOMETERS,
+                reminderTime = LocalTime.of(9, 0),
+                reminderDate = HabitSchedule.EveryDay,
+                habitType = ModeForSwitch.BUILD
             )
         )
         add(
@@ -81,6 +97,12 @@ object HabitRepositoryImpl : HabitRepository {
                 title = "Run",
                 createdAt = LocalDate.now(),
                 schedule = HabitSchedule.EveryDay,
+                color = Color(0xFF64B5F6),
+                target = "10",
+                metric = HabitMetric.KILOMETERS,
+                reminderTime = LocalTime.of(9, 0),
+                reminderDate = HabitSchedule.EveryDay,
+                habitType = ModeForSwitch.BUILD
             )
         )
         add(
@@ -91,6 +113,12 @@ object HabitRepositoryImpl : HabitRepository {
                 title = "Read books",
                 createdAt = LocalDate.now(),
                 schedule = HabitSchedule.EveryDay,
+                color = Color(0xFF64B5F6),
+                target = "30",
+                metric = HabitMetric.MINUTES,
+                reminderTime = LocalTime.of(12, 30),
+                reminderDate = HabitSchedule.EveryDay,
+                habitType = ModeForSwitch.BUILD
             )
         )
         add(
@@ -101,6 +129,12 @@ object HabitRepositoryImpl : HabitRepository {
                 title = "Meditate",
                 createdAt = LocalDate.now(),
                 schedule = HabitSchedule.EveryDay,
+                color = Color(0xFF64B5F6),
+                target = "30",
+                metric = HabitMetric.MINUTES,
+                reminderTime = LocalTime.of(8, 30),
+                reminderDate = HabitSchedule.EveryDay,
+                habitType = ModeForSwitch.BUILD
             )
         )
         add(
@@ -111,6 +145,12 @@ object HabitRepositoryImpl : HabitRepository {
                 title = "Study",
                 createdAt = LocalDate.now(),
                 schedule = HabitSchedule.EveryDay,
+                color = Color(0xFF64B5F6),
+                target = "60",
+                metric = HabitMetric.MINUTES,
+                reminderTime = LocalTime.of(10, 30),
+                reminderDate = HabitSchedule.EveryDay,
+                habitType = ModeForSwitch.BUILD
             )
         )
         add(
@@ -121,6 +161,12 @@ object HabitRepositoryImpl : HabitRepository {
                 title = "Journal",
                 createdAt = LocalDate.now(),
                 schedule = HabitSchedule.EveryDay,
+                color = Color(0xFF64B5F6),
+                target = "30",
+                metric = HabitMetric.MINUTES,
+                reminderTime = LocalTime.of(15, 30),
+                reminderDate = HabitSchedule.EveryDay,
+                habitType = ModeForSwitch.BUILD
             )
         )
         add(
@@ -131,6 +177,12 @@ object HabitRepositoryImpl : HabitRepository {
                 title = "Water plant",
                 createdAt = LocalDate.now(),
                 schedule = HabitSchedule.EveryDay,
+                color = Color(0xFF64B5F6),
+                target = "2",
+                metric = HabitMetric.TIMES,
+                reminderTime = LocalTime.of(12, 30),
+                reminderDate = HabitSchedule.EveryDay,
+                habitType = ModeForSwitch.BUILD
             )
         )
         add(
@@ -141,6 +193,12 @@ object HabitRepositoryImpl : HabitRepository {
                 title = "Sleep",
                 createdAt = LocalDate.now(),
                 schedule = HabitSchedule.EveryDay,
+                color = Color(0xFF64B5F6),
+                target = "8",
+                metric = HabitMetric.HOURS,
+                reminderTime = LocalTime.of(23, 30),
+                reminderDate = HabitSchedule.EveryDay,
+                habitType = ModeForSwitch.BUILD
             )
         )
         //// Add Habits To USER
@@ -153,6 +211,12 @@ object HabitRepositoryImpl : HabitRepository {
                 title = "Sleep",
                 createdAt = LocalDate.now(),
                 schedule = HabitSchedule.EveryDay,
+                color = Color(0xFF64B5F6),
+                target = "8",
+                metric = HabitMetric.HOURS,
+                reminderTime = LocalTime.of(23, 30),
+                reminderDate = HabitSchedule.EveryDay,
+                habitType = ModeForSwitch.BUILD
             )
         )
         add(
@@ -163,6 +227,12 @@ object HabitRepositoryImpl : HabitRepository {
                 title = "Study",
                 createdAt = LocalDate.now(),
                 schedule = HabitSchedule.EveryDay,
+                color = Color(0xFF64B5F6),
+                target = "60",
+                metric = HabitMetric.MINUTES,
+                reminderTime = LocalTime.of(12, 30),
+                reminderDate = HabitSchedule.EveryDay,
+                habitType = ModeForSwitch.BUILD
             )
         )
         add(
@@ -173,6 +243,12 @@ object HabitRepositoryImpl : HabitRepository {
                 title = "Journal",
                 createdAt = LocalDate.now(),
                 schedule = HabitSchedule.EveryDay,
+                color = Color(0xFF64B5F6),
+                target = "30",
+                metric = HabitMetric.MINUTES,
+                reminderTime = LocalTime.of(12, 30),
+                reminderDate = HabitSchedule.EveryDay,
+                habitType = ModeForSwitch.BUILD
             )
         )
         add(
@@ -183,6 +259,12 @@ object HabitRepositoryImpl : HabitRepository {
                 title = "Water plant",
                 createdAt = LocalDate.now(),
                 schedule = HabitSchedule.EveryDay,
+                color = Color(0xFF64B5F6),
+                target = "4",
+                metric = HabitMetric.TIMES,
+                reminderTime = LocalTime.of(12, 30),
+                reminderDate = HabitSchedule.EveryDay,
+                habitType = ModeForSwitch.BUILD
             )
         )
         add(
@@ -193,6 +275,12 @@ object HabitRepositoryImpl : HabitRepository {
                 title = "Waterasd plant",
                 createdAt = LocalDate.now(),
                 schedule = HabitSchedule.EveryNDays(2),
+                color = Color(0xFF64B5F6),
+                target = "52",
+                metric = HabitMetric.TIMES,
+                reminderTime = LocalTime.of(12, 30),
+                reminderDate = HabitSchedule.EveryDay,
+                habitType = ModeForSwitch.BUILD
             )
         )
     }
@@ -254,7 +342,14 @@ object HabitRepositoryImpl : HabitRepository {
                     emoji = habit.emoji,
                     title = habit.title,
                     isCompleted = progress.isCompleted,
-                    progress = progress.progress
+                    progress = progress.progress,
+                    color = habit.color,
+                    target = habit.target,
+                    metric = habit.metric,
+                    habitType = habit.habitType,
+                    progressWithTarget = progress.progressWithTarget,
+                    skipped = progress.failed,
+                    failed = progress.failed
                 )
             }
         }
@@ -323,7 +418,15 @@ object HabitRepositoryImpl : HabitRepository {
         emoji: String,
         title: String,
         createdAt: LocalDate,
-        schedule: HabitSchedule
+        schedule: HabitSchedule,
+        color: Color,
+        target: String,
+        metric: HabitMetric,
+        reminderTime: LocalTime,
+        reminderDate: HabitSchedule,
+        reminderIsActive: Boolean,
+        habitType: ModeForSwitch,
+        habitCustom: Boolean
     ) {
         habitsStateFlow.update { oldList ->
             val habit = HabitUi(
@@ -333,6 +436,14 @@ object HabitRepositoryImpl : HabitRepository {
                 title = title,
                 createdAt = createdAt,
                 schedule = schedule,
+                color = color,
+                target = target,
+                metric = metric,
+                reminderTime = reminderTime,
+                reminderDate = reminderDate,
+                reminderIsActive = reminderIsActive,
+                habitType = habitType,
+                habitCustom = habitCustom,
             )
             oldList + habit
         }
@@ -372,7 +483,8 @@ object HabitRepositoryImpl : HabitRepository {
     ): HabitProgress {
         val progress = HabitProgress(
             habitId = habitId,
-            date = date
+            date = date,
+
         )
         progressStateFlow.update { oldList ->
 

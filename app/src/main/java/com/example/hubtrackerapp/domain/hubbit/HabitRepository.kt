@@ -1,11 +1,15 @@
 package com.example.hubtrackerapp.domain.hubbit
 
+import HabitMetric
+import androidx.compose.ui.graphics.Color
 import com.example.hubtrackerapp.domain.hubbit.models.HabitProgress
 import com.example.hubtrackerapp.domain.hubbit.models.HabitSchedule
 import com.example.hubtrackerapp.domain.hubbit.models.HabitUi
+import com.example.hubtrackerapp.domain.hubbit.models.ModeForSwitch
 import com.example.hubtrackerapp.domain.hubbit.models.forUi.HabitWithProgressUi
 import kotlinx.coroutines.flow.Flow
 import java.time.LocalDate
+import java.time.LocalTime
 
 interface HabitRepository {
 
@@ -24,11 +28,20 @@ interface HabitRepository {
         emoji: String,
         title: String,
         createdAt: LocalDate,
-        schedule: HabitSchedule
+        schedule: HabitSchedule,
+        color: Color,
+        target: String,
+        metric: HabitMetric,
+        reminderTime: LocalTime,
+        reminderDate: HabitSchedule,
+        reminderIsActive: Boolean,
+        habitType: ModeForSwitch,
+        habitCustom: Boolean
     )
     suspend fun addProgressForHabit(
         habitId: String,
-        date: LocalDate
+        date: LocalDate,
+
     ): HabitProgress
     suspend fun saveProgress(
         habitProgress: HabitProgress

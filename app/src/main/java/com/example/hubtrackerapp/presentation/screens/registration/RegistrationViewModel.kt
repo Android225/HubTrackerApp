@@ -4,52 +4,47 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.hubtrackerapp.data.AuthRepositoryImpl
+import com.example.hubtrackerapp.data.predefined.PredefinedHabitData
+import com.example.hubtrackerapp.data.predefined.PredefinedHabitRepositoryImpl
 import com.example.hubtrackerapp.domain.auth.RegisterUseCase
+import com.example.hubtrackerapp.domain.hubbit.models.PredefinedHabit
+import com.example.hubtrackerapp.domain.predefined.GetAllPredefinedHabitsUseCase
 import com.example.hubtrackerapp.presentation.screens.registration.model.RegistrationDraft
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-object RegistrationViewModel : ViewModel() {
+class RegistrationViewModel : ViewModel() {
 
     private val repository = AuthRepositoryImpl
+    private val predifinedRepository = PredefinedHabitRepositoryImpl
     private val registerUseCase = RegisterUseCase(repository)
-
-    private val FirstHabbitsOnRegister = mutableListOf<RegisterHabits>().apply {
-
-    }
-
-
+    private val getAllPredefinedHabits = GetAllPredefinedHabitsUseCase(predifinedRepository)
     private val _state = MutableStateFlow(
-        RegistrationHabitsState(
-            habits = listOf(
-                RegisterHabits(1, "💧", "Drink water"),
-                RegisterHabits(2, "🏃‍♀️", "Run"),
-                RegisterHabits(3, "📖", "Read books"),
-                RegisterHabits(4, "🧘‍♀️", "Meditate"),
-                RegisterHabits(5, "🧑‍💻", "Study"),
-                RegisterHabits(6, "📕", "Journal"),
-                RegisterHabits(7, "🌿", "Water plant"),
-                RegisterHabits(8, "😴", "Sleep")
-            )
-        )
+        RegistrationHabitsState()
     )
-
     val state = _state.asStateFlow()
 
     private var _draft = MutableStateFlow(RegistrationDraft())
     val draft = _draft.asStateFlow()
-
-    fun onHabitClick(id: Int) {
-        val chosenHabbits = _state.value.habits.map {
-            if (it.id == id) it.copy(isPinned = !it.isPinned) else it
+    private var predefinedHabits = emptyList<PredefinedHabit>()
+    init {
+        viewModelScope.launch {
+            loadPredefinedHabits()
         }
-        _state.value = _state.value.copy(habits = chosenHabbits)
-        _draft.value = _draft.value.copy(
-            habbies = chosenHabbits.filter { it.isPinned }
-        )
-
     }
+    private suspend fun loadPredefinedHabits(){
+        predefinedHabits = getAllPredefinedHabits()
+        val habits = predefinedHabits.mapIndexed {index, habit ->
+            RegisterHabits(index,habit.icon,habit.habitName)
+        }
+        _state.update {
+            it.copy(habits = habits)
+        }
+    }
+    //временная переменная для заполнения
+
 
 
     /////ВРОДЕ ГАЗ ГАЗ ГАЗ
@@ -61,7 +56,7 @@ object RegistrationViewModel : ViewModel() {
         Log.d("Register", "draft email 1 - ${_draft.value.email}")
     }
 
-    fun setFirtsName(name: String) {
+    fun setFirstName(name: String) {
         _draft.value = _draft.value.copy(firstName = name)
     }
 
@@ -88,6 +83,25 @@ object RegistrationViewModel : ViewModel() {
 
         }
     }
+    fun onHabitClick(id: Int) {
+        val updatedHabits = _state.value.habits.map {
+            if (it.id == id) it.copy(isPinned = !it.isPinned) else it
+        }
+
+        val selectedHabits: List<PredefinedHabit> = updatedHabits
+            .filter { it.isPinned }
+            .sortedBy { it.id }
+            .mapNotNull { registerHabits ->
+                predefinedHabits.getOrNull(registerHabits.id)
+            }
+        _state.update {it.copy(habits = updatedHabits)}
+        _draft.update {
+            it.copy(
+                habbies = selectedHabits
+            )
+        }
+    }
+
 }
 
 data class RegisterHabits(
