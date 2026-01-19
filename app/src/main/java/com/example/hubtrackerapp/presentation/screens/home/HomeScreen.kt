@@ -89,10 +89,12 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.hubtrackerapp.R
 import com.example.hubtrackerapp.domain.hubbit.models.forUi.CalendarDayUi
 import com.example.hubtrackerapp.domain.hubbit.models.ModeForSwitch
+import com.example.hubtrackerapp.domain.hubbit.models.ModeForSwitchInHabit
 import com.example.hubtrackerapp.domain.hubbit.models.forUi.HabitWithProgressUi
 import com.example.hubtrackerapp.domain.hubbit.models.forUi.Mood
 import com.example.hubtrackerapp.presentation.navigation.BottomTab
 import com.example.hubtrackerapp.presentation.screens.components.ModSwitcher
+import com.example.hubtrackerapp.presentation.screens.components.SwitcherOption
 import java.time.LocalDate
 
 @Composable
@@ -100,7 +102,8 @@ fun HomeScreen(
     modifier: Modifier = Modifier,
     viewModel: HomeViewModel = viewModel(
         //  HomeViewModel()
-    )
+    ),
+    onAddHabitClick: ()-> Unit
 ) {
     val state by viewModel.state.collectAsState()
 //    val mode by viewModel.mode.collectAsState()
@@ -123,7 +126,11 @@ fun HomeScreen(
                 ProfileRow()
                 ModSwitcher(
                     selected = state.mode,
-                    onModChange = viewModel::changeMode
+                    onModChange = viewModel::changeMode,
+                    options = listOf(
+                        SwitcherOption("Hobbies", ModeForSwitch.HOBBIES),
+                        SwitcherOption("Clubs", ModeForSwitch.CLUBS)
+                    )
                 )
 
                 //gray line
@@ -235,7 +242,9 @@ fun HomeScreen(
                 enter = slideInVertically { it } + fadeIn(),
                 exit = slideOutVertically { it } + fadeOut()
             ) {
-                AddMenu()
+                AddMenu(
+                    onClick = {onAddHabitClick()}
+                )
             }
 
         }
@@ -244,7 +253,7 @@ fun HomeScreen(
 
 @Composable
 fun AddMenu(
-
+ onClick: () -> Unit
 ){
     Column(
         modifier = Modifier
@@ -254,9 +263,15 @@ fun AddMenu(
             .padding(16.dp)
     ) {
         Row() {
-            AddHabitCard("Quit Bad Habit","Never too late", Icons.Default.Done)
+            AddHabitCard(
+                "Quit Bad Habit", "Never too late", Icons.Default.Done,
+                onClick = {onClick()}
+            )
             Spacer(Modifier.height(8.dp))
-            AddHabitCard("Quit Bad Habit","Never too late", Icons.Default.Close)
+            AddHabitCard(
+                "New Good Habit", "For a better life", Icons.Default.Close,
+                onClick = {onClick()}
+            )
             Spacer(Modifier.height(12.dp))
         }
 
@@ -295,14 +310,15 @@ fun AddMoodRow(
 fun AddHabitCard(
     textHabitFirst: String,
     textHabitSecond: String,
-    imageVector: ImageVector
+    imageVector: ImageVector,
+    onClick: () -> Unit
 ){
     Row(
         modifier = Modifier
             .clip(RoundedCornerShape(16.dp))
             .background(White100)
             .padding(16.dp)
-
+            .clickable{onClick()}
     ) {
         Column() {
             Text(

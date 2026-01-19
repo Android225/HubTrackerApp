@@ -50,6 +50,7 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -87,9 +88,11 @@ import androidx.compose.ui.zIndex
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.hubtrackerapp.domain.hubbit.models.HabitSchedule
 import com.example.hubtrackerapp.domain.hubbit.models.ModeForSwitch
+import com.example.hubtrackerapp.domain.hubbit.models.ModeForSwitchInHabit
 import com.example.hubtrackerapp.domain.hubbit.models.PredefinedHabit
 import com.example.hubtrackerapp.domain.hubbit.models.toDisplayText
 import com.example.hubtrackerapp.presentation.screens.components.ModSwitcher
+import com.example.hubtrackerapp.presentation.screens.components.SwitcherOption
 import com.example.hubtrackerapp.presentation.screens.registration.RegistrationViewModel
 import com.example.hubtrackerapp.presentation.ui.theme.ColorGroup
 import com.example.hubtrackerapp.presentation.ui.theme.colorGroups
@@ -105,13 +108,192 @@ fun AddHabit(
     viewModel: AddHabitViewModel = viewModel(
         // AddHabitViewModel()
     ),
-    onBackClick: () -> Unit,
-    onAddHabit: () -> Unit
+    onBackClick: () -> Unit
 ) {
     val state by viewModel.state.collectAsState()
     val predefinedHabits = viewModel.predifinedHabits
-    val uiState by viewModel.addHabitUiState.collectAsState()
 
+    when(state){
+        is AddHabitState.Creation -> {
+            val creationState = state as AddHabitState.Creation
+            val form = creationState.form
+            val activePicker = creationState.activePicker
+
+            AddHabitContent(
+                modifier = modifier,
+                form = creationState.form,
+                onEvent = viewModel::onEventAddHabit
+            )
+            PickerOverlay(
+                form = creationState.form,
+                predefinedHabits = predefinedHabits,
+                creationState.activePicker,
+                onEvent = viewModel::onEventAddHabit
+            )
+        }
+        AddHabitState.Finished -> {
+            LaunchedEffect(Unit) {
+                onBackClick()
+            }
+        }
+        AddHabitState.Initial -> {
+            Box(modifier = Modifier.fillMaxSize()) {
+                CircularProgressIndicator()
+            }
+        }
+    }
+
+    
+
+}
+
+@Composable
+private fun PickerOverlay(
+    form: PredefinedHabit,
+    predefinedHabits: List<PredefinedHabit>,
+    activePicker: PickerType,
+    onEvent: (AddHabitEvent) -> Unit
+){
+    when (activePicker) {
+        PickerType.Close -> {}
+        PickerType.Color -> {
+            UniversalAnimatedPicker(
+                pickerType = PickerType.Color,
+                onDismissClick = {
+                    onEvent(AddHabitEvent.ClosePicker)
+                    Log.d("AddHabit Picker UI", "AddHabitEvent.ClosePicker")
+                },
+                title = "Выбор цвета",
+                content =
+                    {
+                        ColorPickerContent(
+                            colorGroups = colorGroups,
+                            selectedColor = form.color,
+                            onColorSelected = {
+                                onEvent(AddHabitEvent.SelectColor(it))
+                                Log.d("AddHabit Picker UI", "AddHabitEvent.SelectColor($it)")
+                            }
+                        )
+                    }
+            )
+        }
+
+        PickerType.Goal -> {
+            UniversalAnimatedPicker(
+                pickerType = PickerType.Goal,
+                onDismissClick = {
+                    if (form.target == "") {
+                        onEvent(AddHabitEvent.SelectMetric(metric = form.metricForHabit, target = "1"))
+                        Log.d("AddHabit Picker UI", "AddHabitEvent.SelectMetric")
+                    }
+                    onEvent(AddHabitEvent.ClosePicker)
+                    Log.d("AddHabit Picker UI", "AddHabitEvent.SelectMetric -> AddHabitEvent.ClosePicker")
+                },
+                title = "Выбор метрик для хобби",
+                content =
+                    {
+                        MetricPicker(
+                            habitMetric = form.metricForHabit,
+                            target = form.target,
+                            onTargetChanged = { metric, target ->
+                                onEvent(AddHabitEvent.SelectMetric(metric = metric, target = target))
+                                Log.d("AddHabit Picker UI", "AddHabitEvent.SelectMetric")
+                            },
+                            onSaveClick = {
+                                if (form.target == "") {
+                                    onEvent(AddHabitEvent.SelectMetric(metric = form.metricForHabit, target = "1"))
+                                }
+                                onEvent(AddHabitEvent.ClosePicker)
+                            }
+                        )
+                    }
+            )
+        }
+
+        PickerType.Icon -> {
+            UniversalAnimatedPicker(
+                pickerType = PickerType.Icon,
+                onDismissClick = {
+                    onEvent(AddHabitEvent.ClosePicker)
+                },
+                title = "Выбор своей иконки или готового хобби",
+                content =
+                    {
+                        IconPickerContent(
+                            text = form.icon,
+                            predefinedHabits = predefinedHabits,
+                            onTextChanged = {
+                                onEvent(AddHabitEvent.SelectIcon(it)) },
+                            onAddHabit = {
+                                onEvent(AddHabitEvent.ApplyPredefinedHabit(it))
+                                onEvent(AddHabitEvent.ClosePicker)
+                            },
+                            onSaveIconClick = {
+                                onEvent(AddHabitEvent.ClosePicker)
+                            }
+                        )
+                    }
+            )
+        }
+
+        PickerType.Schedule -> {
+            UniversalAnimatedPicker(
+                pickerType = PickerType.Schedule,
+                onDismissClick = {
+                    onEvent(AddHabitEvent.ClosePicker)
+                },
+                title = "График хобби",
+                content =
+                    {
+                        SchedulePicker(
+                            selectedValue = form.habitSchedule,
+                            onValueChange = { value ->
+                                onEvent(AddHabitEvent.SelectHabitSchedule(value))
+                            },
+                            onCardClick = {
+                                onEvent(AddHabitEvent.ClosePicker)
+                            }
+                        )
+                    }
+            )
+        }
+
+        PickerType.Reminder -> {
+            UniversalAnimatedPicker(
+                pickerType = PickerType.Reminder,
+                onDismissClick = {
+                    onEvent(AddHabitEvent.ClosePicker)
+                },
+                title = "График хобби",
+                content =
+                    {
+                        TimePicker(
+                            selectedValue = form.reminderDate,
+                            selectedTime = form.reminderTime,
+                            onValueChange = { date, time ->
+                                onEvent(AddHabitEvent.SelectTimeAndDate(
+                                    reminderTime = time,
+                                    reminderDate = date
+                                ))
+                            },
+                            onCardClick = {
+                                onEvent(AddHabitEvent.ClosePicker)
+                            }
+                        )
+                    }
+            )
+        }
+
+    }
+}
+
+@Composable
+private fun AddHabitContent(
+    modifier: Modifier = Modifier,
+    form: PredefinedHabit,
+    onEvent: (AddHabitEvent) -> Unit
+
+){
     Box(modifier = Modifier.fillMaxSize()) {
         Scaffold(
             modifier = modifier,
@@ -145,7 +327,7 @@ fun AddHabit(
                                     color = Black10
                                 )
                                 .clickable {
-                                    onBackClick()
+                                    onEvent(AddHabitEvent.Back)
                                 },
                             contentAlignment = Alignment.Center
                         ) {
@@ -172,7 +354,7 @@ fun AddHabit(
                             .fillMaxWidth()
                             .padding(horizontal = 20.dp),
                         onClick = {
-                            onAddHabit()
+                            onEvent(AddHabitEvent.Save)
                         },
                         shape = RoundedCornerShape(40.dp),
 
@@ -191,7 +373,6 @@ fun AddHabit(
                     .height(1.dp)
                     .background(Black20)
             )
-
             Column(
                 modifier = Modifier
                     .padding(innerPadding)
@@ -202,224 +383,74 @@ fun AddHabit(
 
                 TextStr(text = "NAME")
                 TextContent(
-                    text = state.habitName,
+                    text = form.habitName,
                     textPlace = "Enter habit name",
                     onTextChanged = {
-                        Log.d("habitName", "name - $it")
-                        viewModel.setHabitName(it)
+                        onEvent(AddHabitEvent.NameChanged(it))
+                        Log.d("AddHabit UI", "Event AddHabitEvent.NameChanged")
                     }
                 )
                 TextStr(text = "ICON AND COLOR")
                 ChoiceIconAndColor(
                     modifier = Modifier.offset(y = (-12).dp),
-                    habitName = state.habitName,
-                    habitIcon = state.icon,
-                    habitColor = state.color,
-                    onColorClick = { viewModel.onEventAddHabit(AddHabitEvent.OpenPicker(PickerType.Color)) },
-                    onIconClick = { viewModel.onEventAddHabit(AddHabitEvent.OpenPicker(PickerType.Icon)) }
+                    habitName = form.habitName,
+                    habitIcon = form.icon,
+                    habitColor = form.color,
+                    onColorClick = {
+                        onEvent(AddHabitEvent.OpenPicker(PickerType.Color))
+                        Log.d("AddHabit UI", "AddHabitEvent.OpenPicker(PickerType.Color)") },
+                    onIconClick = {
+                        onEvent(AddHabitEvent.OpenPicker(PickerType.Icon))
+                        Log.d("AddHabit UI", "AddHabitEvent.OpenPicker(PickerType.Color)")
+                    }
                 )
                 TextStr(modifier = Modifier.offset(y = (-12).dp), text = "GOAL")
                 ChoiceGoal(
                     modifier = Modifier.offset(y = (-24).dp),
-                    metricForHabit = state.metricForHabit,
-                    target = state.target,
+                    metricForHabit = form.metricForHabit,
+                    target = form.target,
                     onEditClick = {
-                        viewModel.onEventAddHabit(AddHabitEvent.OpenPicker(PickerType.Goal))
+                        onEvent(AddHabitEvent.OpenPicker(PickerType.Goal))
+                        Log.d("AddHabit UI", "AddHabitEvent.OpenPicker(PickerType.Goal)")
                     },
                     onChoiceSchedule = {
-                        viewModel.onEventAddHabit(
-                            AddHabitEvent.OpenPicker(
-                                PickerType.Schedule
-                            )
-                        )
+                        onEvent(AddHabitEvent.OpenPicker(PickerType.Schedule))
+                        Log.d("AddHabit UI", "AddHabitEvent.OpenPicker(PickerType.Schedule)")
                     },
-                    habitSchedule = state.habitSchedule.toDisplayText()
+                    habitSchedule = form.habitSchedule.toDisplayText()
                 )
                 TextStr(modifier = Modifier.offset(y = (-24).dp), text = "REMINDERS")
                 ReminderBlock(
                     modifier = Modifier.offset(y = (-32).dp),
-                    isEnabled = state.reminderIsActive,
-                    reminderTime = state.reminderTime,
-                    reminderDate = state.reminderDate,
+                    isEnabled = form.reminderIsActive,
+                    reminderTime = form.reminderTime,
+                    reminderDate = form.reminderDate,
                     onSwitchClick = {
-                        viewModel.onEventAddHabit(AddHabitEvent.SwitchReminder)
+                        onEvent(AddHabitEvent.SwitchReminder)
+                        Log.d("AddHabit UI", "AddHabitEvent.SwitchReminder")
                     },
                     onChoiceScheduleReminder = {
-                        viewModel.onEventAddHabit(
-                            AddHabitEvent.OpenPicker(
-                                PickerType.Reminder
-                            )
-                        )
+                        onEvent(AddHabitEvent.OpenPicker(PickerType.Reminder))
+                        Log.d("AddHabit UI", "AddHabitEvent.OpenPicker(PickerType.Reminder)")
                     }
                 )
                 TextStr(modifier = Modifier.offset(y = (-40).dp), text = "HABIT TYPE")
                 ModSwitcher(
                     modifier = Modifier.offset(y = (-64).dp),
-                    selected = state.habitType,
-                    onModChange = viewModel::changeMode,
-                    textFirstSwitch = "Build",
-                    textSecondSwitch = "Quit",
-                    selectedFirst = ModeForSwitch.BUILD,
-                    selectedSecond = ModeForSwitch.QUIT,
+                    selected = form.habitType,
+                    onModChange = {
+                        onEvent(AddHabitEvent.SelectHabitType(it))
+                        Log.d("AddHabit UI", "AddHabitEvent.SelectHabitType($it)")
+                    },
+                    options = listOf(
+                        SwitcherOption("Build", ModeForSwitchInHabit.BUILD),
+                        SwitcherOption("Quit", ModeForSwitchInHabit.QUIT)
+                    ),
                     horizontalPadding = 0.dp
                 )
             }
-//        AnimatedPickerVisibility(
-//            isVisible = uiState.isIconPickerVisible,
-//            onDismiss = {},
-//            onIconSelected = {}
-//        )
         }
     }
-    when (uiState.activePicker) {
-        PickerType.Close -> {}
-        PickerType.Color -> {
-            UniversalAnimatedPicker(
-                pickerType = PickerType.Color,
-                onDismissClick = {
-                    viewModel.onEventAddHabit(AddHabitEvent.ClosePicker)
-                },
-                title = "Выбор цвета",
-                content =
-                    {
-                        ColorPickerContent(
-                            colorGroups = colorGroups,
-                            selectedColor = state.color,
-                            onColorSelected = {
-                                viewModel.onEventAddHabit(
-                                    AddHabitEvent.SelectColor(
-                                        it
-                                    )
-                                )
-                            }
-                        )
-                    }
-            )
-        }
-
-        PickerType.Goal -> {
-            UniversalAnimatedPicker(
-                pickerType = PickerType.Goal,
-                onDismissClick = {
-                    if (state.target == "") {
-                        viewModel.onEventAddHabit(
-                            AddHabitEvent.SelectMetric(
-                                metric = state.metricForHabit,
-                                target = "1"
-                            )
-                        )
-                    }
-                    viewModel.onEventAddHabit(AddHabitEvent.ClosePicker)
-                },
-                title = "Выбор метрик для хобби",
-                content =
-                    {
-                        MetricPicker(
-                            habitMetric = state.metricForHabit,
-                            target = state.target,
-                            onTargetChanged = { metric, target ->
-                                viewModel.onEventAddHabit(
-                                    AddHabitEvent.SelectMetric(
-                                        metric = metric,
-                                        target = target
-                                    )
-                                )
-                            },
-                            onSaveClick = {
-                                if (state.target == "") {
-                                    viewModel.onEventAddHabit(
-                                        AddHabitEvent.SelectMetric(
-                                            metric = state.metricForHabit,
-                                            target = "1"
-                                        )
-                                    )
-                                }
-                                viewModel.onEventAddHabit(AddHabitEvent.ClosePicker)
-                            }
-                        )
-                    }
-            )
-        }
-
-        PickerType.Icon -> {
-            UniversalAnimatedPicker(
-                pickerType = PickerType.Icon,
-                onDismissClick = {
-                    viewModel.onEventAddHabit(AddHabitEvent.ClosePicker)
-                },
-                title = "Выбор своей иконки или готового хобби",
-                content =
-                    {
-                        IconPickerContent(
-                            text = state.icon,
-                            predefinedHabits = predefinedHabits,
-                            onTextChanged = { viewModel.onEventAddHabit(AddHabitEvent.SelectIcon(it)) },
-                            onAddHabit = {
-                                viewModel.onEventAddHabit(AddHabitEvent.ApplyPredefinedHabit(it))
-                                viewModel.onEventAddHabit(AddHabitEvent.ClosePicker)
-                            },
-                            onSaveIconClick = {
-                                viewModel.onEventAddHabit(AddHabitEvent.ClosePicker)
-                            }
-                        )
-                    }
-            )
-        }
-
-        PickerType.Schedule -> {
-            UniversalAnimatedPicker(
-                pickerType = PickerType.Schedule,
-                onDismissClick = {
-                    viewModel.onEventAddHabit(AddHabitEvent.ClosePicker)
-                },
-                title = "График хобби",
-                content =
-                    {
-                        SchedulePicker(
-                            selectedValue = state.habitSchedule,
-                            onValueChange = { value ->
-                                viewModel.onEventAddHabit(
-                                    AddHabitEvent.SelectHabitSchedule(value)
-                                )
-                            },
-                            onCardClick = {
-                                viewModel.onEventAddHabit(AddHabitEvent.ClosePicker)
-                            }
-                        )
-                    }
-            )
-        }
-
-        PickerType.Reminder -> {
-            UniversalAnimatedPicker(
-                pickerType = PickerType.Reminder,
-                onDismissClick = {
-                    viewModel.onEventAddHabit(AddHabitEvent.ClosePicker)
-                },
-                title = "График хобби",
-                content =
-                    {
-                        TimePicker(
-                            selectedValue = state.reminderDate,
-                            selectedTime = state.reminderTime,
-                            onValueChange = { date, time ->
-                                viewModel.onEventAddHabit(
-                                    AddHabitEvent.SelectTimeAndDate(
-                                        reminderTime = time,
-                                        reminderDate = date
-                                    )
-                                )
-                            },
-                            onCardClick = {
-                                viewModel.onEventAddHabit(AddHabitEvent.ClosePicker)
-                            }
-                        )
-                    }
-            )
-        }
-
-    }
-
 }
 
 @Composable
@@ -499,6 +530,9 @@ private fun IconPickerContent(
         }
     }
 }
+
+
+
 @Composable
 private fun TimePicker(
     selectedValue: HabitSchedule,

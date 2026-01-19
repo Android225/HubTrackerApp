@@ -14,6 +14,6 @@ data class PredefinedHabit(
     val reminderTime: LocalTime, // -- время во сколько будет приходить уведомление
     val reminderDate: HabitSchedule, // -- дни в которые будут приходить уведомления для данной задачи
     val reminderIsActive: Boolean = false, // -- напоминания включены или выключены
-    val habitType: ModeForSwitch, // --
+    val habitType: ModeForSwitchInHabit = ModeForSwitchInHabit.BUILD, // --
     val habitCustom: Boolean = false // --
 )

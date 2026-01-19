@@ -2,6 +2,7 @@
 
 package com.example.hubtrackerapp.presentation.screens.registration
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -118,7 +119,6 @@ fun RegistrationChooseHabbitsScreen(
                         .fillMaxWidth()
                         .padding(horizontal = 24.dp),
                     onClick = {
-                        viewModel.onRegisterClick()
                         onRegister()
                     },
                     shape = RoundedCornerShape(40.dp),
@@ -172,7 +172,8 @@ fun RegistrationChooseHabbitsScreen(
                         textOnCard = habit.title,
                         isSelected = habit.isPinned,
                         onBoxClick = {
-                            viewModel.onHabitClick(habit.id)
+                            Log.d("RegistrationViewModel","Click for habit with id - ${habit.id} / title ${habit.title}")
+                            viewModel.onEventRegister(RegisterEvent.ChosePredefinedHabits(habit.id))
                         }
                     )
                 }

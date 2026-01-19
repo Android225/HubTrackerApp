@@ -1,5 +1,6 @@
 package com.example.hubtrackerapp.presentation.screens.components
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -21,14 +22,11 @@ import com.example.hubtrackerapp.domain.hubbit.models.ModeForSwitch
 
 
 @Composable
-fun ModSwitcher(
+fun <T> ModSwitcher(
     modifier: Modifier = Modifier,
-    selected: ModeForSwitch,
-    textFirstSwitch: String = "Today",
-    selectedFirst:ModeForSwitch = ModeForSwitch.HOBBIES,
-    selectedSecond:ModeForSwitch = ModeForSwitch.CLUBS,
-    textSecondSwitch: String = "Clubs",
-    onModChange: (ModeForSwitch) -> Unit,
+    selected: T,
+    options: List<SwitcherOption<T>>,
+    onModChange: (T) -> Unit,
     horizontalPadding: Dp = 24.dp
 ) {
     Row(
@@ -40,22 +38,20 @@ fun ModSwitcher(
             .fillMaxWidth(),
         horizontalArrangement = Arrangement.Center
     ) {
-        ModeItem(
-            modifier = Modifier.weight(1f),
-            text = textFirstSwitch,
-            selected = selected == selectedFirst,
-            onClick = { onModChange(selectedFirst) }
-        )
-        ModeItem(
-            modifier = Modifier.weight(1f),
-            text = textSecondSwitch,
-            selected = selected == selectedSecond,
-            onClick = { onModChange(selectedSecond) }
-        )
-
+        options.forEach { option ->
+            ModeItem(
+                modifier = Modifier.weight(1f),
+                text = option.label,
+                selected = selected == option.value,
+                onClick = { onModChange(option.value) }
+            )
+        }
     }
 }
-
+data class SwitcherOption<T>(
+    val label: String,
+    val value: T
+)
 
 @Composable
 fun ModeItem(

@@ -19,6 +19,6 @@ data class HabitUi(
     val reminderTime: LocalTime,
     val reminderDate: HabitSchedule,
     val reminderIsActive: Boolean = false,
-    val habitType: ModeForSwitch,
+    val habitType: ModeForSwitchInHabit,
     val habitCustom: Boolean = false
 )

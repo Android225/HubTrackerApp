@@ -4,6 +4,7 @@ import HabitMetric
 import androidx.compose.ui.graphics.Color
 import com.example.hubtrackerapp.domain.hubbit.models.HabitSchedule
 import com.example.hubtrackerapp.domain.hubbit.models.ModeForSwitch
+import com.example.hubtrackerapp.domain.hubbit.models.ModeForSwitchInHabit
 import java.time.LocalDate
 import java.time.LocalTime
 
@@ -21,7 +22,7 @@ class AddHabitUseCase(
         reminderTime: LocalTime,
         reminderDate: HabitSchedule,
         reminderIsActive: Boolean,
-        habitType: ModeForSwitch,
+        habitType: ModeForSwitchInHabit,
         habitCustom: Boolean
     ){
         repository.addHabit(

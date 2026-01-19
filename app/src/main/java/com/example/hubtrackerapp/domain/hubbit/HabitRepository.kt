@@ -6,6 +6,7 @@ import com.example.hubtrackerapp.domain.hubbit.models.HabitProgress
 import com.example.hubtrackerapp.domain.hubbit.models.HabitSchedule
 import com.example.hubtrackerapp.domain.hubbit.models.HabitUi
 import com.example.hubtrackerapp.domain.hubbit.models.ModeForSwitch
+import com.example.hubtrackerapp.domain.hubbit.models.ModeForSwitchInHabit
 import com.example.hubtrackerapp.domain.hubbit.models.forUi.HabitWithProgressUi
 import kotlinx.coroutines.flow.Flow
 import java.time.LocalDate
@@ -35,7 +36,7 @@ interface HabitRepository {
         reminderTime: LocalTime,
         reminderDate: HabitSchedule,
         reminderIsActive: Boolean,
-        habitType: ModeForSwitch,
+        habitType: ModeForSwitchInHabit,
         habitCustom: Boolean
     )
     suspend fun addProgressForHabit(
@@ -61,4 +62,5 @@ interface HabitRepository {
         habitId: String,
         date: LocalDate
     )
+    suspend fun getUserId(): String
 }

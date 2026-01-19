@@ -60,7 +60,8 @@ fun RegistrationScreen(
         RegistrationViewModel
     }
 ) {
-    val draft by viewModel.draft.collectAsState()
+
+    val state by viewModel.state.collectAsState()
     Scaffold(
         modifier = modifier,
         topBar = {
@@ -152,28 +153,28 @@ fun RegistrationScreen(
 
             TextStr(text = "NAME")
             TextContent(
-                text = draft.firstName,
+                text = state.registrationDraft.firstName,
                 textPlace = "Enter your name",
                 onTextChanged = {
-                    viewModel.setFirstName(it)
+                    viewModel.onEventRegister(RegisterEvent.SetFirstName(it))
                 }
             )
             TextStr(text = "SURNAME")
             TextContent(
-                text = draft.lastName,
+                text = state.registrationDraft.lastName,
                 textPlace = "Enter your surname",
                 onTextChanged = {
-                    viewModel.setLastName(it)
+                    viewModel.onEventRegister(RegisterEvent.SetSecondName(it))
                 }
             )
             TextStr(text = "BIRTHDATE")
 
             //ДОДЕЛАТЬ ОТОБРАЖЕНИЕ НОРМАЛЬНОЕ
             TextContent(
-                text = draft.birthDate.filter { it.isDigit() || it == '/' }.take(10),
+                text = state.registrationDraft.birthDate.filter { it.isDigit() || it == '/' }.take(10),
                 textPlace = "mm/dd/yyyy",
                 onTextChanged = {
-                    viewModel.setDate(it)
+                    viewModel.onEventRegister(RegisterEvent.SetBirthDate(it))
                 }
             )
         }

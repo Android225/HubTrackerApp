@@ -43,6 +43,7 @@ import androidx.compose.ui.text.input.VisualTransformation.Companion
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.hubtrackerapp.presentation.screens.registration.RegisterEvent
 import com.example.hubtrackerapp.presentation.screens.registration.RegistrationViewModel
 
 
@@ -56,7 +57,7 @@ fun RegistrationEnterEmailScreen(
     onBackClick: () -> Unit,
     onNextStep: () -> Unit
 ) {
-    val draft by viewModel.draft.collectAsState()
+    val state by viewModel.state.collectAsState()
     Scaffold(
         modifier = modifier,
         topBar = {
@@ -114,7 +115,10 @@ fun RegistrationEnterEmailScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 20.dp),
+                    enabled = state.isRegisterEnabled,
                     onClick = {
+                        Log.d("Registration","Register Click")
+                        viewModel.onEventRegister(RegisterEvent.RegisterUser)
                         onNextStep()
                     },
                     shape = RoundedCornerShape(40.dp),
@@ -145,20 +149,20 @@ fun RegistrationEnterEmailScreen(
 
             TextStr(text = "EMAIL")
             TextContent(
-                text = draft.email,
+                text = state.registrationDraft.email,
                 textPlace = "Enter your email",
                 onTextChanged = {
                     Log.d("Register","email - $it")
-                    viewModel.setEmail(it)
+                    viewModel.onEventRegister(RegisterEvent.SetEmail(it))
                 }
             )
             TextStr(text = "Password")
             TextContent(
-                text = draft.password,
+                text = state.registrationDraft.password,
                 textPlace = "Enter your password",
                 visualTransformation = PasswordVisualTransformation(),
                 onTextChanged = {
-                    viewModel.setPassword(it)
+                    viewModel.onEventRegister(RegisterEvent.SetPassword(it))
                 }
             )
         }

@@ -13,6 +13,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.hubtrackerapp.R
 import com.example.hubtrackerapp.data.HabitRepositoryImpl
 import com.example.hubtrackerapp.domain.hubbit.GetHabitsWithScheduleForDateUseCase
+import com.example.hubtrackerapp.domain.hubbit.GetUserID
 import com.example.hubtrackerapp.domain.hubbit.SwitchCompleteStatusUseCase
 import com.example.hubtrackerapp.domain.hubbit.models.forUi.CalendarDayUi
 import com.example.hubtrackerapp.domain.hubbit.models.ModeForSwitch
@@ -36,6 +37,7 @@ class HomeViewModel : ViewModel() {
     private val repository = HabitRepositoryImpl
     private val getHabitsWithScheduleForDateUseCase =
         GetHabitsWithScheduleForDateUseCase(repository = repository)
+    private val getUserId = GetUserID(repository)
     private val switchCompleteStatusUseCase =
         SwitchCompleteStatusUseCase(repository)
     private val _state = MutableStateFlow(HomeUiState())
@@ -83,7 +85,8 @@ class HomeViewModel : ViewModel() {
             }
             .flatMapLatest { date ->
                 getHabitsWithScheduleForDateUseCase(
-                    repository.testUser.userId,
+                    getUserId(),
+                    //repository.testUser.userId,
                     date
                 )
             }

@@ -1,54 +1,80 @@
 package com.example.hubtrackerapp.presentation.screens.add
 
 import HabitMetric
+import android.util.Log
 import androidx.compose.runtime.isTraceInProgress
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.example.hubtrackerapp.data.HabitRepositoryImpl
 import com.example.hubtrackerapp.data.predefined.PredefinedHabitData
+import com.example.hubtrackerapp.data.predefined.PredefinedHabitRepositoryImpl
 import com.example.hubtrackerapp.domain.hubbit.AddHabitUseCase
 import com.example.hubtrackerapp.domain.hubbit.models.HabitSchedule
 import com.example.hubtrackerapp.domain.hubbit.models.ModeForSwitch
+import com.example.hubtrackerapp.domain.hubbit.models.ModeForSwitchInHabit
 import com.example.hubtrackerapp.domain.hubbit.models.PredefinedHabit
+import com.example.hubtrackerapp.domain.predefined.GetAllPredefinedHabitsUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
+import java.time.LocalDate
 import java.time.LocalTime
 
 class AddHabitViewModel : ViewModel() {
 
     private val repository = HabitRepositoryImpl
     private val addHabitUseCase = AddHabitUseCase(repository)
+    private val predefinedRepository = PredefinedHabitRepositoryImpl
+    private val getAllPredefinedHabitsUseCase = GetAllPredefinedHabitsUseCase(predefinedRepository)
     val predifinedHabits = PredefinedHabitData.habits
 
-    private val _state = MutableStateFlow(predifinedHabits.first())
+    private val _state = MutableStateFlow<AddHabitState>(AddHabitState.Initial)
     val state = _state.asStateFlow()
+    
 
-    private val _addHabitUiState = MutableStateFlow(AddHabitUiState())
-    val addHabitUiState = _addHabitUiState.asStateFlow()
-    fun setHabitName(habitName: String) {
-        _state.value = _state.value.copy(habitName = habitName)
+   init {
+        viewModelScope.launch {
+            _state.update {
+                AddHabitState.Creation(
+                    form = getAllPredefinedHabitsUseCase().first()
+                )
+            }
+        }
+   }
+
+    private inline fun AddHabitState.updateCreation(
+        crossinline update: AddHabitState.Creation.() -> AddHabitState.Creation
+    ): AddHabitState{
+    return (this as? AddHabitState.Creation)?. update() ?: this
     }
-
-    fun changeMode(newMode: ModeForSwitch) {
-        _state.value = _state.value.copy(habitType = newMode)
-    }
-
     fun onEventAddHabit(event: AddHabitEvent) {
         when (event) {
 
             is AddHabitEvent.NameChanged -> {
-                _state.update { it.copy(habitName = event.habitName) }
+                Log.d("AddHabit","Name Changed -> ${event.habitName}")
+                _state.update {
+                    it.updateCreation {
+                        copy(form = form.copy(habitName = event.habitName))
+                    }
+                }
             }
 
             is AddHabitEvent.SelectColor -> {
-                _state.update { it.copy(color = event.color) }
-                _addHabitUiState.update { it.copy(activePicker = PickerType.Close) }
+                _state.update { previous ->
+                    previous.updateCreation {
+                        copy(form = form.copy(color = event.color),activePicker = PickerType.Close)
+                    }
+                }
             }
 
             is AddHabitEvent.SelectHabitSchedule -> {
-                _state.update { it.copy(habitSchedule = event.habitSchedule) }
-
+                _state.update {
+                    it.updateCreation {
+                        copy(form = form.copy(habitSchedule = event.habitSchedule))
+                    }
+                }
             }
 
             is AddHabitEvent.SelectIcon -> {
@@ -59,7 +85,11 @@ class AddHabitViewModel : ViewModel() {
                         else text.codePoints().limit(1).toArray()
                             .let { String(it, 0, it.size) }
                     }
-                _state.update { it.copy(icon = newIcon, habitCustom = true) }
+                _state.update {
+                    it.updateCreation {
+                        copy(form = form.copy(icon = newIcon, habitCustom = true))
+                    }
+                }
             }
 
             is AddHabitEvent.SelectMetric -> {
@@ -67,39 +97,94 @@ class AddHabitViewModel : ViewModel() {
                     .filter { it.isDigit() }          // оставляем только цифры
                     .take(3)                          // не больше 3 символов
                     .trimStart('0')                   // убираем ведущие нули
-                    _state.update { it.copy(metricForHabit = event.metric, target = filteredTarget) }
+
+                _state.update {
+                    it.updateCreation {
+                        copy(form = form.copy(metricForHabit = event.metric, target = filteredTarget))
+                    }
+                }
 
             }
 
             is AddHabitEvent.SelectTimeAndDate -> {
                 _state.update {
-                    it.copy(
-                        reminderTime = event.reminderTime,
-                        reminderDate = event.reminderDate
-                    )
+                    it.updateCreation {
+                        copy(
+                            form = form.copy(reminderTime = event.reminderTime, reminderDate = event.reminderDate),
+                            activePicker = PickerType.Close)
+                    }
                 }
-                _addHabitUiState.update { it.copy(activePicker = PickerType.Close) }
             }
 
             is AddHabitEvent.ApplyPredefinedHabit -> {
-                _state.value = event.habit
+                _state.update {
+                    it.updateCreation {
+                        copy(form = event.habit)
+                    }
+                }
             }
 
             is AddHabitEvent.SelectHabitType -> {
-                _state.update { it.copy(habitType = event.habitType) }
+                _state.update {
+                    it.updateCreation {
+                        copy(form = form.copy(habitType = event.habitType))
+                    }
+                }
             }
 
             AddHabitEvent.SwitchReminder -> {
-                _state.update { it.copy(reminderIsActive = !it.reminderIsActive) }
+                _state.update {
+                    it.updateCreation {
+                        copy(form = form.copy(reminderIsActive = !form.reminderIsActive))
+                    }
+                }
             }
 
             is AddHabitEvent.OpenPicker -> {
-                _addHabitUiState.update { it.copy(activePicker = event.pickerType) }
+                _state.update {
+                    it.updateCreation {
+                        copy(activePicker = event.pickerType)
+                    }
+                }
             }
 
             AddHabitEvent.ClosePicker -> {
-                _addHabitUiState.update {
-                    it.copy(activePicker = PickerType.Close)
+                _state.update {
+                    it.updateCreation {
+                        copy(activePicker = PickerType.Close)
+                    }
+                }
+            }
+
+            AddHabitEvent.Save -> {
+                viewModelScope.launch {
+                    _state.update { previous ->
+                        if (previous is AddHabitState.Creation && previous.isSaveEnable){
+                            addHabitUseCase(
+                                emoji = previous.form.icon,
+                                title = previous.form.habitName,
+                                schedule = previous.form.habitSchedule,
+                                color = previous.form.color,
+                                target = previous.form.target,
+                                metric = previous.form.metricForHabit,
+                                reminderTime = previous.form.reminderTime,
+                                reminderDate = previous.form.reminderDate,
+                                reminderIsActive = previous.form.reminderIsActive,
+                                habitType = previous.form.habitType,
+                                habitCustom = previous.form.habitCustom,
+                                createdAt = LocalDate.now()
+                            )
+                            AddHabitState.Finished
+                        } else {
+                            previous
+                        }
+                    }
+                }
+            }
+
+            AddHabitEvent.Back -> {
+                _state.update {
+                    AddHabitState.Finished
                 }
             }
         }
@@ -116,15 +201,36 @@ class AddHabitViewModel : ViewModel() {
         object Reminder : PickerType()
     }
 
-    data class AddHabitUiState(
-        val activePicker: PickerType = PickerType.Close
-    )
+sealed interface AddHabitState{
+    data object Initial: AddHabitState // поле form в Creation в самом начале не инициализировано
+    // поэтому вызываем сначала Initaial
+    data class Creation(
+        val form: PredefinedHabit,
+        val activePicker: PickerType = PickerType.Close,
+    ) : AddHabitState {
+        val isSaveEnable: Boolean
+            get() {
+                return when {
+                    form.habitName.isBlank() -> false
+                    (form.target.toIntOrNull() ?: 0) < 1 -> false
+                    else -> {
+                        Log.d("AddHabit","IsSave Enable to Button Save is true")
+                        true
+                    }
+                }
+            }
+    }
+    data object Finished : AddHabitState
+}
+
 
     sealed interface AddHabitEvent {
 
         object SwitchReminder : AddHabitEvent
         object ClosePicker : AddHabitEvent
 
+        data object Save: AddHabitEvent
+        data object Back : AddHabitEvent
         data class OpenPicker(val pickerType: PickerType) : AddHabitEvent
         data class NameChanged(val habitName: String) : AddHabitEvent
         data class SelectIcon(val icon: String) : AddHabitEvent
@@ -136,5 +242,5 @@ class AddHabitViewModel : ViewModel() {
         data class SelectHabitSchedule(val habitSchedule: HabitSchedule) : AddHabitEvent
         data class SelectTimeAndDate(val reminderTime: LocalTime, val reminderDate: HabitSchedule) : AddHabitEvent
 
-        data class SelectHabitType(val habitType: ModeForSwitch) : AddHabitEvent
+        data class SelectHabitType(val habitType: ModeForSwitchInHabit) : AddHabitEvent
     }

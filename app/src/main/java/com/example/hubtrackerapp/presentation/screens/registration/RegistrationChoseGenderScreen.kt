@@ -174,7 +174,7 @@ fun RegistrationChoseGenderScreen(
                         )
                         .clip(RoundedCornerShape(16.dp))
                         .clickable{
-                            viewModel.setGender("Male")
+                            viewModel.onEventRegister(RegisterEvent.ChoseGender("Male"))
                         },
                     contentAlignment = Alignment.Center
                 ) {
@@ -207,7 +207,7 @@ fun RegistrationChoseGenderScreen(
                         )
                         .clip(RoundedCornerShape(16.dp))
                         .clickable{
-                            viewModel.setGender("Female")
+                            viewModel.onEventRegister(RegisterEvent.ChoseGender("Female"))
                         },
                     contentAlignment = Alignment.Center
                 ) {
