@@ -103,7 +103,7 @@ fun HomeScreen(
     viewModel: HomeViewModel = viewModel(
         //  HomeViewModel()
     ),
-    onAddHabitClick: ()-> Unit
+    onAddHabitClick: () -> Unit
 ) {
     val state by viewModel.state.collectAsState()
 //    val mode by viewModel.mode.collectAsState()
@@ -122,17 +122,30 @@ fun HomeScreen(
                 modifier = Modifier
                     .padding(innerPadding)
             ) {
-                TopActionRow()
-                ProfileRow()
+                TopActionRow(
+                    onCalendarButtonClick = {
+                        viewModel.onEvent(HomeEvent.OpenPicker(HomePickerType.Calendar))
+                    },
+                    onNotificationsButtonClick = {
+                        viewModel.onEvent(HomeEvent.OpenPicker(HomePickerType.Notifications))
+                    }
+                )
+                ProfileRow(
+                    userName = state.userName,
+                    onEmojiButtonClick = {
+                        viewModel.onEvent(HomeEvent.OpenPicker(HomePickerType.EmojiBar))
+                    }
+                )
                 ModSwitcher(
                     selected = state.mode,
-                    onModChange = viewModel::changeMode,
+                    onModChange = {
+                        viewModel.onEvent(HomeEvent.ChangeModeScreen(it))
+                    },
                     options = listOf(
                         SwitcherOption("Hobbies", ModeForSwitch.HOBBIES),
                         SwitcherOption("Clubs", ModeForSwitch.CLUBS)
                     )
                 )
-
                 //gray line
                 Box(
                     modifier = Modifier
@@ -141,70 +154,29 @@ fun HomeScreen(
                         .height(1.dp)
                         .background(Black20)
                 )
-
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxSize(),
-                    contentPadding = PaddingValues(
-                        bottom = 60.dp
-                    )// глянуть потом насколько он тут вообще нужон
-                ) {
-                    //Date Boxes Row
-                    item {
-                        CalendarRow(
-                            dates = state.calendarDays,
+                when(state.mode){
+                    ModeForSwitch.HOBBIES -> {
+                        HomeTodayContent(
+                            datesList = state.calendarDays,
                             selectedDate = state.selectedDate,
                             onDateClick = {
-                                viewModel.processCommand(
-                                    HabitCommands.ChangeDate(it)
-                                )
-                            }
-                        )
-                    }
-                    item {
-                        StatisticBox(
-                            onClick = {
-                                Log.d("HomeScreen", "onStaticBoxClick")
+                                viewModel.onEvent(HomeEvent.OnDateChanged(it))
+ //                               viewModel.processCommand(
+//                        HabitCommands.ChangeDate(it)
+//                    )
                             },
-                            progress = state.completedCount,
-                            allHabitsCount = state.habits.size
-                        )
-                    }
-                    item {
-                        Text(
-                            modifier = Modifier
-                                .padding(horizontal = 24.dp)
-                                .padding(top = 16.dp),
-                            text = "Challenges",
-                            style = MaterialTheme.typography.bodyMedium
-                        )
-                        //переписать добавить кнопку ViewAll если будет надобность для обзора всех челенджей юзера
-                    }
-                    item {
-                        ChallengesRow("Best Runners!", "5 days 13 hours left")
-                    }
-                    item {
-                        Text(
-                            modifier = Modifier
-                                .padding(horizontal = 24.dp)
-                                .padding(top = 16.dp),
-                            text = "Habits",
-                            style = MaterialTheme.typography.bodyMedium
-                        )
-                    }
-                    itemsIndexed(
-                        items = state.habits,
-                        key = { _, habit: HabitWithProgressUi -> habit.habitId }
-                    ) { index, habits ->
-
-                        HabitCard(
-                            habits,
+                            completedCount = state.completedCount,
+                            allHabitsCount = state.habits.size,
+                            habitsList = state.habits,
                             onPlusBoxClick = {
                                 viewModel.processCommand(HabitCommands.SwitchCompletedStatus(it))
+                                //  viewModel.processCommand(HabitCommands.SwitchCompletedStatus(it))
                             }
                         )
                     }
+                    ModeForSwitch.CLUBS -> {}
                 }
+
             }
             CustomBottomBar(
                 modifier = Modifier
@@ -212,7 +184,10 @@ fun HomeScreen(
                     .zIndex(0f)
                     .padding(horizontal = 16.dp, vertical = 12.dp),
                 selected = BottomTab.HOME,
-                onTabClick = { viewModel.onEvent(HomeEvent.AddClicked) } //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                onTabClick = {tab ->
+                    //В последствии исправить навигацию мб вынести в общую ViewModel для BottomBar логику
+
+                    viewModel.onEvent(HomeEvent.AddClicked) } //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             )
 
             AnimatedVisibility(
@@ -227,8 +202,8 @@ fun HomeScreen(
                         .background(Black100.copy(alpha = 0.4f))
                         .clickable(
                             indication = null,
-                            interactionSource = remember{ MutableInteractionSource() }
-                        ){
+                            interactionSource = remember { MutableInteractionSource() }
+                        ) {
                             viewModel.onEvent(HomeEvent.DismissAddMenu)
                         }
                 )
@@ -243,7 +218,7 @@ fun HomeScreen(
                 exit = slideOutVertically { it } + fadeOut()
             ) {
                 AddMenu(
-                    onClick = {onAddHabitClick()}
+                    onClick = { onAddHabitClick() }
                 )
             }
 
@@ -252,46 +227,152 @@ fun HomeScreen(
 }
 
 @Composable
-fun AddMenu(
- onClick: () -> Unit
+private fun HomeTodayContent(
+    datesList: List<CalendarDayUi>,
+    selectedDate: LocalDate,
+    onDateClick: (LocalDate) -> Unit,
+    completedCount:Int,
+    allHabitsCount: Int, //state.habits.size
+    habitsList: List<HabitWithProgressUi>,
+    onPlusBoxClick: (String) -> Unit
 ){
+
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize(),
+        contentPadding = PaddingValues(
+            bottom = 60.dp
+        )
+    ) {
+        //Date Boxes Row
+        item {
+            CalendarRow(
+                dates = datesList,
+                selectedDate = selectedDate,
+                onDateClick = {
+                    onDateClick(it)
+//                    viewModel.processCommand(
+//                        HabitCommands.ChangeDate(it)
+//                    )
+                }
+            )
+        }
+        item {
+            StatisticBox(
+                onClick = {
+                    Log.d("HomeScreen", "onStaticBoxClick")
+                },
+                progress = completedCount,
+                allHabitsCount = allHabitsCount
+            )
+        }
+        item {
+            Text(
+                modifier = Modifier
+                    .padding(horizontal = 24.dp)
+                    .padding(top = 16.dp),
+                text = "Challenges",
+                style = MaterialTheme.typography.bodyMedium
+            )
+            //переписать добавить кнопку ViewAll если будет надобность для обзора всех челенджей юзера
+        }
+        item {
+            ChallengesRow("Best Runners!", "5 days 13 hours left")
+        }
+        item {
+            Text(
+                modifier = Modifier
+                    .padding(horizontal = 24.dp)
+                    .padding(top = 16.dp),
+                text = "Habits",
+                style = MaterialTheme.typography.bodyMedium
+            )
+        }
+        itemsIndexed(
+            items = habitsList,
+            key = { _, habit: HabitWithProgressUi -> habit.habitId }
+        ) { index, habits ->
+
+            HabitCard(
+                habits,
+                onPlusBoxClick = {
+                    onPlusBoxClick(it)
+                  //  viewModel.processCommand(HabitCommands.SwitchCompletedStatus(it))
+                }
+            )
+        }
+    }
+}
+
+@Composable
+fun AddMenu(
+    onClick: () -> Unit
+) {
     Column(
         modifier = Modifier
-            .padding(16.dp)
+            .padding(horizontal = 12.dp, vertical = 8.dp)
             .clip(RoundedCornerShape(16.dp))
-            //.background(Color.Transparent)
-            .padding(16.dp)
+            .background(Color.Transparent)
     ) {
-        Row() {
+        Row(
+            modifier = Modifier.fillMaxWidth()
+                .padding(horizontal = 12.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
             AddHabitCard(
-                "Quit Bad Habit", "Never too late", Icons.Default.Done,
-                onClick = {onClick()}
+                modifier = Modifier
+                    .weight(1f),
+                "Quit Bad Habit",
+                "Never too late",
+                Icons.Default.Close,
+                onClick = { onClick() }
             )
-            Spacer(Modifier.height(8.dp))
             AddHabitCard(
-                "New Good Habit", "For a better life", Icons.Default.Close,
-                onClick = {onClick()}
+                modifier = Modifier
+                    .weight(1f),
+                "New Good Habit",
+                "For a better life",
+                Icons.Default.Done,
+                onClick = { onClick() }
             )
-            Spacer(Modifier.height(12.dp))
-        }
 
+        }
+        Spacer(Modifier.height(12.dp))
         AddMoodRow()
     }
 }
+
 @Composable
 fun AddMoodRow(
 
-){
-    Row {
+) {
+    Row(
+        modifier = Modifier
+        .fillMaxWidth()
+        .padding(horizontal = 12.dp)
+        .clip(RoundedCornerShape(16.dp))
+        .background(White100)
+        .padding(16.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(2.dp)
+    ) {
         TextForChallengesAndHabits(
             cardName = "Add Mood",
             additionalInfo = "How're you feeling?"
         )
-        Mood.entries.forEach { mood->
+
+        Mood.entries.forEach { mood ->
             Box(
                 modifier = Modifier
-                    .size(44.dp)
-                    .clip(CircleShape)
+                    .weight(1f)
+                    .padding(start = 4.dp)
+                    .size(40.dp)
+                    .border(
+                        width = 1.dp,
+                        color = Black10,
+                        shape = RoundedCornerShape(12.dp)
+                    )
+                    .clip(RoundedCornerShape(12.dp))
                     .background(Color(0xFFF5F5F5))
                     .clickable { /*onMoodSelected(mood)*/ },
                 contentAlignment = Alignment.Center
@@ -308,19 +389,22 @@ fun AddMoodRow(
 
 @Composable
 fun AddHabitCard(
+    modifier: Modifier = Modifier,
     textHabitFirst: String,
     textHabitSecond: String,
     imageVector: ImageVector,
     onClick: () -> Unit
-){
+) {
     Row(
-        modifier = Modifier
+        modifier = modifier
             .clip(RoundedCornerShape(16.dp))
             .background(White100)
+            .clickable { onClick() }
             .padding(16.dp)
-            .clickable{onClick()}
     ) {
-        Column() {
+        Column(
+            modifier = Modifier.weight(1f)
+        ) {
             Text(
                 text = textHabitFirst
             )
@@ -328,10 +412,16 @@ fun AddHabitCard(
                 text = textHabitSecond
             )
         }
-        Icon(
-            imageVector = imageVector,
-            contentDescription = null
-        )
+        Box(
+            modifier = Modifier
+                .size(32.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = imageVector,
+                contentDescription = null
+            )
+        }
     }
 }
 
@@ -652,7 +742,10 @@ fun CustomLinearProgressIndicator(
 }
 
 @Composable
-fun TopActionRow() {
+fun TopActionRow(
+    onCalendarButtonClick: () -> Unit,
+    onNotificationsButtonClick: () -> Unit
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -660,50 +753,47 @@ fun TopActionRow() {
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        IconButton(
-            onClick = {
-                TODO("Calendar button")
-            }
+        Box(
+            modifier = Modifier
+                .size(48.dp)
+                .border(1.dp, Black10, RoundedCornerShape(16.dp))
+                .clip(RoundedCornerShape(16.dp))
+                .clickable {
+                    onCalendarButtonClick()
+                },
+            contentAlignment = Alignment.Center
         ) {
-            Box(
-                modifier = Modifier
-                    .size(48.dp)
-                    .border(1.dp, Black10, RoundedCornerShape(16.dp))
-                    .clip(RoundedCornerShape(16.dp))
-            ) {
-                Icon(
-                    Icons.Default.DateRange,
-                    contentDescription = "Calendar button"
-                )
-            }
-
-
+            Icon(
+                Icons.Default.DateRange,
+                contentDescription = "Calendar button"
+            )
         }
-
-        IconButton(
-            onClick = {
-                TODO("Notifications Button")
-            }
+        Box(
+            modifier = Modifier
+                .size(48.dp)
+                .border(1.dp, Black10, RoundedCornerShape(16.dp))
+                .clip(RoundedCornerShape(16.dp))
+                .clickable {
+                    onNotificationsButtonClick()
+                },
+            contentAlignment = Alignment.Center
         ) {
-            Box(
-                modifier = Modifier
-                    .size(48.dp)
-                    .border(1.dp, Black10, RoundedCornerShape(16.dp))
-                    .clip(RoundedCornerShape(16.dp))
-            ) {
-                Icon(
-                    Icons.Default.Notifications,
-                    contentDescription = "Notifications Button"
-                )
-            }
+            Icon(
+                Icons.Default.Notifications,
+                contentDescription = "Notifications Button"
+            )
         }
     }
 }
 
 @Composable
-fun ProfileRow() {
+fun ProfileRow(
+    userName: String,
+    onEmojiButtonClick: () -> Unit
+) {
     Row(
         modifier = Modifier
+            .padding(top = 8.dp)
             .fillMaxWidth()
             .padding(horizontal = 24.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -711,7 +801,7 @@ fun ProfileRow() {
     ) {
         Column() {
             Text(
-                text = "Hi, Mert",
+                text = "Hi,$userName \uD83D\uDC4B\uD83C\uDFFB",
                 style = MaterialTheme.typography.titleLarge
             )
             Text(
@@ -726,7 +816,7 @@ fun ProfileRow() {
                 .clip(CircleShape)
                 .background(Blue10)
                 .clickable {
-                    TODO("EMOJI BUTTON")
+                    onEmojiButtonClick()
                 },
             contentAlignment = Alignment.Center
         ) {

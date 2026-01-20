@@ -8,6 +8,7 @@ import com.example.hubtrackerapp.domain.hubbit.models.HabitUi
 import com.example.hubtrackerapp.domain.hubbit.models.ModeForSwitch
 import com.example.hubtrackerapp.domain.hubbit.models.ModeForSwitchInHabit
 import com.example.hubtrackerapp.domain.hubbit.models.forUi.HabitWithProgressUi
+import com.example.hubtrackerapp.domain.user.User
 import kotlinx.coroutines.flow.Flow
 import java.time.LocalDate
 import java.time.LocalTime
@@ -63,4 +64,6 @@ interface HabitRepository {
         date: LocalDate
     )
     suspend fun getUserId(): String
+
+    suspend fun getUserCard(userId: String): User
 }

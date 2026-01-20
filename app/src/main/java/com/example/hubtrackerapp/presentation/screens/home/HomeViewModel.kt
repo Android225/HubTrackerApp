@@ -13,11 +13,15 @@ import androidx.lifecycle.viewModelScope
 import com.example.hubtrackerapp.R
 import com.example.hubtrackerapp.data.HabitRepositoryImpl
 import com.example.hubtrackerapp.domain.hubbit.GetHabitsWithScheduleForDateUseCase
+import com.example.hubtrackerapp.domain.hubbit.GetUserCardUseCase
 import com.example.hubtrackerapp.domain.hubbit.GetUserID
 import com.example.hubtrackerapp.domain.hubbit.SwitchCompleteStatusUseCase
 import com.example.hubtrackerapp.domain.hubbit.models.forUi.CalendarDayUi
 import com.example.hubtrackerapp.domain.hubbit.models.ModeForSwitch
+import com.example.hubtrackerapp.domain.hubbit.models.SwipeHabitState
 import com.example.hubtrackerapp.domain.hubbit.models.forUi.HabitWithProgressUi
+import com.example.hubtrackerapp.domain.hubbit.models.forUi.Mood
+import com.example.hubtrackerapp.presentation.screens.add.PickerType
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -38,6 +42,7 @@ class HomeViewModel : ViewModel() {
     private val getHabitsWithScheduleForDateUseCase =
         GetHabitsWithScheduleForDateUseCase(repository = repository)
     private val getUserId = GetUserID(repository)
+    private val getUserCard = GetUserCardUseCase(repository)
     private val switchCompleteStatusUseCase =
         SwitchCompleteStatusUseCase(repository)
     private val _state = MutableStateFlow(HomeUiState())
@@ -72,11 +77,11 @@ class HomeViewModel : ViewModel() {
 //                }
 //            }.launchIn(viewModelScope)
 
-
         selectedDate
             .onEach { date ->
                 _state.update {
                     it.copy(
+                        userName = getUserCard(getUserId()).firstName,
                         selectedDate = date,
                         calendarDays = _calendarDays.value,
                         isLoading = true
@@ -100,19 +105,6 @@ class HomeViewModel : ViewModel() {
                 }
             }.launchIn(viewModelScope)
 
-    }
-
-    private val _modeSwitcher = MutableStateFlow(ModeForSwitch.HOBBIES)
-    val mode = _modeSwitcher.asStateFlow()
-
-
-    fun changeMode(newMode: ModeForSwitch) {
-        _modeSwitcher.value = newMode
-    }
-
-
-    private fun onDateChanged(date: LocalDate) {
-        _selectedDate.value = date
     }
 
     private fun generateMonth() {
@@ -139,8 +131,21 @@ class HomeViewModel : ViewModel() {
                 is HabitCommands.SwitchCompletedStatus -> {
                     switchCompleteStatusUseCase(command.habitId, _selectedDate.value)
                 }
-                is HabitCommands.ChangeDate -> {
-                    onDateChanged(command.date)
+//                is HabitCommands.ChangeDate -> {
+//                    onDateChanged(command.date)
+//                }
+                is HabitCommands.OnHabitSwiped -> {
+                    _state.update { state ->
+                        state.copy(
+                            habits = state.habits.map { habit ->
+                                if (habit.habitId == command.habitId){
+                                    habit.copy(swipeState = command.newState)
+                                } else {
+                                    habit.copy(swipeState = SwipeHabitState.CLOSED)
+                                }
+                            }
+                        )
+                    }
                 }
             }
         }
@@ -154,8 +159,54 @@ class HomeViewModel : ViewModel() {
             HomeEvent.DismissAddMenu -> {
                 _state.update { it.copy(addMenuVisible = false) }
             }
+            is HomeEvent.ChangeModeScreen -> {
+                Log.d("Home","Mode Changed -> ${event.newMode}")
+                _state.update {
+                    it.copy(mode = event.newMode)
+                }
+            }
+            is HomeEvent.OnDateChanged -> {
+                _selectedDate.value = event.date
+            }
+            is HomeEvent.SelectEmojiInProfile -> {
+                _state.update {
+                    it.copy(mood = event.mood)
+                }
+            }
+
+            is HomeEvent.OpenPicker -> {
+                _state.update {
+                    it.copy(activeHomePicker = event.pickerType)
+                }
+            }
+
+            HomeEvent.ClosePicker -> {
+                _state.update {
+                    it.copy(activeHomePicker = HomePickerType.Close)
+                }
+            }
+
+            HomeEvent.ActivityClick -> {
+                Log.d("Home","Bottom bar Navigate to activity")
+            }
+            HomeEvent.ExploreClick -> {
+                Log.d("Home","Bottom bar Navigate to explore")
+            }
+            HomeEvent.ProfileClick -> {
+                Log.d("Home","Bottom bar Navigate to profile")
+            }
         }
     }
+}
+
+sealed class HomePickerType {
+    object Close: HomePickerType()
+    object Calendar: HomePickerType()
+    object Notifications: HomePickerType()
+    object EmojiBar: HomePickerType()
+    object AddHabit: HomePickerType()
+    object ViewHabitCard: HomePickerType()
+
 }
 
 data class HomeUiState(
@@ -165,18 +216,35 @@ data class HomeUiState(
     val completedCount: Int = 0,
     val mode: ModeForSwitch = ModeForSwitch.HOBBIES,
     val isLoading: Boolean = false, // состояние загружены ли данные true = загружаются false = загружены
-    val addMenuVisible: Boolean = false
+    val addMenuVisible: Boolean = false,
+    val activeHomePicker: HomePickerType = HomePickerType.Close,
+    val userName: String = "",
+    val mood: Mood = Mood.Happy,
+    //val clubs: List<ClubUI>
+    //val challenges: List<ChallengesUI>
 )
 
 sealed interface HabitCommands {
-    data class ChangeDate(val date: LocalDate) : HabitCommands
+   // data class ChangeDate(val date: LocalDate) : HabitCommands
     data class SwitchCompletedStatus(override val habitId: String) : HabitAction
     data class SkipHabitInThisDay(override val habitId: String) : HabitAction
     data class FailHabitInThisDay(override val habitId: String) : HabitAction
+    data class OnHabitSwiped(override val habitId: String,val newState: SwipeHabitState):  HabitAction
 }
+
 sealed interface HomeEvent{
     data object AddClicked: HomeEvent
     data object DismissAddMenu: HomeEvent
+    data object ExploreClick: HomeEvent
+    data object ActivityClick: HomeEvent
+    data object ProfileClick: HomeEvent
+
+    data object ClosePicker: HomeEvent
+    data class ChangeModeScreen(val newMode: ModeForSwitch): HomeEvent
+    data class SelectEmojiInProfile(val mood: Mood): HomeEvent
+    data class OnDateChanged(val date: LocalDate): HomeEvent
+    data class OpenPicker(val pickerType: HomePickerType): HomeEvent
+
 }
 
 sealed interface HabitAction : HabitCommands {

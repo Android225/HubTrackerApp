@@ -25,10 +25,10 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            NavGraph()
-//            HomeScreen(
-//                onAddHabitClick = {}
-//            )
+         //   NavGraph()
+            HomeScreen(
+                onAddHabitClick = {}
+            )
             //AddHabit(onBackClick = {})
         }
     }

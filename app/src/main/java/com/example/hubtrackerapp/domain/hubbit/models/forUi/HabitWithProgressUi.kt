@@ -4,6 +4,7 @@ import HabitMetric
 import androidx.compose.ui.graphics.Color
 import com.example.hubtrackerapp.domain.hubbit.models.ModeForSwitch
 import com.example.hubtrackerapp.domain.hubbit.models.ModeForSwitchInHabit
+import com.example.hubtrackerapp.domain.hubbit.models.SwipeHabitState
 
 data class HabitWithProgressUi (
     val habitId: String,
@@ -17,5 +18,6 @@ data class HabitWithProgressUi (
     val habitType: ModeForSwitchInHabit,
     val progressWithTarget: String, // сколько выполнили,
     val skipped: Boolean,
-    val failed: Boolean
+    val failed: Boolean,
+    val swipeState: SwipeHabitState = SwipeHabitState.CLOSED
 )

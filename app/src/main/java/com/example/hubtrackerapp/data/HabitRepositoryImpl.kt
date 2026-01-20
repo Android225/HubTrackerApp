@@ -222,4 +222,15 @@ object HabitRepositoryImpl : HabitRepository {
     override suspend fun getUserId(): String {
         return testUser.userId
     }
+
+    override suspend fun getUserCard(userId: String): User {
+        return User(
+            userId = userId,
+            email = testUser.email,
+            firstName = testUser.firstName,
+            lastName = testUser.lastName,
+            birthDate = testUser.birthDate,
+            gender = testUser.gender
+        )
+    }
 }
