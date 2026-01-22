@@ -1,4 +1,4 @@
-package com.example.hubtrackerapp.data
+package com.example.hubtrackerapp.data.db.model
 
 import HabitMetric
 import androidx.compose.ui.graphics.Color
@@ -9,7 +9,7 @@ import com.example.hubtrackerapp.domain.hubbit.models.ModeForSwitchInHabit
 import java.time.LocalDate
 import java.time.LocalTime
 
-@Entity
+@Entity(tableName = "habits")
 data class HabitDbModel(
     @PrimaryKey
     val habitId: String,

@@ -1,10 +1,10 @@
-package com.example.hubtrackerapp.data
+package com.example.hubtrackerapp.data.db.model
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import java.time.LocalDate
 
-@Entity
+@Entity(tableName = "habit_progress")
 data class HabitProgressDbModel(
     @PrimaryKey
     val habitId: String,

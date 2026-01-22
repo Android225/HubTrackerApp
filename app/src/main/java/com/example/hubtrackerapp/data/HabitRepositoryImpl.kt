@@ -89,6 +89,7 @@ object HabitRepositoryImpl : HabitRepository {
         TODO("Not yet implemented")
     }
 
+    //удалить
     override suspend fun changeSchedule(
         habitId: String,
         schedule: HabitSchedule
@@ -192,7 +193,6 @@ object HabitRepositoryImpl : HabitRepository {
         val progress = HabitProgress(
             habitId = habitId,
             date = date,
-
         )
         progressStateFlow.update { oldList ->
 

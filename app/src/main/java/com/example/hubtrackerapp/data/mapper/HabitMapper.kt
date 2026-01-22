@@ -1,9 +1,9 @@
-package com.example.hubtrackerapp.data
+package com.example.hubtrackerapp.data.mapper
 
+import com.example.hubtrackerapp.data.db.model.HabitDbModel
 import com.example.hubtrackerapp.domain.hubbit.models.HabitUi
-import com.example.hubtrackerapp.domain.user.User
 
-fun HabitUi.toDbModel(): HabitDbModel{
+fun HabitUi.toDbModel(): HabitDbModel {
     return HabitDbModel(
         habitId = habitId,
         userId = userId,

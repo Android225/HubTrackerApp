@@ -1,9 +1,9 @@
-package com.example.hubtrackerapp.data
+package com.example.hubtrackerapp.data.db.model
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
-@Entity
+@Entity(tableName = "user")
 data class UserDbModel(
     @PrimaryKey
     val userId: String,
