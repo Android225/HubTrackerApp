@@ -85,6 +85,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.hubtrackerapp.R
 import com.example.hubtrackerapp.domain.hubbit.models.forUi.CalendarDayUi
@@ -100,9 +101,7 @@ import java.time.LocalDate
 @Composable
 fun HomeScreen(
     modifier: Modifier = Modifier,
-    viewModel: HomeViewModel = viewModel(
-        //  HomeViewModel()
-    ),
+    viewModel: HomeViewModel = hiltViewModel(),
     onAddHabitClick: () -> Unit
 ) {
     val state by viewModel.state.collectAsState()

@@ -47,6 +47,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.hubtrackerapp.R
 import com.example.hubtrackerapp.presentation.screens.authorization.AuthorizationViewModel
@@ -58,9 +59,7 @@ fun RegistrationChoseGenderScreen(
     modifier: Modifier = Modifier,
     onNextStep: () -> Unit,
     onBackClick: () -> Unit,
-    viewModel: RegistrationViewModel = viewModel {
-        RegistrationViewModel
-    }
+    viewModel: RegistrationViewModel = hiltViewModel()
 ) {
     Scaffold(
         modifier = modifier,

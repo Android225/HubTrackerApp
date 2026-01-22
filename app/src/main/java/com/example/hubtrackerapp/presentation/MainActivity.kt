@@ -20,16 +20,18 @@ import com.example.hubtrackerapp.presentation.screens.registration.RegistrationC
 import com.example.hubtrackerapp.presentation.screens.registration.RegistrationChoseGenderScreen
 import com.example.hubtrackerapp.presentation.screens.registration.RegistrationScreen
 import com.example.hubtrackerapp.presentation.ui.theme.HubTrackerAppTheme
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-         //   NavGraph()
-            HomeScreen(
-                onAddHabitClick = {}
-            )
+            NavGraph()
+//            HomeScreen(
+//                onAddHabitClick = {}
+//            )
             //AddHabit(onBackClick = {})
         }
     }

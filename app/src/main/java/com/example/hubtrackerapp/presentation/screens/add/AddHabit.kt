@@ -3,8 +3,6 @@
 package com.example.hubtrackerapp.presentation.screens.add
 
 import HabitMetric
-import android.R
-import android.content.Context
 import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
@@ -16,7 +14,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
-import androidx.compose.foundation.indication
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -34,7 +31,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -47,7 +43,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
@@ -75,25 +70,20 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import com.example.hubtrackerapp.presentation.theme.*
-import androidx.compose.ui.graphics.painter.Painter
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
-import androidx.compose.ui.text.input.VisualTransformation.Companion
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.hubtrackerapp.domain.hubbit.models.HabitSchedule
-import com.example.hubtrackerapp.domain.hubbit.models.ModeForSwitch
 import com.example.hubtrackerapp.domain.hubbit.models.ModeForSwitchInHabit
 import com.example.hubtrackerapp.domain.hubbit.models.PredefinedHabit
 import com.example.hubtrackerapp.domain.hubbit.models.toDisplayText
 import com.example.hubtrackerapp.presentation.screens.components.ModSwitcher
 import com.example.hubtrackerapp.presentation.screens.components.SwitcherOption
-import com.example.hubtrackerapp.presentation.screens.registration.RegistrationViewModel
 import com.example.hubtrackerapp.presentation.ui.theme.ColorGroup
 import com.example.hubtrackerapp.presentation.ui.theme.colorGroups
 import java.time.DayOfWeek
@@ -105,13 +95,11 @@ import java.util.Locale
 @Composable
 fun AddHabit(
     modifier: Modifier = Modifier,
-    viewModel: AddHabitViewModel = viewModel(
-        // AddHabitViewModel()
-    ),
+    viewModel: AddHabitViewModel = hiltViewModel(),
     onBackClick: () -> Unit
 ) {
     val state by viewModel.state.collectAsState()
-    val predefinedHabits = viewModel.predifinedHabits
+    val predefinedHabits = viewModel.predefinedHabits
 
     when(state){
         is AddHabitState.Creation -> {

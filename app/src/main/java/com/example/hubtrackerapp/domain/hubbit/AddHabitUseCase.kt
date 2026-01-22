@@ -7,8 +7,9 @@ import com.example.hubtrackerapp.domain.hubbit.models.ModeForSwitch
 import com.example.hubtrackerapp.domain.hubbit.models.ModeForSwitchInHabit
 import java.time.LocalDate
 import java.time.LocalTime
+import javax.inject.Inject
 
-class AddHabitUseCase(
+class AddHabitUseCase @Inject constructor (
     private val repository: HabitRepository
 ) {
     suspend operator fun invoke(

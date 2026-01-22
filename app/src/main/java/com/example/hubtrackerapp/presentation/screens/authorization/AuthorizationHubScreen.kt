@@ -46,8 +46,9 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation.Companion
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.hubtrackerapp.data.AuthRepositoryImpl
+//import com.example.hubtrackerapp.data.AuthRepositoryImpl
 import kotlinx.coroutines.launch
 
 
@@ -55,9 +56,7 @@ import kotlinx.coroutines.launch
 fun AuthorizationHubScreen(
     modifier: Modifier = Modifier,
     context: Context = LocalContext.current.applicationContext,
-    viewModel: AuthorizationViewModel = viewModel {
-        AuthorizationViewModel()
-    },
+    viewModel: AuthorizationViewModel = hiltViewModel(),
     onBackClick:()->Unit,
     onLoginClick: () -> Unit,
     onRegisterAccount: () -> Unit

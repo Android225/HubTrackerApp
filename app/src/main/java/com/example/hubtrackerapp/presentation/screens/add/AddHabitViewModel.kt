@@ -2,38 +2,66 @@ package com.example.hubtrackerapp.presentation.screens.add
 
 import HabitMetric
 import android.util.Log
-import androidx.compose.runtime.isTraceInProgress
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.hubtrackerapp.data.HabitRepositoryImpl
+//import com.example.hubtrackerapp.data.HabitRepositoryImpl
 import com.example.hubtrackerapp.data.predefined.PredefinedHabitData
 import com.example.hubtrackerapp.data.predefined.PredefinedHabitRepositoryImpl
 import com.example.hubtrackerapp.domain.hubbit.AddHabitUseCase
 import com.example.hubtrackerapp.domain.hubbit.models.HabitSchedule
-import com.example.hubtrackerapp.domain.hubbit.models.ModeForSwitch
 import com.example.hubtrackerapp.domain.hubbit.models.ModeForSwitchInHabit
 import com.example.hubtrackerapp.domain.hubbit.models.PredefinedHabit
 import com.example.hubtrackerapp.domain.predefined.GetAllPredefinedHabitsUseCase
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.LocalTime
+import javax.inject.Inject
 
-class AddHabitViewModel : ViewModel() {
+@HiltViewModel
+class AddHabitViewModel @Inject constructor(
+    private val addHabitUseCase:AddHabitUseCase,
+    private val getAllPredefinedHabitsUseCase:GetAllPredefinedHabitsUseCase,
+    //val predefinedHabits: List<PredefinedHabit>
+) : ViewModel() {
 
-    private val repository = HabitRepositoryImpl
-    private val addHabitUseCase = AddHabitUseCase(repository)
-    private val predefinedRepository = PredefinedHabitRepositoryImpl
-    private val getAllPredefinedHabitsUseCase = GetAllPredefinedHabitsUseCase(predefinedRepository)
-    val predifinedHabits = PredefinedHabitData.habits
+    /*
+    * можно будет потом добавить в конструктор habitId: String будем получать карточку хобби
+    *
+    * на весить @AssistedInject
+    *
+    * @Assisted("habitId") private val habitId: String
+    *
+    * и в классе ViewModel создать фабрику
+    *
+    * @AssistedFactory
+    * interface Factory {
+    * fun create(
+    * @Assisted("habitId")habitId: String
+    * ): AddHabitViewModel
+    * }
+    *
+    * @HiltViewModel(assistedFactory = AddHabitViewModel.Factory::class)
+    *
+    *
+    * в AddHabit hiltViewModel(
+    * creationCallback = {factory: AddHabitViewModel.Factory ->
+    * factory.create(habitId)
+    * })
+    * */
 
+
+    //private val repository = HabitRepositoryImpl
+    //private val addHabitUseCase = AddHabitUseCase(repository)
+    //private val getAllPredefinedHabitsUseCase = GetAllPredefinedHabitsUseCase(predefinedRepository)
+   // private val predefinedRepository = PredefinedHabitRepositoryImpl
+    val predefinedHabits = PredefinedHabitData.habits
     private val _state = MutableStateFlow<AddHabitState>(AddHabitState.Initial)
     val state = _state.asStateFlow()
-    
-
    init {
         viewModelScope.launch {
             _state.update {
@@ -43,7 +71,6 @@ class AddHabitViewModel : ViewModel() {
             }
         }
    }
-
     private inline fun AddHabitState.updateCreation(
         crossinline update: AddHabitState.Creation.() -> AddHabitState.Creation
     ): AddHabitState{

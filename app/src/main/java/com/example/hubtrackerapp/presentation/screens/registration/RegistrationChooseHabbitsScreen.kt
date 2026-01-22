@@ -46,6 +46,7 @@ import com.example.hubtrackerapp.presentation.theme.*
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 
 @Composable
@@ -53,9 +54,7 @@ fun RegistrationChooseHabbitsScreen(
     modifier: Modifier = Modifier,
     onRegister: () -> Unit,
     onBackClick: () -> Unit,
-    viewModel: RegistrationViewModel = viewModel {
-        RegistrationViewModel
-    }
+    viewModel: RegistrationViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsState()
     Scaffold(

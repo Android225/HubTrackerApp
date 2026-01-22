@@ -4,6 +4,7 @@ import HabitMetric
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.room.TypeConverter
+import com.example.hubtrackerapp.data.db.model.HabitScheduleDbModel
 import com.example.hubtrackerapp.domain.hubbit.models.HabitSchedule
 import com.example.hubtrackerapp.domain.hubbit.models.ModeForSwitchInHabit
 import com.google.gson.Gson
@@ -51,10 +52,10 @@ class Converters {
         value?.let { ModeForSwitchInHabit.valueOf(it) }
 
     @TypeConverter
-    fun fromHabitSchedule(schedule: HabitSchedule?): String? =
+    fun fromHabitSchedule(schedule: HabitScheduleDbModel?): String? =
         schedule?.let { Gson().toJson(it) }
 
     @TypeConverter
-    fun toHabitSchedule(value: String?): HabitSchedule? =
-        value?.let { Gson().fromJson(it, HabitSchedule::class.java) }
+    fun toHabitSchedule(value: String?): HabitScheduleDbModel? =
+        value?.let { Gson().fromJson(it, HabitScheduleDbModel::class.java) }
 }

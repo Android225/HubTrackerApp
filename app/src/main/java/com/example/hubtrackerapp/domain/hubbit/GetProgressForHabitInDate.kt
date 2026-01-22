@@ -2,8 +2,9 @@ package com.example.hubtrackerapp.domain.hubbit
 
 import com.example.hubtrackerapp.domain.hubbit.models.HabitProgress
 import java.time.LocalDate
+import javax.inject.Inject
 
-class GetProgressForHabitInDate(
+class GetProgressForHabitInDate @Inject constructor (
     private val repository: HabitRepository
 ){
     suspend operator fun invoke(

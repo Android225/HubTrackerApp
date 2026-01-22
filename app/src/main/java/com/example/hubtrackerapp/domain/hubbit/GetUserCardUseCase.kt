@@ -1,8 +1,9 @@
 package com.example.hubtrackerapp.domain.hubbit
 
 import com.example.hubtrackerapp.domain.user.User
+import javax.inject.Inject
 
-class GetUserCardUseCase(
+class GetUserCardUseCase @Inject constructor (
     private val repository: HabitRepository
 ) {
     suspend operator fun invoke (

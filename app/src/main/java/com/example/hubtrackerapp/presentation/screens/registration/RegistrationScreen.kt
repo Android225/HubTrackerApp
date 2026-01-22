@@ -47,6 +47,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.hubtrackerapp.presentation.screens.authorization.AuthorizationViewModel
 import java.time.format.TextStyle
@@ -56,9 +57,7 @@ fun RegistrationScreen(
     modifier: Modifier = Modifier,
     onBackClick: () -> Unit,
     onNextStep: () -> Unit,
-    viewModel: RegistrationViewModel = viewModel {
-        RegistrationViewModel
-    }
+    viewModel: RegistrationViewModel = hiltViewModel()
 ) {
 
     val state by viewModel.state.collectAsState()

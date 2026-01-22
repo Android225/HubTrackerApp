@@ -3,25 +3,33 @@ package com.example.hubtrackerapp.presentation.screens.registration
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.hubtrackerapp.data.AuthRepositoryImpl
+//import com.example.hubtrackerapp.data.AuthRepositoryImpl
 import com.example.hubtrackerapp.data.predefined.PredefinedHabitData
 import com.example.hubtrackerapp.data.predefined.PredefinedHabitRepositoryImpl
 import com.example.hubtrackerapp.domain.auth.RegisterUseCase
+import com.example.hubtrackerapp.domain.hubbit.AddHabitUseCase
 import com.example.hubtrackerapp.domain.hubbit.models.PredefinedHabit
 import com.example.hubtrackerapp.domain.predefined.GetAllPredefinedHabitsUseCase
 import com.example.hubtrackerapp.presentation.screens.registration.model.RegistrationDraft
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 import kotlin.collections.emptyList
 
-object RegistrationViewModel : ViewModel() {
+@HiltViewModel
+class RegistrationViewModel @Inject constructor(
+    private val registerUseCase:RegisterUseCase,
+    private val getAllPredefinedHabits:GetAllPredefinedHabitsUseCase,
+   // val predefinedHabits: List<PredefinedHabit>
+) : ViewModel() {
 
-    private val repository = AuthRepositoryImpl
-    private val predefinedRepository = PredefinedHabitRepositoryImpl
-    private val registerUseCase = RegisterUseCase(repository)
-    private val getAllPredefinedHabits = GetAllPredefinedHabitsUseCase(predefinedRepository)
+//    private val repository = AuthRepositoryImpl
+//    private val predefinedRepository = PredefinedHabitRepositoryImpl
+//    private val registerUseCase = RegisterUseCase(repository)
+//    private val getAllPredefinedHabits = GetAllPredefinedHabitsUseCase(predefinedRepository)
 
     private val _state = MutableStateFlow(RegistrationState.Creation())
     val state = _state.asStateFlow()
@@ -31,12 +39,18 @@ object RegistrationViewModel : ViewModel() {
     fun onEventRegister(event: RegisterEvent){
         when(event){
             is RegisterEvent.ChoseGender -> {
+
+                Log.d("Register", "ChoseGender On Register Click ${_state.value.registrationDraft}")
+
                 _state.update {
                     Log.d("Register", "Set gender input - ${event.gender}")
                     it.copy(registrationDraft = it.registrationDraft.copy(gender = event.gender))
                 }
             }
             is RegisterEvent.ChosePredefinedHabits -> {
+
+
+                Log.d("Register", "ChosePredefinedHabits On Register Click ${_state.value.registrationDraft}")
 
                 //при клике меняется состояние у списка хобби
                 val updatedHabits = _state.value.habits.map {
@@ -58,6 +72,9 @@ object RegistrationViewModel : ViewModel() {
 //
             }
             RegisterEvent.RegisterUser -> {
+
+                Log.d("Register", "RegisterUser On Register Click ${_state.value.registrationDraft}")
+
                 viewModelScope.launch {
                     Log.d("Register", "On Register Click ${_state.value.registrationDraft}")
 
@@ -79,6 +96,9 @@ object RegistrationViewModel : ViewModel() {
                 }
             }
             is RegisterEvent.SetBirthDate -> {
+
+
+
                 _state.update {
                     Log.d("Register", "Set birthDate input - ${event.birthDate}")
                     it.copy(registrationDraft = it.registrationDraft.copy(birthDate = event.birthDate))
@@ -112,6 +132,7 @@ object RegistrationViewModel : ViewModel() {
     }
 
     init {
+        Log.d("RegistrationViewModel", "ViewModel CREATED - ${this.hashCode()}")
         viewModelScope.launch {
             loadPredefinedHabits()
         }

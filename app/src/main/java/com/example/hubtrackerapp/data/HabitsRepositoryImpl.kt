@@ -5,7 +5,7 @@ import android.content.Context
 import android.util.Log
 import androidx.compose.runtime.retain.retain
 import androidx.compose.ui.graphics.Color
-import com.example.hubtrackerapp.data.TempDB.testUser
+//import com.example.hubtrackerapp.data.TempDB.testUser
 import com.example.hubtrackerapp.data.db.HabitsDatabase
 import com.example.hubtrackerapp.data.db.dao.HabitDao
 import com.example.hubtrackerapp.data.db.dao.HabitProgressDao
@@ -33,13 +33,19 @@ import kotlinx.coroutines.flow.combine
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID
+import javax.inject.Inject
 
-class HabitsRepositoryImpl private constructor (context: Context): HabitRepository, AuthRepository {
+class HabitsRepositoryImpl @Inject constructor (
+    private val habitDao: HabitDao,
+    private val userDao: UserDao,
+    private val habitProgressDao: HabitProgressDao
 
-    private val habitsDatabase = HabitsDatabase.getInstance(context)
-    private val habitDao = habitsDatabase.habitDao()
-    private val userDao = habitsDatabase.userDao()
-    private val habitProgressDao = habitsDatabase.habitProgressDao()
+): HabitRepository, AuthRepository {
+
+//    private val habitsDatabase = HabitsDatabase.getInstance(context)
+//    private val habitDao = habitsDatabase.habitDao()
+//    private val userDao = habitsDatabase.userDao()
+//    private val habitProgressDao = habitsDatabase.habitProgressDao()
 
     override suspend fun getHabitsWithScheduleForDate(
         userId: String,
@@ -183,8 +189,24 @@ class HabitsRepositoryImpl private constructor (context: Context): HabitReposito
         }
     }
 
+    suspend fun clearLocalDatabase(){
+        try {
+            Log.d("Repository", "Clearing database...")
+
+            habitProgressDao.clearAllProgress()
+            habitDao.clearHabits()
+            userDao.clearUsers()
+
+            Log.d("Repository", "Database cleared successfully")
+        } catch (e: Exception) {
+            Log.e("Repository", "Error clearing database: ${e.message}", e)
+            throw e
+        }
+    }
+
     override suspend fun register(registerUser: RegistrationDraft): Boolean {
 
+        clearLocalDatabase()
 
         val newUserId = UUID.randomUUID().toString()
         val passwordHash = hashPassword(registerUser.password)
@@ -207,20 +229,20 @@ class HabitsRepositoryImpl private constructor (context: Context): HabitReposito
         return true // подправить мб проверку организовать тоже
     }
 
-    companion object{
-        private val LOCK = Any()
-        private var instance: HabitsRepositoryImpl? = null
-
-        fun getInstance(context: Context): HabitsRepositoryImpl{
-            instance?.let { return it }
-
-            synchronized(LOCK){
-                instance?.let { return it }
-
-                return HabitsRepositoryImpl(context).also {
-                    instance = it
-                }
-            }
-        }
-    }
+//    companion object{
+//        private val LOCK = Any()
+//        private var instance: HabitsRepositoryImpl? = null
+//
+//        fun getInstance(context: Context): HabitsRepositoryImpl{
+//            instance?.let { return it }
+//
+//            synchronized(LOCK){
+//                instance?.let { return it }
+//
+//                return HabitsRepositoryImpl(context).also {
+//                    instance = it
+//                }
+//            }
+//        }
+//    }
 }

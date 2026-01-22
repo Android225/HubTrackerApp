@@ -22,7 +22,7 @@ import com.example.hubtrackerapp.data.db.model.UserDbModel
     exportSchema = false
 )
 @TypeConverters(Converters::class)
-abstract class HabitsDatabase: RoomDatabase() {
+abstract class HabitsDatabase : RoomDatabase() {
 
     abstract fun habitDao(): HabitDao
     abstract fun userDao(): UserDao

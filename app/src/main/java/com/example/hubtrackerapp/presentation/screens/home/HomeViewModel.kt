@@ -11,7 +11,8 @@ import androidx.compose.ui.res.imageResource
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.hubtrackerapp.R
-import com.example.hubtrackerapp.data.HabitRepositoryImpl
+//import com.example.hubtrackerapp.data.HabitRepositoryImpl
+import com.example.hubtrackerapp.domain.hubbit.AddHabitUseCase
 import com.example.hubtrackerapp.domain.hubbit.GetHabitsWithScheduleForDateUseCase
 import com.example.hubtrackerapp.domain.hubbit.GetUserCardUseCase
 import com.example.hubtrackerapp.domain.hubbit.GetUserID
@@ -22,6 +23,7 @@ import com.example.hubtrackerapp.domain.hubbit.models.SwipeHabitState
 import com.example.hubtrackerapp.domain.hubbit.models.forUi.HabitWithProgressUi
 import com.example.hubtrackerapp.domain.hubbit.models.forUi.Mood
 import com.example.hubtrackerapp.presentation.screens.add.PickerType
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -35,16 +37,23 @@ import java.time.LocalDate
 import java.time.format.TextStyle
 import java.time.temporal.TemporalAdjusters
 import java.util.Locale
+import javax.inject.Inject
 
-class HomeViewModel : ViewModel() {
+@HiltViewModel
+class HomeViewModel @Inject constructor(
+    private val getHabitsWithScheduleForDateUseCase:GetHabitsWithScheduleForDateUseCase,
+    private val getUserId:GetUserID,
+    private val getUserCard:GetUserCardUseCase,
+    private val switchCompleteStatusUseCase:SwitchCompleteStatusUseCase
+) : ViewModel() {
 
-    private val repository = HabitRepositoryImpl
-    private val getHabitsWithScheduleForDateUseCase =
-        GetHabitsWithScheduleForDateUseCase(repository = repository)
-    private val getUserId = GetUserID(repository)
-    private val getUserCard = GetUserCardUseCase(repository)
-    private val switchCompleteStatusUseCase =
-        SwitchCompleteStatusUseCase(repository)
+    //private val repository = HabitRepositoryImpl
+//    private val getHabitsWithScheduleForDateUseCase =
+//        GetHabitsWithScheduleForDateUseCase(repository = repository)
+   // private val getUserId = GetUserID(repository)
+    //private val getUserCard = GetUserCardUseCase(repository)
+//    private val switchCompleteStatusUseCase =
+//        SwitchCompleteStatusUseCase(repository)
     private val _state = MutableStateFlow(HomeUiState())
     val state = _state.asStateFlow()
 
@@ -60,23 +69,7 @@ class HomeViewModel : ViewModel() {
     val calendarDays = _calendarDays.asStateFlow()
 
     init {
-
         generateMonth()
-//        getHabitsWithScheduleForDateUseCase(repository.testUser.userId, selectedDate.value)
-//            .onEach { habits ->
-//
-//                _state.update { habit ->
-//                    habit.copy(
-//                        selectedDate = _selectedDate.value,
-//                        calendarDays = _calendarDays.value,
-//                        habits = habits,
-//                        completedCount = habits.count { it.isCompleted },
-//                        mode = ModeForSwitch.HOBBIES,
-//                        isLoading = false
-//                    )
-//                }
-//            }.launchIn(viewModelScope)
-
         selectedDate
             .onEach { date ->
                 _state.update {
@@ -104,9 +97,7 @@ class HomeViewModel : ViewModel() {
                     )
                 }
             }.launchIn(viewModelScope)
-
     }
-
     private fun generateMonth() {
         val firstDayInMonth = today.withDayOfMonth(1)
         val lastDayInMonth = today.with(TemporalAdjusters.lastDayOfMonth())

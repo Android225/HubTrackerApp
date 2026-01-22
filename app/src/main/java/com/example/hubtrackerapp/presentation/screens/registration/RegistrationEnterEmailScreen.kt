@@ -42,6 +42,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation.Companion
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.hubtrackerapp.presentation.screens.registration.RegisterEvent
 import com.example.hubtrackerapp.presentation.screens.registration.RegistrationViewModel
@@ -51,9 +52,7 @@ import com.example.hubtrackerapp.presentation.screens.registration.RegistrationV
 @Composable
 fun RegistrationEnterEmailScreen(
     modifier: Modifier = Modifier,
-    viewModel: RegistrationViewModel = viewModel {
-        RegistrationViewModel
-    },
+    viewModel: RegistrationViewModel = hiltViewModel(),
     onBackClick: () -> Unit,
     onNextStep: () -> Unit
 ) {
