@@ -15,12 +15,12 @@ import java.time.LocalTime
 
 interface HabitRepository {
 
-    fun getHabitsWithScheduleForDate(userId: String, date: LocalDate): Flow<List<HabitWithProgressUi>>
+    suspend fun getHabitsWithScheduleForDate(userId: String, date: LocalDate): Flow<List<HabitWithProgressUi>>
 
 
     suspend fun getHabit(userId: String,habitId: String): HabitUi
 
-    suspend fun changeSchedule(habitId: String, schedule: HabitSchedule)
+    //suspend fun changeSchedule(habitId: String, schedule: HabitSchedule)
 
     suspend fun deleteHabit(habitId: String)
 

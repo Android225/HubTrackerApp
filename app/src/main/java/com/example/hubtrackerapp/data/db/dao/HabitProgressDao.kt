@@ -33,7 +33,7 @@ interface HabitProgressDao {
     suspend fun getProgressForDate(date: String): List<HabitProgressDbModel>
 
     @Query("SELECT * FROM habit_progress WHERE date = :date")
-    fun getProgressForDateFlow(date: String): Flow<List<HabitProgressDbModel>>
+    fun getProgressForDateFlow(date: LocalDate): Flow<List<HabitProgressDbModel>>
 
     //для очистки при выходе из профиля
     @Query("DELETE FROM habit_progress")

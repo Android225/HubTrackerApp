@@ -4,9 +4,9 @@ import com.example.hubtrackerapp.presentation.screens.registration.model.Registr
 
 interface AuthRepository {
 
-    fun login(email: String, password: String): Boolean
+    suspend fun login(email: String, password: String): Boolean
 
-    fun register(
+    suspend fun register(
         registerUser: RegistrationDraft
     ): Boolean
 }

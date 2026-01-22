@@ -9,6 +9,11 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface HabitDao {
+
+    @Query("SELECT * FROM habits WHERE userId = :userId AND habitId = :habitId")
+    suspend fun getHabit(userId: String, habitId: String): HabitDbModel?
+
+
     // Получить все привычки текущего пользователя
     @Query("SELECT * FROM habits WHERE userId = :userId")
     suspend fun getAllHabitsByUserId(userId: String): List<HabitDbModel>
