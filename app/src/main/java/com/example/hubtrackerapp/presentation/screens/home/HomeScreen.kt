@@ -2,6 +2,7 @@
 
 package com.example.hubtrackerapp.presentation.screens.home
 
+import HabitMetric
 import android.graphics.Bitmap
 import android.media.Image
 import android.util.Log
@@ -193,6 +194,7 @@ fun HomeScreen(
                                 //  viewModel.processCommand(HabitCommands.SwitchCompletedStatus(it))
                             },
                             editProgressState = state.editProgressState,
+                            canEditToday = state.canEditToday,
                             onSwipe = viewModel::processCommand,
                             onClick = viewModel::processCommand
                         )
@@ -260,6 +262,7 @@ private fun HomeTodayContent(
     allHabitsCount: Int, //state.habits.size
     editProgressState: EditProgressState?,
     habitsList: List<HabitWithProgressUi>,
+    canEditToday: Boolean,
     onPlusBoxClick: (String) -> Unit,
     onSwipe: (HabitCommands) -> Unit,
     onClick: (HabitCommands) -> Unit
@@ -328,18 +331,22 @@ private fun HomeTodayContent(
                 leftMenu = {
                     LeftMenu(
                         habits.habitId,
-                        onClick = {onClick(it)}
+                        onClick = {onClick(it)},
+                        canEditToday = canEditToday,
+                        isCompleted = habits.isCompleted
                     )
                 },
                 rightMenu = {
                     RightMenu(
                         habits.habitId,
-                        onClick = {onClick(it)}
+                        onClick = {onClick(it)},
+                        canEditToday = canEditToday
                     )
                 }
             ) {
                 if (habits.isInTargetMode && editProgressState != null) {
                     EditProgressPanel(
+                        habitMetric = habits.metric,
                         editState = editProgressState,
                         onCancel = { onClick(HabitCommands.CancelEditor) },
                         onApply = { onClick(HabitCommands.ApplyEditor) },
@@ -351,7 +358,8 @@ private fun HomeTodayContent(
                     onPlusBoxClick = {
                         onPlusBoxClick(it)
                         //  viewModel.processCommand(HabitCommands.SwitchCompletedStatus(it))
-                    }
+                    },
+                    canEditToday = canEditToday
                 )
             }
             }
@@ -396,7 +404,8 @@ fun EditProgressPanel(
     editState: EditProgressState,
     onCancel: () -> Unit,
     onApply: () -> Unit,
-    onValueChange: (String) -> Unit
+    onValueChange: (String) -> Unit,
+    habitMetric: HabitMetric
 ) {
     Row(
         modifier = Modifier
@@ -434,7 +443,7 @@ fun EditProgressPanel(
 
             // progress text
             Text(
-                text = "${editState.tempProgress} / ${editState.target}",
+                text = "${editState.tempProgress} / ${editState.target} ${habitMetric.getUnitForm(editState.target.toString())}",
                 style = MaterialTheme.typography.bodySmall,
                 color = Black40
             )
@@ -485,7 +494,7 @@ fun EditProgressPanel(
                     color = Black10,
                     shape = RoundedCornerShape(16.dp)
                 )
-                .clickable{
+                .clickable {
                     val step = (editState.target * 0.05f)
                         .toInt()
                         .coerceAtLeast(1)
@@ -509,7 +518,7 @@ fun EditProgressPanel(
                     color = Black10,
                     shape = RoundedCornerShape(16.dp)
                 )
-                .clickable{
+                .clickable {
                     val step = (editState.target * 0.05f)
                         .toInt()
                         .coerceAtLeast(1)
@@ -547,6 +556,7 @@ fun EditProgressPanel(
 @Composable
 fun RightMenu(
     habitId: String,
+    canEditToday: Boolean,
     onClick: (HabitCommands) -> Unit
 ){
     Row(
@@ -565,8 +575,10 @@ fun RightMenu(
         Column(
             modifier = Modifier
                 .weight(1f)
-                .clickable{
-                    onClick(HabitCommands.FailHabitInThisDay(habitId))
+                .clickable {
+                    if (canEditToday) {
+                        onClick(HabitCommands.FailHabitInThisDay(habitId))
+                    }
                 },
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
@@ -588,8 +600,10 @@ fun RightMenu(
         Column(
             modifier = Modifier
                 .weight(1f)
-                .clickable{
-                    onClick(HabitCommands.SkipHabitInThisDay(habitId))
+                .clickable {
+                    if (canEditToday) {
+                        onClick(HabitCommands.SkipHabitInThisDay(habitId))
+                    }
                 },
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
@@ -606,8 +620,13 @@ fun RightMenu(
 @Composable
 fun LeftMenu(
     habitId: String,
-    onClick: (HabitCommands) -> Unit
+    canEditToday: Boolean,
+    isCompleted: Boolean,
+    onClick: (HabitCommands) -> Unit,
+    text:String =  if (!isCompleted) "Done" else "UnDone",
+    iconDone: ImageVector = if (!isCompleted) Icons.Default.Done else Icons.Default.Close
 ){
+    val x = Icons.Default.Done
     Row(
         modifier = Modifier
             .height(80.dp)
@@ -624,8 +643,10 @@ fun LeftMenu(
         Column(
             modifier = Modifier
                 .weight(1f)
-                .clickable{
-                    onClick(HabitCommands.SwitchCompletedStatus(habitId))
+                .clickable {
+                    if (canEditToday) {
+                        onClick(HabitCommands.SwitchCompletedStatus(habitId))
+                    }
                 },
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
@@ -647,15 +668,17 @@ fun LeftMenu(
         Column(
             modifier = Modifier
                 .weight(1f)
-                .clickable{
-                    onClick(HabitCommands.SwitchCompletedStatus(habitId))
+                .clickable {
+                    if (canEditToday) {
+                        onClick(HabitCommands.SwitchCompletedStatus(habitId))
+                    }
                 },
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Icon(Icons.Default.Done, null, tint = GreenSuccess100)
+            Icon(iconDone, null, tint = GreenSuccess100)
             Text(
-                text = "Done",
+                text = text,
                 style = MaterialTheme.typography.bodySmall,
                 color = Black40
             )
@@ -975,6 +998,7 @@ fun SwipeHabitItem(
 @Composable
 fun HabitCard(
     habitWithProgress: HabitWithProgressUi,
+    canEditToday: Boolean,
     onPlusBoxClick: (String) -> Unit
 ) {
     Row(
@@ -1004,13 +1028,17 @@ fun HabitCard(
             modifier = Modifier
                 .weight(1f),
             cardName = habitWithProgress.title,
-            additionalInfo = "daysLeft"
+            additionalInfo = "${habitWithProgress.progressWithTarget} / ${habitWithProgress.target} ${habitWithProgress.metric.getUnitForm(habitWithProgress.target)}"
         )
         ParticipantsRow(fakeParticipants(), size = 28.dp)
         AddAndCompleteHabit(
             habitId = habitWithProgress.habitId,
             habitIsCompleted = habitWithProgress.isCompleted,
-            onPlusBoxClick = onPlusBoxClick
+            onPlusBoxClick = {
+                if (canEditToday) {
+                    onPlusBoxClick(it)
+                }
+            }
         )
     }
 }
@@ -1343,38 +1371,73 @@ fun DateCard(
     isSelected: Boolean,
     onClick: (LocalDate) -> Unit
 ) {
-    //УБРАТЬ ЛОГИКУ В VIEWMODEL!!!
-    val colorInBox = if (isSelected) Blue100 else Black20
-    val colorInBoxNumbers = if (isSelected) Blue100 else Black100
-    val borderWidth = if (isSelected) 2.dp else 1.dp
+
+    val borderColor = when {
+        day.isToday && isSelected -> GreenSuccess100 // сегодня + выбран
+        day.isToday -> GreenSuccess100.copy(alpha = 0.7f) // только сегодня
+        isSelected -> Blue100 // только выбран
+        else -> Black20 // обычный
+    }
+
+    val numberColor = when {
+        day.isToday && isSelected -> GreenSuccess100
+        day.isToday -> GreenSuccess100
+        isSelected -> Blue100
+        else -> Black100
+    }
+
+    val dayOfWeekColor = when {
+        day.isToday && isSelected -> GreenSuccess100.copy(alpha = 0.8f)
+        day.isToday -> GreenSuccess100.copy(alpha = 0.6f)
+        isSelected -> Blue100.copy(alpha = 0.6f)
+        else -> Black40
+    }
+
+    val borderWidth = when {
+        day.isToday && isSelected -> 2.dp
+        day.isToday || isSelected -> 1.5.dp
+        else -> 1.dp
+    }
     Box(
         modifier = Modifier
             .size(width = 48.dp, height = 64.dp)
             .clip(RoundedCornerShape(16.dp))
             .border(
                 width = borderWidth,
-                color = colorInBox,
+                color = borderColor,
                 shape = RoundedCornerShape(16.dp)
             )
-            .clickable { onClick(day.date) }, // выбор дня в списке
+            .clickable { onClick(day.date) },
         contentAlignment = Alignment.Center
     ) {
         Column(
-            //verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            // Номер дня
             Text(
                 text = day.dayNumber.toString(),
                 style = MaterialTheme.typography.headlineSmall,
-                color = colorInBoxNumbers
+                color = numberColor
             )
+
+            // День недели
             Text(
                 text = day.dayOfWeek,
                 style = MaterialTheme.typography.labelSmall,
-                color = colorInBox
+                color = dayOfWeekColor
             )
-        }
 
+            // Индикатор "сегодня" под днем недели
+            if (day.isToday) {
+                Spacer(modifier = Modifier.height(2.dp))
+                Box(
+                    modifier = Modifier
+                        .size(4.dp)
+                        .clip(CircleShape)
+                        .background(GreenSuccess100)
+                )
+            }
+        }
     }
 }
 
@@ -1386,6 +1449,12 @@ fun StatisticBox(
     allHabitsCount: Int
     //передавать количество выполненных habbits
 ) {
+
+    val progressPercentage = if (allHabitsCount > 0) {
+        progress.toFloat() / allHabitsCount.toFloat()
+    } else {
+        0f
+    }
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -1401,7 +1470,7 @@ fun StatisticBox(
                 .padding(horizontal = 16.dp, vertical = 16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            ProgressCircle(progress = (progress / 100).toFloat())
+            ProgressCircle(progress = progressPercentage)
             Column(
                 modifier = Modifier
                     .padding(start = 8.dp)

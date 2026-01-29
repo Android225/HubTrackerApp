@@ -45,10 +45,10 @@ import javax.inject.Inject
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
-    private val getHabitsWithScheduleForDateUseCase:GetHabitsWithScheduleForDateUseCase,
-    private val getUserId:GetUserID,
-    private val getUserCard:GetUserCardUseCase,
-    private val switchCompleteStatusUseCase:SwitchCompleteStatusUseCase,
+    private val getHabitsWithScheduleForDateUseCase: GetHabitsWithScheduleForDateUseCase,
+    private val getUserId: GetUserID,
+    private val getUserCard: GetUserCardUseCase,
+    private val switchCompleteStatusUseCase: SwitchCompleteStatusUseCase,
     private val switchFailStatusUseCase: SwitchFailStatusUseCase,
     private val switchSkipStatusUseCase: SwitchSkipStatusUseCase,
     private val saveProgressUseCase: SaveProgressUseCase
@@ -57,7 +57,7 @@ class HomeViewModel @Inject constructor(
     //private val repository = HabitRepositoryImpl
 //    private val getHabitsWithScheduleForDateUseCase =
 //        GetHabitsWithScheduleForDateUseCase(repository = repository)
-   // private val getUserId = GetUserID(repository)
+    // private val getUserId = GetUserID(repository)
     //private val getUserCard = GetUserCardUseCase(repository)
 //    private val switchCompleteStatusUseCase =
 //        SwitchCompleteStatusUseCase(repository)
@@ -84,7 +84,8 @@ class HomeViewModel @Inject constructor(
                         userName = getUserCard(getUserId()).firstName,
                         selectedDate = date,
                         calendarDays = _calendarDays.value,
-                        isLoading = true
+                        isLoading = true,
+                        canEditToday = date == LocalDate.now()
                     )
                 }
             }
@@ -105,6 +106,7 @@ class HomeViewModel @Inject constructor(
                 }
             }.launchIn(viewModelScope)
     }
+
     private fun generateMonth() {
         val firstDayInMonth = today.withDayOfMonth(1)
         val lastDayInMonth = today.with(TemporalAdjusters.lastDayOfMonth())
@@ -127,11 +129,58 @@ class HomeViewModel @Inject constructor(
                 is HabitCommands.FailHabitInThisDay -> {
                     switchFailStatusUseCase(command.habitId, _selectedDate.value)
                 }
+
                 is HabitCommands.SkipHabitInThisDay -> {
                     switchSkipStatusUseCase(command.habitId, _selectedDate.value)
                 }
+
                 is HabitCommands.SwitchCompletedStatus -> {
-                    switchCompleteStatusUseCase(command.habitId, _selectedDate.value)
+
+                    _state.update { state ->
+                        val updatedHabits = state.habits.map { habit ->
+                            if (habit.habitId == command.habitId) {
+                                val updatedHabit = habit.copy(
+                                    progress = 1f,
+                                    progressWithTarget = habit.target
+                                )
+
+                                    if(updatedHabit.isCompleted){
+                                        saveProgressUseCase(
+                                            HabitProgress(
+                                                habitId = updatedHabit.habitId,
+                                                date = selectedDate.value,
+                                                isCompleted = false,
+                                                progress = 0f,
+                                                progressWithTarget = "0",
+                                                skipped = updatedHabit.skipped,
+                                                failed = updatedHabit.failed
+                                            )
+                                        )
+                                    } else {
+                                        saveProgressUseCase(
+                                            HabitProgress(
+                                                habitId = updatedHabit.habitId,
+                                                date = selectedDate.value,
+                                                isCompleted = true,
+                                                progress = updatedHabit.progress,
+                                                progressWithTarget = updatedHabit.target,
+                                                skipped = updatedHabit.skipped,
+                                                failed = updatedHabit.failed
+                                            )
+                                        )
+                                    }
+
+
+                                updatedHabit
+                            } else {
+                                habit // не забываем else!
+                            }
+                        }
+
+                        state.copy(habits = updatedHabits)
+                    }
+
+//                    switchCompleteStatusUseCase(command.habitId, _selectedDate.value)
                 }
 //                is HabitCommands.ChangeDate -> {
 //                    onDateChanged(command.date)
@@ -140,7 +189,7 @@ class HomeViewModel @Inject constructor(
                     _state.update { state ->
                         state.copy(
                             habits = state.habits.map { habit ->
-                                if (habit.habitId == command.habitId){
+                                if (habit.habitId == command.habitId) {
                                     habit.copy(swipeState = command.newState)
                                 } else {
                                     habit.copy(swipeState = SwipeHabitState.CLOSED)
@@ -186,6 +235,7 @@ class HomeViewModel @Inject constructor(
                         }
                     }
                 }
+
                 HabitCommands.CancelEditor -> {
                     _state.update { state ->
                         state.copy(
@@ -194,6 +244,7 @@ class HomeViewModel @Inject constructor(
                         )
                     }
                 }
+
                 is HabitCommands.OpenEditor -> {
                     _state.update { state ->
                         val habit = state.habits.first { it.habitId == command.habitId }
@@ -210,6 +261,7 @@ class HomeViewModel @Inject constructor(
                         )
                     }
                 }
+
                 is HabitCommands.UpdateEditor -> {
                     val edit = state.value.editProgressState ?: return@launch
 
@@ -254,23 +306,28 @@ class HomeViewModel @Inject constructor(
             }
         }
     }
-    fun onEvent(event: HomeEvent){
-        when(event) {
+
+    fun onEvent(event: HomeEvent) {
+        when (event) {
             HomeEvent.AddClicked -> {
                 _state.update { it.copy(addMenuVisible = true) }
             }
+
             HomeEvent.DismissAddMenu -> {
                 _state.update { it.copy(addMenuVisible = false) }
             }
+
             is HomeEvent.ChangeModeScreen -> {
-                Log.d("Home","Mode Changed -> ${event.newMode}")
+                Log.d("Home", "Mode Changed -> ${event.newMode}")
                 _state.update {
                     it.copy(mode = event.newMode)
                 }
             }
+
             is HomeEvent.OnDateChanged -> {
                 _selectedDate.value = event.date
             }
+
             is HomeEvent.SelectEmojiInProfile -> {
                 _state.update {
                     it.copy(mood = event.mood)
@@ -290,26 +347,28 @@ class HomeViewModel @Inject constructor(
             }
 
             HomeEvent.ActivityClick -> {
-                Log.d("Home","Bottom bar Navigate to activity")
+                Log.d("Home", "Bottom bar Navigate to activity")
             }
+
             HomeEvent.ExploreClick -> {
-                Log.d("Home","Bottom bar Navigate to explore")
+                Log.d("Home", "Bottom bar Navigate to explore")
             }
+
             HomeEvent.ProfileClick -> {
-                Log.d("Home","Bottom bar Navigate to profile")
+                Log.d("Home", "Bottom bar Navigate to profile")
             }
         }
     }
 }
 
 sealed class HomePickerType {
-    object Close: HomePickerType()
-    object Calendar: HomePickerType()
-    object Notifications: HomePickerType()
-    object EmojiBar: HomePickerType()
-    object AddHabit: HomePickerType()
+    object Close : HomePickerType()
+    object Calendar : HomePickerType()
+    object Notifications : HomePickerType()
+    object EmojiBar : HomePickerType()
+    object AddHabit : HomePickerType()
 
-    object ViewHabitCard: HomePickerType()
+    object ViewHabitCard : HomePickerType()
 
 }
 
@@ -317,7 +376,7 @@ data class EditProgressState(
     val habitId: String = "0",
     val tempProgressText: String,
     val target: Int
-){
+) {
     val tempProgress: Int
         get() = tempProgressText.toIntOrNull() ?: 0
 
@@ -325,6 +384,7 @@ data class EditProgressState(
         get() = (tempProgress.toFloat() / target)
             .coerceIn(0f, 1f)
 }
+
 data class HomeUiState(
     val selectedDate: LocalDate = LocalDate.now(),
     val calendarDays: List<CalendarDayUi> = emptyList(),
@@ -336,13 +396,14 @@ data class HomeUiState(
     val activeHomePicker: HomePickerType = HomePickerType.Close,
     val userName: String = "",
     val mood: Mood = Mood.Happy,
-    val editProgressState: EditProgressState? = null
+    val editProgressState: EditProgressState? = null,
     //val clubs: List<ClubUI>
     //val challenges: List<ChallengesUI>
+    val canEditToday: Boolean = false
 )
 
 sealed interface HabitCommands {
-   // data class ChangeDate(val date: LocalDate) : HabitCommands
+    // data class ChangeDate(val date: LocalDate) : HabitCommands
     data class SwitchCompletedStatus(override val habitId: String) : HabitAction
 
     //добавление прогресса
@@ -350,24 +411,26 @@ sealed interface HabitCommands {
     data class UpdateEditor(val newValue: String) : HabitCommands
     object ApplyEditor : HabitCommands
     object CancelEditor : HabitCommands
+
     //взаимодействие со swipe
     data class SkipHabitInThisDay(override val habitId: String) : HabitAction
     data class FailHabitInThisDay(override val habitId: String) : HabitAction
-    data class OnHabitSwiped(override val habitId: String,val newState: SwipeHabitState):  HabitAction
+    data class OnHabitSwiped(override val habitId: String, val newState: SwipeHabitState) :
+        HabitAction
 }
 
-sealed interface HomeEvent{
-    data object AddClicked: HomeEvent
-    data object DismissAddMenu: HomeEvent
-    data object ExploreClick: HomeEvent
-    data object ActivityClick: HomeEvent
-    data object ProfileClick: HomeEvent
+sealed interface HomeEvent {
+    data object AddClicked : HomeEvent
+    data object DismissAddMenu : HomeEvent
+    data object ExploreClick : HomeEvent
+    data object ActivityClick : HomeEvent
+    data object ProfileClick : HomeEvent
 
-    data object ClosePicker: HomeEvent
-    data class ChangeModeScreen(val newMode: ModeForSwitch): HomeEvent
-    data class SelectEmojiInProfile(val mood: Mood): HomeEvent
-    data class OnDateChanged(val date: LocalDate): HomeEvent
-    data class OpenPicker(val pickerType: HomePickerType): HomeEvent
+    data object ClosePicker : HomeEvent
+    data class ChangeModeScreen(val newMode: ModeForSwitch) : HomeEvent
+    data class SelectEmojiInProfile(val mood: Mood) : HomeEvent
+    data class OnDateChanged(val date: LocalDate) : HomeEvent
+    data class OpenPicker(val pickerType: HomePickerType) : HomeEvent
 
 }
 
