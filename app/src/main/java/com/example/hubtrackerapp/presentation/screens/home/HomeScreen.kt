@@ -6,6 +6,7 @@ import android.graphics.Bitmap
 import android.media.Image
 import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
@@ -15,6 +16,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -30,6 +32,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -44,6 +47,7 @@ import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Done
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Search
@@ -66,7 +70,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -76,12 +83,15 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ModifierLocalBeyondBoundsLayout
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
@@ -91,11 +101,13 @@ import com.example.hubtrackerapp.R
 import com.example.hubtrackerapp.domain.hubbit.models.forUi.CalendarDayUi
 import com.example.hubtrackerapp.domain.hubbit.models.ModeForSwitch
 import com.example.hubtrackerapp.domain.hubbit.models.ModeForSwitchInHabit
+import com.example.hubtrackerapp.domain.hubbit.models.SwipeHabitState
 import com.example.hubtrackerapp.domain.hubbit.models.forUi.HabitWithProgressUi
 import com.example.hubtrackerapp.domain.hubbit.models.forUi.Mood
 import com.example.hubtrackerapp.presentation.navigation.BottomTab
 import com.example.hubtrackerapp.presentation.screens.components.ModSwitcher
 import com.example.hubtrackerapp.presentation.screens.components.SwitcherOption
+import kotlinx.coroutines.launch
 import java.time.LocalDate
 
 @Composable
@@ -153,14 +165,14 @@ fun HomeScreen(
                         .height(1.dp)
                         .background(Black20)
                 )
-                when(state.mode){
+                when (state.mode) {
                     ModeForSwitch.HOBBIES -> {
                         HomeTodayContent(
                             datesList = state.calendarDays,
                             selectedDate = state.selectedDate,
                             onDateClick = {
                                 viewModel.onEvent(HomeEvent.OnDateChanged(it))
- //                               viewModel.processCommand(
+                                //                               viewModel.processCommand(
 //                        HabitCommands.ChangeDate(it)
 //                    )
                             },
@@ -170,9 +182,12 @@ fun HomeScreen(
                             onPlusBoxClick = {
                                 viewModel.processCommand(HabitCommands.SwitchCompletedStatus(it))
                                 //  viewModel.processCommand(HabitCommands.SwitchCompletedStatus(it))
-                            }
+                            },
+                            onSwipe = viewModel::processCommand,
+                            onClick = viewModel::processCommand
                         )
                     }
+
                     ModeForSwitch.CLUBS -> {}
                 }
 
@@ -183,10 +198,11 @@ fun HomeScreen(
                     .zIndex(0f)
                     .padding(horizontal = 16.dp, vertical = 12.dp),
                 selected = BottomTab.HOME,
-                onTabClick = {tab ->
+                onTabClick = { tab ->
                     //В последствии исправить навигацию мб вынести в общую ViewModel для BottomBar логику
 
-                    viewModel.onEvent(HomeEvent.AddClicked) } //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                    viewModel.onEvent(HomeEvent.AddClicked)
+                } //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             )
 
             AnimatedVisibility(
@@ -230,11 +246,13 @@ private fun HomeTodayContent(
     datesList: List<CalendarDayUi>,
     selectedDate: LocalDate,
     onDateClick: (LocalDate) -> Unit,
-    completedCount:Int,
+    completedCount: Int,
     allHabitsCount: Int, //state.habits.size
     habitsList: List<HabitWithProgressUi>,
-    onPlusBoxClick: (String) -> Unit
-){
+    onPlusBoxClick: (String) -> Unit,
+    onSwipe: (HabitCommands) -> Unit,
+    onClick: (HabitCommands) -> Unit
+) {
 
     LazyColumn(
         modifier = Modifier
@@ -292,17 +310,164 @@ private fun HomeTodayContent(
             key = { _, habit: HabitWithProgressUi -> habit.habitId }
         ) { index, habits ->
 
-            HabitCard(
-                habits,
-                onPlusBoxClick = {
-                    onPlusBoxClick(it)
-                  //  viewModel.processCommand(HabitCommands.SwitchCompletedStatus(it))
+
+            SwipeHabitItem(
+                habit = habits,
+                onSwipe = { onSwipe(HabitCommands.OnHabitSwiped(habits.habitId,it)) },
+                leftMenu = {
+                    LeftMenu(
+                        habits.habitId,
+                        onClick = {onClick(it)}
+                    )
+                },
+                rightMenu = {
+                    RightMenu(
+                        habits.habitId,
+                        onClick = {onClick(it)}
+                    )
                 }
-            )
+            ) {
+                HabitCard(
+                    habits,
+                    onPlusBoxClick = {
+                        onPlusBoxClick(it)
+                        //  viewModel.processCommand(HabitCommands.SwitchCompletedStatus(it))
+                    }
+                )
+            }
         }
     }
 }
 
+@Composable
+fun RightMenu(
+    habitId: String,
+    onClick: (HabitCommands) -> Unit
+){
+    Row(
+        modifier = Modifier
+            .height(80.dp)
+            .width(100.dp)
+            .clip(RoundedCornerShape(12.dp))
+            .background(White100)
+            .border(
+                width = 1.dp,
+                color = Black10,
+                shape = RoundedCornerShape(12.dp)
+            ),
+    verticalAlignment = Alignment.CenterVertically
+    ) {
+        Column(
+            modifier = Modifier
+                .weight(1f)
+                .clickable{
+                    onClick(HabitCommands.SwitchCompletedStatus(habitId))
+                },
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Icon(Icons.Default.Edit, null/*, tint = Color.White*/)
+            Text(
+                text = "View",
+                style = MaterialTheme.typography.bodySmall,
+                color = Black40
+            )
+        }
+        Box(
+            modifier = Modifier
+                .fillMaxHeight()
+                .width(1.dp)
+                .padding(vertical = 16.dp)
+                .background(Black10)
+        )
+        Column(
+            modifier = Modifier
+                .weight(1f)
+                .clickable{
+                    onClick(HabitCommands.SwitchCompletedStatus(habitId))
+                },
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Icon(Icons.Default.Done, null/*, tint = Color.White*/)
+            Text(
+                text = "Done",
+                style = MaterialTheme.typography.bodySmall,
+                color = Black40
+            )
+        }
+    }
+}
+@Composable
+fun LeftMenu(
+    habitId: String,
+    onClick: (HabitCommands) -> Unit
+){
+    Row(
+        modifier = Modifier
+            .height(80.dp)
+            .width(100.dp)
+            .clip(RoundedCornerShape(12.dp))
+            .background(White100)
+            .border(
+                width = 1.dp,
+                color = Black10,
+                shape = RoundedCornerShape(12.dp)
+            ),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Column(
+            modifier = Modifier
+                .weight(1f)
+                .clickable{
+                    onClick(HabitCommands.SwitchCompletedStatus(habitId))
+                },
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Icon(Icons.Default.Edit, null/*, tint = Color.White*/)
+            Text(
+                text = "View",
+                style = MaterialTheme.typography.bodySmall,
+                color = Black40
+            )
+        }
+        Box(
+            modifier = Modifier
+                .fillMaxHeight()
+                .width(1.dp)
+                .padding(vertical = 16.dp)
+                .background(Black10)
+        )
+        Column(
+            modifier = Modifier
+                .weight(1f)
+                .clickable{
+                    onClick(HabitCommands.SwitchCompletedStatus(habitId))
+                },
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Icon(Icons.Default.Done, null/*, tint = Color.White*/)
+            Text(
+                text = "Done",
+                style = MaterialTheme.typography.bodySmall,
+                color = Black40
+            )
+        }
+    }
+//    IconButton(onClick = {
+//        onClick(HabitCommands.SkipHabitInThisDay(habitId))
+//    }) {
+//        Icon(Icons.Default.Close, null, tint = Color.White)
+//    }
+//
+//    IconButton(onClick = {
+//            HabitCommands.FailHabitInThisDay(habitId)
+//    }) {
+//        Icon(Icons.Default.Notifications, null, tint = Color.White)
+//    }
+}
 @Composable
 fun AddMenu(
     onClick: () -> Unit
@@ -314,7 +479,8 @@ fun AddMenu(
             .background(Color.Transparent)
     ) {
         Row(
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
                 .padding(horizontal = 12.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
@@ -347,11 +513,11 @@ fun AddMoodRow(
 ) {
     Row(
         modifier = Modifier
-        .fillMaxWidth()
-        .padding(horizontal = 12.dp)
-        .clip(RoundedCornerShape(16.dp))
-        .background(White100)
-        .padding(16.dp),
+            .fillMaxWidth()
+            .padding(horizontal = 12.dp)
+            .clip(RoundedCornerShape(16.dp))
+            .background(White100)
+            .padding(16.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(2.dp)
     ) {
@@ -504,15 +670,114 @@ fun BottomBarItem(
 }
 
 @Composable
+fun SwipeHabitItem(
+    habit: HabitWithProgressUi,
+    onSwipe: (SwipeHabitState) -> Unit,
+    leftMenu: @Composable () -> Unit,
+    rightMenu: @Composable () -> Unit,
+    content: @Composable () -> Unit
+) {
+
+
+    //val maxOffset = 270f
+    val offsetX = remember { Animatable(0f) }
+    val scope = rememberCoroutineScope()
+
+    var menuWidthPx by remember { mutableStateOf(0f) }
+    val maxOffset = menuWidthPx
+
+    LaunchedEffect(habit.swipeState) {
+        when (habit.swipeState) {
+            SwipeHabitState.CLOSED -> offsetX.animateTo(0f)
+            SwipeHabitState.OPEN_LEFT -> offsetX.animateTo(maxOffset)
+            SwipeHabitState.OPEN_RIGHT -> offsetX.animateTo(-maxOffset)
+        }
+    }
+
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 24.dp, vertical = 4.dp)
+            .height(80.dp)
+    ) {
+
+        Box(
+            modifier = Modifier
+                .matchParentSize(),
+            contentAlignment = Alignment.CenterStart
+        ) {
+            Box(
+                modifier = Modifier.onSizeChanged {
+                    menuWidthPx = it.width.toFloat()
+                }
+            ) {
+                leftMenu()
+            }
+        }
+        Box(
+            modifier = Modifier
+                .matchParentSize(),
+            contentAlignment = Alignment.CenterEnd
+        ) {
+            Box(
+                modifier = Modifier.onSizeChanged {
+                    menuWidthPx = it.width.toFloat()
+                }
+            ) {
+                rightMenu()
+            }
+        }
+
+        Box(
+            modifier = Modifier
+                .offset { IntOffset(offsetX.value.toInt(), 0) }
+                .fillMaxSize()
+                .clip(RoundedCornerShape(16.dp))
+                .background(White100)// Исправить цвет
+                .pointerInput(Unit) {
+                    detectHorizontalDragGestures(
+                        onDragEnd = {
+                            scope.launch {
+                                val newState = when {
+                                    offsetX.value > maxOffset / 2 -> SwipeHabitState.OPEN_LEFT
+                                    offsetX.value < -maxOffset / 2 -> SwipeHabitState.OPEN_RIGHT
+                                    else -> SwipeHabitState.CLOSED
+                                }
+                                onSwipe(newState)
+                                val targetOffset = when (newState) {
+                                    SwipeHabitState.CLOSED -> 0f
+                                    SwipeHabitState.OPEN_LEFT -> maxOffset
+                                    SwipeHabitState.OPEN_RIGHT -> -maxOffset
+                                }
+                                offsetX.animateTo(targetOffset)
+                            }
+                        }
+                    ) { _, dragAmount ->
+                        scope.launch {
+                            offsetX.snapTo(
+                                (offsetX.value + dragAmount)
+                                    .coerceIn(-maxOffset, maxOffset)
+                            )
+                        }
+                    }
+                }
+        ) {
+            content()
+        }
+    }
+}
+
+@Composable
 fun HabitCard(
     habitWithProgress: HabitWithProgressUi,
     onPlusBoxClick: (String) -> Unit
 ) {
     Row(
         modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 24.dp)
-            .padding(top = 12.dp)
+            .fillMaxSize()
+            //.fillMaxWidth()
+            //.padding(horizontal = 24.dp)
+            //.padding(top = 12.dp)
             .border(
                 width = 1.dp,
                 color = Black10,
