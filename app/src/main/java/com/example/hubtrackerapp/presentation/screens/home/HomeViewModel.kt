@@ -16,7 +16,11 @@ import com.example.hubtrackerapp.domain.hubbit.AddHabitUseCase
 import com.example.hubtrackerapp.domain.hubbit.GetHabitsWithScheduleForDateUseCase
 import com.example.hubtrackerapp.domain.hubbit.GetUserCardUseCase
 import com.example.hubtrackerapp.domain.hubbit.GetUserID
+import com.example.hubtrackerapp.domain.hubbit.SaveProgressUseCase
 import com.example.hubtrackerapp.domain.hubbit.SwitchCompleteStatusUseCase
+import com.example.hubtrackerapp.domain.hubbit.SwitchFailStatusUseCase
+import com.example.hubtrackerapp.domain.hubbit.SwitchSkipStatusUseCase
+import com.example.hubtrackerapp.domain.hubbit.models.HabitProgress
 import com.example.hubtrackerapp.domain.hubbit.models.forUi.CalendarDayUi
 import com.example.hubtrackerapp.domain.hubbit.models.ModeForSwitch
 import com.example.hubtrackerapp.domain.hubbit.models.SwipeHabitState
@@ -44,7 +48,10 @@ class HomeViewModel @Inject constructor(
     private val getHabitsWithScheduleForDateUseCase:GetHabitsWithScheduleForDateUseCase,
     private val getUserId:GetUserID,
     private val getUserCard:GetUserCardUseCase,
-    private val switchCompleteStatusUseCase:SwitchCompleteStatusUseCase
+    private val switchCompleteStatusUseCase:SwitchCompleteStatusUseCase,
+    private val switchFailStatusUseCase: SwitchFailStatusUseCase,
+    private val switchSkipStatusUseCase: SwitchSkipStatusUseCase,
+    private val saveProgressUseCase: SaveProgressUseCase
 ) : ViewModel() {
 
     //private val repository = HabitRepositoryImpl
@@ -117,8 +124,12 @@ class HomeViewModel @Inject constructor(
     fun processCommand(command: HabitCommands) {
         viewModelScope.launch {
             when (command) {
-                is HabitCommands.FailHabitInThisDay -> TODO()
-                is HabitCommands.SkipHabitInThisDay -> TODO()
+                is HabitCommands.FailHabitInThisDay -> {
+                    switchFailStatusUseCase(command.habitId, _selectedDate.value)
+                }
+                is HabitCommands.SkipHabitInThisDay -> {
+                    switchSkipStatusUseCase(command.habitId, _selectedDate.value)
+                }
                 is HabitCommands.SwitchCompletedStatus -> {
                     switchCompleteStatusUseCase(command.habitId, _selectedDate.value)
                 }
@@ -138,10 +149,111 @@ class HomeViewModel @Inject constructor(
                         )
                     }
                 }
+
+                HabitCommands.ApplyEditor -> {
+                    val edit = state.value.editProgressState ?: return@launch
+
+                    viewModelScope.launch {
+                        val progressPercent = edit.percent
+                        val isCompleted = progressPercent >= 1f
+
+                        saveProgressUseCase(
+                            HabitProgress(
+                                habitId = edit.habitId,
+                                date = selectedDate.value,
+                                isCompleted = isCompleted,
+                                progress = progressPercent,
+                                progressWithTarget = edit.tempProgress.toString(),
+                                skipped = false,
+                                failed = false
+                            )
+                        )
+
+                        _state.update { state ->
+                            state.copy(
+                                editProgressState = null,
+                                habits = state.habits.map {
+                                    if (it.habitId == edit.habitId) {
+                                        it.copy(
+                                            progress = progressPercent,
+                                            progressWithTarget = edit.tempProgress.toString(),
+                                            isCompleted = isCompleted,
+                                            isInTargetMode = false
+                                        )
+                                    } else it
+                                }
+                            )
+                        }
+                    }
+                }
+                HabitCommands.CancelEditor -> {
+                    _state.update { state ->
+                        state.copy(
+                            editProgressState = null,
+                            habits = state.habits.map { it.copy(isInTargetMode = false) }
+                        )
+                    }
+                }
+                is HabitCommands.OpenEditor -> {
+                    _state.update { state ->
+                        val habit = state.habits.first { it.habitId == command.habitId }
+
+                        state.copy(
+                            editProgressState = EditProgressState(
+                                habitId = habit.habitId,
+                                tempProgressText = habit.progressWithTarget,
+                                target = habit.target.toIntOrNull() ?: 1
+                            ),
+                            habits = state.habits.map {
+                                it.copy(isInTargetMode = it.habitId == command.habitId)
+                            }
+                        )
+                    }
+                }
+                is HabitCommands.UpdateEditor -> {
+                    val edit = state.value.editProgressState ?: return@launch
+
+                    if (command.newValue.isEmpty()) {
+                        _state.update {
+                            it.copy(
+                                editProgressState = edit.copy(
+                                    tempProgressText = ""
+                                )
+                            )
+                        }
+                        return@launch
+                    }
+
+                    if (!command.newValue.all { it.isDigit() }) {
+                        return@launch
+                    }
+
+                    val withoutLeadingZeros = command.newValue.trimStart('0')
+                    val finalValue = if (withoutLeadingZeros.isEmpty()) "0" else withoutLeadingZeros
+
+                    val number = finalValue.toInt()
+                    if (number > edit.target) {
+
+                        _state.update {
+                            it.copy(
+                                editProgressState = edit.copy(
+                                    tempProgressText = edit.target.toString()
+                                )
+                            )
+                        }
+                    } else {
+                        _state.update {
+                            it.copy(
+                                editProgressState = edit.copy(
+                                    tempProgressText = finalValue
+                                )
+                            )
+                        }
+                    }
+                }
             }
         }
     }
-
     fun onEvent(event: HomeEvent){
         when(event) {
             HomeEvent.AddClicked -> {
@@ -196,10 +308,23 @@ sealed class HomePickerType {
     object Notifications: HomePickerType()
     object EmojiBar: HomePickerType()
     object AddHabit: HomePickerType()
+
     object ViewHabitCard: HomePickerType()
 
 }
 
+data class EditProgressState(
+    val habitId: String = "0",
+    val tempProgressText: String,
+    val target: Int
+){
+    val tempProgress: Int
+        get() = tempProgressText.toIntOrNull() ?: 0
+
+    val percent: Float
+        get() = (tempProgress.toFloat() / target)
+            .coerceIn(0f, 1f)
+}
 data class HomeUiState(
     val selectedDate: LocalDate = LocalDate.now(),
     val calendarDays: List<CalendarDayUi> = emptyList(),
@@ -211,6 +336,7 @@ data class HomeUiState(
     val activeHomePicker: HomePickerType = HomePickerType.Close,
     val userName: String = "",
     val mood: Mood = Mood.Happy,
+    val editProgressState: EditProgressState? = null
     //val clubs: List<ClubUI>
     //val challenges: List<ChallengesUI>
 )
@@ -218,6 +344,13 @@ data class HomeUiState(
 sealed interface HabitCommands {
    // data class ChangeDate(val date: LocalDate) : HabitCommands
     data class SwitchCompletedStatus(override val habitId: String) : HabitAction
+
+    //добавление прогресса
+    data class OpenEditor(val habitId: String) : HabitCommands
+    data class UpdateEditor(val newValue: String) : HabitCommands
+    object ApplyEditor : HabitCommands
+    object CancelEditor : HabitCommands
+    //взаимодействие со swipe
     data class SkipHabitInThisDay(override val habitId: String) : HabitAction
     data class FailHabitInThisDay(override val habitId: String) : HabitAction
     data class OnHabitSwiped(override val habitId: String,val newState: SwipeHabitState):  HabitAction

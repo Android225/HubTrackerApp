@@ -45,6 +45,7 @@ interface HabitRepository {
         date: LocalDate,
 
     ): HabitProgress
+
     suspend fun saveProgress(
         habitProgress: HabitProgress
     )
@@ -59,10 +60,9 @@ interface HabitRepository {
         date: LocalDate
     ): HabitProgress?
 
-    suspend fun switchCompleteStatus(
-        habitId: String,
-        date: LocalDate
-    )
+    suspend fun switchCompleteStatus(habitId: String, date: LocalDate)
+    suspend fun switchFailedStatus(habitId: String,date: LocalDate)
+    suspend fun switchSkipStatus(habitId: String,date: LocalDate)
     suspend fun getUserId(): String
 
     suspend fun getUserCard(userId: String): User

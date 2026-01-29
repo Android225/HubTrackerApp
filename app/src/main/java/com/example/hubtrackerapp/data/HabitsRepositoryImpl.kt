@@ -169,6 +169,14 @@ class HabitsRepositoryImpl @Inject constructor (
         habitProgressDao.switchCompleteStatus(habitId,date)
     }
 
+    override suspend fun switchFailedStatus(habitId: String, date: LocalDate) {
+        habitProgressDao.switchFailedStatus(habitId,date)
+    }
+
+    override suspend fun switchSkipStatus(habitId: String, date: LocalDate) {
+        habitProgressDao.switchSkippedStatus(habitId,date)
+    }
+
     override suspend fun getUserId(): String {
         return userDao.getUserId()!!    // тоже может вернуть Null потом проверка
     }

@@ -40,15 +40,21 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AddCircle
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Star
@@ -64,6 +70,7 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -89,6 +96,7 @@ import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
@@ -180,9 +188,11 @@ fun HomeScreen(
                             allHabitsCount = state.habits.size,
                             habitsList = state.habits,
                             onPlusBoxClick = {
-                                viewModel.processCommand(HabitCommands.SwitchCompletedStatus(it))
+                                viewModel.processCommand(HabitCommands.OpenEditor(it))
+                              //  viewModel.processCommand(HabitCommands.SwitchCompletedStatus(it))
                                 //  viewModel.processCommand(HabitCommands.SwitchCompletedStatus(it))
                             },
+                            editProgressState = state.editProgressState,
                             onSwipe = viewModel::processCommand,
                             onClick = viewModel::processCommand
                         )
@@ -248,6 +258,7 @@ private fun HomeTodayContent(
     onDateClick: (LocalDate) -> Unit,
     completedCount: Int,
     allHabitsCount: Int, //state.habits.size
+    editProgressState: EditProgressState?,
     habitsList: List<HabitWithProgressUi>,
     onPlusBoxClick: (String) -> Unit,
     onSwipe: (HabitCommands) -> Unit,
@@ -327,6 +338,14 @@ private fun HomeTodayContent(
                     )
                 }
             ) {
+                if (habits.isInTargetMode && editProgressState != null) {
+                    EditProgressPanel(
+                        editState = editProgressState,
+                        onCancel = { onClick(HabitCommands.CancelEditor) },
+                        onApply = { onClick(HabitCommands.ApplyEditor) },
+                        onValueChange = { onClick(HabitCommands.UpdateEditor(it)) }
+                    )
+                } else {
                 HabitCard(
                     habits,
                     onPlusBoxClick = {
@@ -335,9 +354,195 @@ private fun HomeTodayContent(
                     }
                 )
             }
+            }
         }
     }
 }
+@Composable
+fun CompactNumberField(
+    value: String,
+    onValueChange: (String) -> Unit
+) {
+    Box(
+        modifier = Modifier
+            .height(36.dp)
+            .border(
+                width = 1.dp,
+                color = Black40,
+                shape = RoundedCornerShape(12.dp)
+            )
+            .clip(RoundedCornerShape(12.dp))
+            .background(Color.Transparent)
+            .padding(horizontal = 12.dp),
+        contentAlignment = Alignment.CenterStart
+    ) {
+        BasicTextField(
+            value = value,
+            onValueChange = onValueChange,
+            singleLine = true,
+            textStyle = TextStyle(
+                color = Black100,
+                fontSize = 14.sp,
+                textAlign = TextAlign.Start
+            ),
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+            modifier = Modifier.fillMaxWidth()
+        )
+    }
+}
+
+@Composable
+fun EditProgressPanel(
+    editState: EditProgressState,
+    onCancel: () -> Unit,
+    onApply: () -> Unit,
+    onValueChange: (String) -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxSize()
+            .border(
+                width = 1.dp,
+                color = Black10,
+                shape = RoundedCornerShape(16.dp)
+            )
+            .padding(horizontal = 4.dp, vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(2.dp)
+    ) {
+
+        // CANCEL
+        IconButton(
+            modifier = Modifier.size(36.dp),
+            onClick = onCancel
+        ) {
+            Icon(Icons.Default.Close, null)
+        }
+        Box(
+            Modifier
+                .fillMaxHeight()
+                .width(1.dp)
+                .background(Black10)
+        )
+        // MAIN CONTENT
+        Column(
+            modifier = Modifier
+                .weight(1f)
+                .padding(horizontal = 8.dp),
+            verticalArrangement = Arrangement.spacedBy(6.dp)
+        ) {
+
+            // progress text
+            Text(
+                text = "${editState.tempProgress} / ${editState.target}",
+                style = MaterialTheme.typography.bodySmall,
+                color = Black40
+            )
+
+            // divider
+            Box(
+                Modifier
+                    .fillMaxWidth()
+                    .height(1.dp)
+                    .background(Black20)
+            )
+
+            // input
+            CompactNumberField(
+                value = editState.tempProgressText,
+                onValueChange = {text ->
+                    if (text.all { it.isDigit() }) {
+                        onValueChange(text)
+                    }
+                }
+            )
+        }
+        Box(
+            Modifier
+                .fillMaxHeight()
+                .width(1.dp)
+                .background(Black10)
+        )
+        // progress circle
+        ProgressCircle(
+            progress = editState.percent,
+            size = 50.dp,
+            strokeWidth = 2.dp,
+            colorBackground = Black10,
+            colorCompleted = Blue100,
+            colorText = Black60
+        )
+
+        // PLUS
+        Box(
+            modifier = Modifier
+                .padding(start = 4.dp)
+                .weight(0.5f)
+                .size(height = 40.dp, width = 25.dp)
+                .clip(RoundedCornerShape(16.dp))
+                .border(
+                    width = 1.dp,
+                    color = Black10,
+                    shape = RoundedCornerShape(16.dp)
+                )
+                .clickable{
+                    val step = (editState.target * 0.05f)
+                        .toInt()
+                        .coerceAtLeast(1)
+
+                    onValueChange((editState.tempProgress + step).toString())
+                },
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(Icons.Default.KeyboardArrowUp, null)
+        }
+
+        // MINUS
+        Box(
+            modifier = Modifier
+                .padding(start = 4.dp)
+                .weight(0.5f)
+                .size(height = 40.dp, width = 25.dp)
+                .clip(RoundedCornerShape(16.dp))
+                .border(
+                    width = 1.dp,
+                    color = Black10,
+                    shape = RoundedCornerShape(16.dp)
+                )
+                .clickable{
+                    val step = (editState.target * 0.05f)
+                        .toInt()
+                        .coerceAtLeast(1)
+
+                    onValueChange((editState.tempProgress - step).toString())
+                },
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(Icons.Default.KeyboardArrowDown, null)
+        }
+
+
+        Box(
+            Modifier
+                .padding(start = 3.dp)
+                .fillMaxHeight()
+                .width(1.dp)
+                .background(Black10)
+        )
+        // APPLY
+        IconButton(
+            modifier = Modifier.size(36.dp),
+            onClick = onApply
+        ) {
+            Icon(
+                Icons.Default.Done,
+                null,
+                tint = GreenSuccess100
+            )
+        }
+    }
+}
+
 
 @Composable
 fun RightMenu(
@@ -361,14 +566,14 @@ fun RightMenu(
             modifier = Modifier
                 .weight(1f)
                 .clickable{
-                    onClick(HabitCommands.SwitchCompletedStatus(habitId))
+                    onClick(HabitCommands.FailHabitInThisDay(habitId))
                 },
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Icon(Icons.Default.Edit, null/*, tint = Color.White*/)
+            Icon(Icons.Default.Close, null, tint = Color.Red)
             Text(
-                text = "View",
+                text = "Fail",
                 style = MaterialTheme.typography.bodySmall,
                 color = Black40
             )
@@ -384,14 +589,14 @@ fun RightMenu(
             modifier = Modifier
                 .weight(1f)
                 .clickable{
-                    onClick(HabitCommands.SwitchCompletedStatus(habitId))
+                    onClick(HabitCommands.SkipHabitInThisDay(habitId))
                 },
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Icon(Icons.Default.Done, null/*, tint = Color.White*/)
+            Icon(Icons.Default.KeyboardArrowRight, null/*, tint = Color.White*/)
             Text(
-                text = "Done",
+                text = "Skip",
                 style = MaterialTheme.typography.bodySmall,
                 color = Black40
             )
@@ -448,7 +653,7 @@ fun LeftMenu(
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Icon(Icons.Default.Done, null/*, tint = Color.White*/)
+            Icon(Icons.Default.Done, null, tint = GreenSuccess100)
             Text(
                 text = "Done",
                 style = MaterialTheme.typography.bodySmall,
@@ -1226,6 +1431,8 @@ fun ProgressCircle(
     size: Dp = 50.dp,
     colorBackground: Color = Blue40,
     colorCompleted: Color = White100,
+    colorText: Color = White100,
+    textStyle: TextStyle = MaterialTheme.typography.bodyLarge,
     text: String = "%${(progress * 100).toInt()}"
 ) {
 
@@ -1261,8 +1468,8 @@ fun ProgressCircle(
         }
         Text(
             text = text,
-            style = MaterialTheme.typography.bodyLarge,
-            color = White100
+            style = textStyle,
+            color = colorText
         )
     }
 }

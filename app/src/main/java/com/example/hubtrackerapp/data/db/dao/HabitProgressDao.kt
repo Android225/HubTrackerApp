@@ -29,6 +29,17 @@ interface HabitProgressDao {
     """)
     suspend fun switchCompleteStatus( habitId: String, date: LocalDate)
 
+    @Query("UPDATE habit_progress SET failed = NOT failed WHERE habitId = :habitId AND date = :date")
+    suspend fun switchFailedStatus(habitId: String, date: LocalDate)
+    @Query("UPDATE habit_progress SET skipped = NOT skipped WHERE habitId = :habitId AND date = :date")
+    suspend fun switchSkippedStatus(habitId: String, date: LocalDate)
+    @Query("UPDATE habit_progress SET progressWithTarget =:progressWithTarget  WHERE habitId = :habitId AND date = :date")
+    suspend fun changeProgressWithTarget(habitId: String, date: LocalDate,progressWithTarget: String)
+
+    @Query("UPDATE habit_progress SET progress =:progress  WHERE habitId = :habitId AND date = :date")
+    suspend fun changeProgress(habitId: String, date: LocalDate,progress: Float)
+
+
     @Query("SELECT * FROM habit_progress WHERE date = :date")
     suspend fun getProgressForDate(date: String): List<HabitProgressDbModel>
 
@@ -38,6 +49,7 @@ interface HabitProgressDao {
     //для очистки при выходе из профиля
     @Query("DELETE FROM habit_progress")
     suspend fun clearAllProgress()
+
 
     // потом для статистики получения в периоде прогресса между а и б
     @Query("""

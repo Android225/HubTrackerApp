@@ -19,5 +19,6 @@ data class HabitWithProgressUi (
     val progressWithTarget: String, // сколько выполнили,
     val skipped: Boolean,
     val failed: Boolean,
-    val swipeState: SwipeHabitState = SwipeHabitState.CLOSED
+    val swipeState: SwipeHabitState = SwipeHabitState.CLOSED,
+    val isInTargetMode: Boolean = false //режим настройки прогресса
 )
