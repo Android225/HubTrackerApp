@@ -4,15 +4,13 @@ package com.example.hubtrackerapp.presentation.screens.home
 
 import android.util.Log
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.graphics.ImageBitmap
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.imageResource
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.hubtrackerapp.R
+import com.example.hubtrackerapp.data.predefined.PredefinedHabitData
 //import com.example.hubtrackerapp.data.HabitRepositoryImpl
-import com.example.hubtrackerapp.domain.hubbit.AddHabitUseCase
 import com.example.hubtrackerapp.domain.hubbit.GetHabitsWithScheduleForDateUseCase
 import com.example.hubtrackerapp.domain.hubbit.GetUserCardUseCase
 import com.example.hubtrackerapp.domain.hubbit.GetUserID
@@ -21,12 +19,12 @@ import com.example.hubtrackerapp.domain.hubbit.SwitchCompleteStatusUseCase
 import com.example.hubtrackerapp.domain.hubbit.SwitchFailStatusUseCase
 import com.example.hubtrackerapp.domain.hubbit.SwitchSkipStatusUseCase
 import com.example.hubtrackerapp.domain.hubbit.models.HabitProgress
+import com.example.hubtrackerapp.domain.hubbit.models.HomeMenuType
 import com.example.hubtrackerapp.domain.hubbit.models.forUi.CalendarDayUi
 import com.example.hubtrackerapp.domain.hubbit.models.ModeForSwitch
 import com.example.hubtrackerapp.domain.hubbit.models.SwipeHabitState
 import com.example.hubtrackerapp.domain.hubbit.models.forUi.HabitWithProgressUi
 import com.example.hubtrackerapp.domain.hubbit.models.forUi.Mood
-import com.example.hubtrackerapp.presentation.screens.add.PickerType
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -34,7 +32,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.LocalDate
@@ -63,7 +60,7 @@ class HomeViewModel @Inject constructor(
 //        SwitchCompleteStatusUseCase(repository)
     private val _state = MutableStateFlow(HomeUiState())
     val state = _state.asStateFlow()
-
+    val predefinedHabits = PredefinedHabitData.habits
 
     //текущая дата
     private val today: LocalDate = LocalDate.now()
@@ -310,11 +307,11 @@ class HomeViewModel @Inject constructor(
     fun onEvent(event: HomeEvent) {
         when (event) {
             HomeEvent.AddClicked -> {
-                _state.update { it.copy(addMenuVisible = true) }
+                _state.update { it.copy(activeHomeMenu = HomeMenuType.ADD_MENU) }
             }
 
             HomeEvent.DismissAddMenu -> {
-                _state.update { it.copy(addMenuVisible = false) }
+                _state.update { it.copy(activeHomeMenu = HomeMenuType.CLOSED) }
             }
 
             is HomeEvent.ChangeModeScreen -> {
@@ -357,6 +354,10 @@ class HomeViewModel @Inject constructor(
             HomeEvent.ProfileClick -> {
                 Log.d("Home", "Bottom bar Navigate to profile")
             }
+
+            HomeEvent.OpenBottomSheet -> {
+                _state.update { it.copy(activeHomeMenu = HomeMenuType.BOTTOM_SHEET) }
+            }
         }
     }
 }
@@ -392,7 +393,7 @@ data class HomeUiState(
     val completedCount: Int = 0,
     val mode: ModeForSwitch = ModeForSwitch.HOBBIES,
     val isLoading: Boolean = false, // состояние загружены ли данные true = загружаются false = загружены
-    val addMenuVisible: Boolean = false,
+    val activeHomeMenu: HomeMenuType = HomeMenuType.CLOSED,
     val activeHomePicker: HomePickerType = HomePickerType.Close,
     val userName: String = "",
     val mood: Mood = Mood.Happy,
@@ -422,6 +423,7 @@ sealed interface HabitCommands {
 sealed interface HomeEvent {
     data object AddClicked : HomeEvent
     data object DismissAddMenu : HomeEvent
+    data object OpenBottomSheet: HomeEvent
     data object ExploreClick : HomeEvent
     data object ActivityClick : HomeEvent
     data object ProfileClick : HomeEvent

@@ -3,8 +3,6 @@
 package com.example.hubtrackerapp.presentation.screens.home
 
 import HabitMetric
-import android.graphics.Bitmap
-import android.media.Image
 import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Animatable
@@ -24,7 +22,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
@@ -47,7 +44,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AddCircle
-import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Done
@@ -59,21 +55,15 @@ import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Star
-import androidx.compose.material3.BottomAppBar
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.NavigationBarItemDefaults
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -92,7 +82,6 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.layout.ModifierLocalBeyondBoundsLayout
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
@@ -105,11 +94,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.hubtrackerapp.R
+import com.example.hubtrackerapp.domain.hubbit.models.HomeMenuType
 import com.example.hubtrackerapp.domain.hubbit.models.forUi.CalendarDayUi
 import com.example.hubtrackerapp.domain.hubbit.models.ModeForSwitch
-import com.example.hubtrackerapp.domain.hubbit.models.ModeForSwitchInHabit
+import com.example.hubtrackerapp.domain.hubbit.models.PredefinedHabit
 import com.example.hubtrackerapp.domain.hubbit.models.SwipeHabitState
 import com.example.hubtrackerapp.domain.hubbit.models.forUi.HabitWithProgressUi
 import com.example.hubtrackerapp.domain.hubbit.models.forUi.Mood
@@ -126,6 +115,7 @@ fun HomeScreen(
     onAddHabitClick: () -> Unit
 ) {
     val state by viewModel.state.collectAsState()
+    val predefinedHabits = viewModel.predefinedHabits
 //    val mode by viewModel.mode.collectAsState()
 //    val daysInMonth by viewModel.calendarDays.collectAsState()
 //    val selectedDate by viewModel.selectedDate.collectAsState()
@@ -190,7 +180,7 @@ fun HomeScreen(
                             habitsList = state.habits,
                             onPlusBoxClick = {
                                 viewModel.processCommand(HabitCommands.OpenEditor(it))
-                              //  viewModel.processCommand(HabitCommands.SwitchCompletedStatus(it))
+                                //  viewModel.processCommand(HabitCommands.SwitchCompletedStatus(it))
                                 //  viewModel.processCommand(HabitCommands.SwitchCompletedStatus(it))
                             },
                             editProgressState = state.editProgressState,
@@ -218,7 +208,7 @@ fun HomeScreen(
             )
 
             AnimatedVisibility(
-                visible = state.addMenuVisible,
+                visible = state.activeHomeMenu == HomeMenuType.ADD_MENU,
                 enter = fadeIn(),
                 exit = fadeOut()
             ) {
@@ -235,21 +225,176 @@ fun HomeScreen(
                         }
                 )
             }
+            //СДЕЛАТЬ ЧТОБ ОНА ВЫЗЫВАЛА ИЛИ добавление готового хобби в профиль
+            //либо если кликнули на бед хабит или гуд хабит вызывался Ботом Щит
+            //а после viewModel.onEvent(HomeEvent.DismissAddMenu)
             AnimatedVisibility(
                 modifier = Modifier
                     .zIndex(3f)
                     .align(Alignment.BottomCenter)
                     .padding(bottom = 76.dp),
-                visible = state.addMenuVisible,
+                visible = state.activeHomeMenu == HomeMenuType.ADD_MENU,
                 enter = slideInVertically { it } + fadeIn(),
                 exit = slideOutVertically { it } + fadeOut()
             ) {
                 AddMenu(
-                    onClick = { onAddHabitClick() }
+                    onClick = {
+                        viewModel.onEvent(HomeEvent.OpenBottomSheet)
+                        //onAddHabitClick()
+                    }
                 )
             }
-
+            // Сделать еще одно состояние в HomeEvent чтоб только щит открывать и через него тыкать
+            val sheetState = rememberModalBottomSheetState()
+            if (state.activeHomeMenu == HomeMenuType.BOTTOM_SHEET) {
+                ModalBottomSheet(
+                    onDismissRequest = {
+                        viewModel.onEvent(HomeEvent.DismissAddMenu)
+                    },
+                    sheetState = sheetState,
+                    containerColor = Color.White,
+                    tonalElevation = 8.dp,
+                    dragHandle = { BottomSheetDefaults.DragHandle() }
+                ) {
+                    AddOrCreateHabit(
+                        predefinedHabits = predefinedHabits,
+                        onAddHabitClick = {
+                            viewModel.onEvent(HomeEvent.DismissAddMenu)
+                            onAddHabitClick()
+                        }, // создание нового хобби
+                        onPredefinedHabitClick = {} // передается predefinedHabit
+                    )
+//                    AddMenu(
+//                        onClick = {
+//                            viewModel.onEvent(HomeEvent.DismissAddMenu)
+//                            onAddHabitClick()
+//                        }
+//                    )
+                }
+            }
         }
+    }
+}
+
+@Composable
+private fun AddOrCreateHabit(
+    predefinedHabits: List<PredefinedHabit>,
+    onAddHabitClick: () -> Unit,
+    onPredefinedHabitClick: (PredefinedHabit) -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .padding(horizontal = 24.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        Text(
+            text = "New Habit",
+            style = MaterialTheme.typography.labelSmall,
+            color = Black40
+        )
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .border(
+                    width = 1.dp,
+                    color = Black10,
+                    shape = RoundedCornerShape(16.dp)
+                )
+                .padding(horizontal = 12.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                modifier = Modifier
+                    .weight(1f),
+                text = "Create Custom Habit",
+                style = MaterialTheme.typography.bodyMedium
+            )
+            Box(
+                modifier = Modifier
+                    .size(36.dp)
+                    .border(
+                        width = 1.dp,
+                        color = Black10,
+                        shape = RoundedCornerShape(12.dp)
+                    )
+                    .clip(RoundedCornerShape(12.dp))
+                    .clickable{
+                        onAddHabitClick()
+                    },
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Add,
+                    contentDescription = "Add New Habit"
+                )
+            }
+        }
+        Text(
+            text = "Popular Habits",
+            style = MaterialTheme.typography.labelSmall,
+            color = Black40
+        )
+        LazyRow(
+            modifier = Modifier
+                .fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(10.dp),
+            contentPadding = PaddingValues(
+                bottom = 10.dp
+            )
+        ) {
+            itemsIndexed(
+                items = predefinedHabits,
+                key = { _, habit: PredefinedHabit -> habit.habitName }
+            ) { index, habit ->
+                PredefinedHabitCard(
+                    habit = habit,
+                    onPredefinedHabitClick = {}
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun PredefinedHabitCard(
+    habit: PredefinedHabit,
+    onPredefinedHabitClick: (PredefinedHabit) -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .size(width = 128.dp, height = 102.dp)
+            .clip(RoundedCornerShape(16.dp))
+            .background(habit.color)
+            .clickable {
+                onPredefinedHabitClick(habit)
+            }
+            .padding(horizontal = 12.dp, vertical = 8.dp)
+    ) {
+        Box(
+            modifier = Modifier
+            .clip(RoundedCornerShape(10.dp))
+            .background(White100)
+            .padding(horizontal = 4.dp, vertical = 4.dp),
+            contentAlignment = Alignment.Center
+        )
+        {
+            Text(
+                text = habit.icon
+            )
+        }
+
+        Text(
+            modifier = Modifier
+                .padding(top = 4.dp)
+                .weight(1f),
+            text = habit.habitName,
+            style = MaterialTheme.typography.bodyMedium
+        )
+        Text(
+            text = habit.metricForHabit.formatWithQuantity(habit.target),
+            color = Black60,
+            style = MaterialTheme.typography.bodySmall
+        )
     }
 }
 
@@ -327,11 +472,11 @@ private fun HomeTodayContent(
 
             SwipeHabitItem(
                 habit = habits,
-                onSwipe = { onSwipe(HabitCommands.OnHabitSwiped(habits.habitId,it)) },
+                onSwipe = { onSwipe(HabitCommands.OnHabitSwiped(habits.habitId, it)) },
                 leftMenu = {
                     LeftMenu(
                         habits.habitId,
-                        onClick = {onClick(it)},
+                        onClick = { onClick(it) },
                         canEditToday = canEditToday,
                         isCompleted = habits.isCompleted
                     )
@@ -339,7 +484,7 @@ private fun HomeTodayContent(
                 rightMenu = {
                     RightMenu(
                         habits.habitId,
-                        onClick = {onClick(it)},
+                        onClick = { onClick(it) },
                         canEditToday = canEditToday
                     )
                 }
@@ -353,19 +498,20 @@ private fun HomeTodayContent(
                         onValueChange = { onClick(HabitCommands.UpdateEditor(it)) }
                     )
                 } else {
-                HabitCard(
-                    habits,
-                    onPlusBoxClick = {
-                        onPlusBoxClick(it)
-                        //  viewModel.processCommand(HabitCommands.SwitchCompletedStatus(it))
-                    },
-                    canEditToday = canEditToday
-                )
-            }
+                    HabitCard(
+                        habits,
+                        onPlusBoxClick = {
+                            onPlusBoxClick(it)
+                            //  viewModel.processCommand(HabitCommands.SwitchCompletedStatus(it))
+                        },
+                        canEditToday = canEditToday
+                    )
+                }
             }
         }
     }
 }
+
 @Composable
 fun CompactNumberField(
     value: String,
@@ -443,7 +589,11 @@ fun EditProgressPanel(
 
             // progress text
             Text(
-                text = "${editState.tempProgress} / ${editState.target} ${habitMetric.getUnitForm(editState.target.toString())}",
+                text = "${editState.tempProgress} / ${editState.target} ${
+                    habitMetric.getUnitForm(
+                        editState.target.toString()
+                    )
+                }",
                 style = MaterialTheme.typography.bodySmall,
                 color = Black40
             )
@@ -459,7 +609,7 @@ fun EditProgressPanel(
             // input
             CompactNumberField(
                 value = editState.tempProgressText,
-                onValueChange = {text ->
+                onValueChange = { text ->
                     if (text.all { it.isDigit() }) {
                         onValueChange(text)
                     }
@@ -558,7 +708,7 @@ fun RightMenu(
     habitId: String,
     canEditToday: Boolean,
     onClick: (HabitCommands) -> Unit
-){
+) {
     Row(
         modifier = Modifier
             .height(80.dp)
@@ -570,7 +720,7 @@ fun RightMenu(
                 color = Black10,
                 shape = RoundedCornerShape(12.dp)
             ),
-    verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically
     ) {
         Column(
             modifier = Modifier
@@ -617,15 +767,16 @@ fun RightMenu(
         }
     }
 }
+
 @Composable
 fun LeftMenu(
     habitId: String,
     canEditToday: Boolean,
     isCompleted: Boolean,
     onClick: (HabitCommands) -> Unit,
-    text:String =  if (!isCompleted) "Done" else "UnDone",
+    text: String = if (!isCompleted) "Done" else "UnDone",
     iconDone: ImageVector = if (!isCompleted) Icons.Default.Done else Icons.Default.Close
-){
+) {
     val x = Icons.Default.Done
     Row(
         modifier = Modifier
@@ -696,6 +847,7 @@ fun LeftMenu(
 //        Icon(Icons.Default.Notifications, null, tint = Color.White)
 //    }
 }
+
 @Composable
 fun AddMenu(
     onClick: () -> Unit
@@ -1028,7 +1180,11 @@ fun HabitCard(
             modifier = Modifier
                 .weight(1f),
             cardName = habitWithProgress.title,
-            additionalInfo = "${habitWithProgress.progressWithTarget} / ${habitWithProgress.target} ${habitWithProgress.metric.getUnitForm(habitWithProgress.target)}"
+            additionalInfo = "${habitWithProgress.progressWithTarget} / ${habitWithProgress.target} ${
+                habitWithProgress.metric.getUnitForm(
+                    habitWithProgress.target
+                )
+            }"
         )
         ParticipantsRow(fakeParticipants(), size = 28.dp)
         AddAndCompleteHabit(
