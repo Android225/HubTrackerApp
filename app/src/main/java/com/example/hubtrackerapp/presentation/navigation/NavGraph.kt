@@ -1,5 +1,6 @@
 package com.example.hubtrackerapp.presentation.navigation
 
+import android.os.Bundle
 import android.util.Log
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -9,6 +10,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navigation
+import com.example.hubtrackerapp.domain.hubbit.models.PredefinedHabit
+import com.example.hubtrackerapp.domain.hubbit.models.forUi.HabitWithProgressUi
 import com.example.hubtrackerapp.presentation.screens.add.AddHabit
 import com.example.hubtrackerapp.presentation.screens.authorization.AuthorizationHubScreen
 import com.example.hubtrackerapp.presentation.screens.authorization.RegistrationEnterEmailScreen
@@ -138,13 +141,22 @@ fun NavGraph() {
         }
         composable(Screen.HomeScreen.route) {
             HomeScreen(
-                onAddHabitClick = {
-                    navController.navigate(Screen.AddHabit.route)
+                onAddHabitClick = {data ->
+                    // data == null - создаем новый habit
+                    // data != null - есть данные значить editMode
+                    val route = if (data == null) {
+                        Screen.AddHabit.createRoute()
+                    } else {
+                        Screen.AddHabit.createEditRoute(data)
+                    }
+                    navController.navigate(route)
                 }
             )
         }
         composable(Screen.AddHabit.route) {
+            val editData = Screen.AddHabit.getHabitData(it.arguments)
             AddHabit(
+                editData = editData,
                 onBackClick = {
                     navController.popBackStack()
                 }
@@ -163,6 +175,14 @@ sealed class Screen(val route: String) {
     data object RegistrationGender : Screen("reg_gender")
     data object RegistrationHabits : Screen("reg_habits")
     data object HomeScreen: Screen("home")
-    data object AddHabit: Screen("add_habit")
+    data object AddHabit: Screen("add_habit/{edit_data}"){
+
+        fun createRoute(): String = "add_habit"
+        fun createEditRoute(data: String): String = "add_habit/$data"
+
+        fun getHabitData(arguments: Bundle?): String? {
+            return arguments?.getString("edit_data")
+        }
+    }
 
 }

@@ -112,7 +112,7 @@ import java.time.LocalDate
 fun HomeScreen(
     modifier: Modifier = Modifier,
     viewModel: HomeViewModel = hiltViewModel(),
-    onAddHabitClick: () -> Unit
+    onAddHabitClick: (String?) -> Unit
 ) {
     val state by viewModel.state.collectAsState()
     val predefinedHabits = viewModel.predefinedHabits
@@ -186,7 +186,10 @@ fun HomeScreen(
                             editProgressState = state.editProgressState,
                             canEditToday = state.canEditToday,
                             onSwipe = viewModel::processCommand,
-                            onClick = viewModel::processCommand
+                            onClick = viewModel::processCommand,
+                            onEditHabit = {
+                                onAddHabitClick(it)
+                            }
                         )
                     }
 
@@ -260,9 +263,8 @@ fun HomeScreen(
                         predefinedHabits = predefinedHabits,
                         onAddHabitClick = {
                             viewModel.onEvent(HomeEvent.DismissAddMenu)
-                            onAddHabitClick()
-                        }, // создание нового хобби
-                        onPredefinedHabitClick = {} // передается predefinedHabit
+                            onAddHabitClick(it)
+                        }, // создание/изменение нового/старого хобби
                     )
 //                    AddMenu(
 //                        onClick = {
@@ -279,8 +281,7 @@ fun HomeScreen(
 @Composable
 private fun AddOrCreateHabit(
     predefinedHabits: List<PredefinedHabit>,
-    onAddHabitClick: () -> Unit,
-    onPredefinedHabitClick: (PredefinedHabit) -> Unit
+    onAddHabitClick: (String?) -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -318,8 +319,8 @@ private fun AddOrCreateHabit(
                         shape = RoundedCornerShape(12.dp)
                     )
                     .clip(RoundedCornerShape(12.dp))
-                    .clickable{
-                        onAddHabitClick()
+                    .clickable {
+                        onAddHabitClick(null) // Создние нового хобби
                     },
                 contentAlignment = Alignment.Center
             ) {
@@ -348,7 +349,9 @@ private fun AddOrCreateHabit(
             ) { index, habit ->
                 PredefinedHabitCard(
                     habit = habit,
-                    onPredefinedHabitClick = {}
+                    onPredefinedHabitClick = {
+                        onAddHabitClick(it)
+                    }
                 )
             }
         }
@@ -358,7 +361,7 @@ private fun AddOrCreateHabit(
 @Composable
 private fun PredefinedHabitCard(
     habit: PredefinedHabit,
-    onPredefinedHabitClick: (PredefinedHabit) -> Unit
+    onPredefinedHabitClick: (String) -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -366,15 +369,15 @@ private fun PredefinedHabitCard(
             .clip(RoundedCornerShape(16.dp))
             .background(habit.color)
             .clickable {
-                onPredefinedHabitClick(habit)
+                onPredefinedHabitClick(habit.habitName)
             }
             .padding(horizontal = 12.dp, vertical = 8.dp)
     ) {
         Box(
             modifier = Modifier
-            .clip(RoundedCornerShape(10.dp))
-            .background(White100)
-            .padding(horizontal = 4.dp, vertical = 4.dp),
+                .clip(RoundedCornerShape(10.dp))
+                .background(White100)
+                .padding(horizontal = 4.dp, vertical = 4.dp),
             contentAlignment = Alignment.Center
         )
         {
@@ -410,7 +413,8 @@ private fun HomeTodayContent(
     canEditToday: Boolean,
     onPlusBoxClick: (String) -> Unit,
     onSwipe: (HabitCommands) -> Unit,
-    onClick: (HabitCommands) -> Unit
+    onClick: (HabitCommands) -> Unit,
+    onEditHabit: (String) -> Unit
 ) {
 
     LazyColumn(
@@ -478,7 +482,8 @@ private fun HomeTodayContent(
                         habits.habitId,
                         onClick = { onClick(it) },
                         canEditToday = canEditToday,
-                        isCompleted = habits.isCompleted
+                        isCompleted = habits.isCompleted,
+                        onEditHabit = onEditHabit
                     )
                 },
                 rightMenu = {
@@ -774,6 +779,7 @@ fun LeftMenu(
     canEditToday: Boolean,
     isCompleted: Boolean,
     onClick: (HabitCommands) -> Unit,
+    onEditHabit: (String) -> Unit,
     text: String = if (!isCompleted) "Done" else "UnDone",
     iconDone: ImageVector = if (!isCompleted) Icons.Default.Done else Icons.Default.Close
 ) {
@@ -796,7 +802,8 @@ fun LeftMenu(
                 .weight(1f)
                 .clickable {
                     if (canEditToday) {
-                        onClick(HabitCommands.SwitchCompletedStatus(habitId))
+                        onEditHabit(habitId)
+
                     }
                 },
             verticalArrangement = Arrangement.Center,
@@ -1632,7 +1639,11 @@ fun StatisticBox(
                     .padding(start = 8.dp)
             ) {
                 Text(
-                    text = "Your daily goals almost done!",
+                    text = if(progress == allHabitsCount) {
+                        "Your daily goals done!"
+                    } else {
+                        "Your daily goals almost done!"
+                    },
                     style = MaterialTheme.typography.bodyLarge,
                     color = White100
                 )

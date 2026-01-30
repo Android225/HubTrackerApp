@@ -7,12 +7,20 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 //import com.example.hubtrackerapp.data.HabitRepositoryImpl
 import com.example.hubtrackerapp.data.predefined.PredefinedHabitData
-import com.example.hubtrackerapp.data.predefined.PredefinedHabitRepositoryImpl
 import com.example.hubtrackerapp.domain.hubbit.AddHabitUseCase
+import com.example.hubtrackerapp.domain.hubbit.EditHabitUseCase
+import com.example.hubtrackerapp.domain.hubbit.GetHabitUseCase
+import com.example.hubtrackerapp.domain.hubbit.GetUserID
+import com.example.hubtrackerapp.domain.hubbit.models.AddHabitMode
 import com.example.hubtrackerapp.domain.hubbit.models.HabitSchedule
+import com.example.hubtrackerapp.domain.hubbit.models.HabitUi
 import com.example.hubtrackerapp.domain.hubbit.models.ModeForSwitchInHabit
 import com.example.hubtrackerapp.domain.hubbit.models.PredefinedHabit
+import com.example.hubtrackerapp.domain.hubbit.models.forUi.HabitWithProgressUi
 import com.example.hubtrackerapp.domain.predefined.GetAllPredefinedHabitsUseCase
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedFactory
+import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -20,13 +28,16 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.LocalTime
-import javax.inject.Inject
 
-@HiltViewModel
-class AddHabitViewModel @Inject constructor(
+@HiltViewModel(assistedFactory = AddHabitViewModel.Factory::class)
+class AddHabitViewModel @AssistedInject constructor(
     private val addHabitUseCase:AddHabitUseCase,
     private val getAllPredefinedHabitsUseCase:GetAllPredefinedHabitsUseCase,
+    private val getHabitUseCase: GetHabitUseCase,
+    private val getUserID: GetUserID,
+    private val editHabitUseCase: EditHabitUseCase,
     //val predefinedHabits: List<PredefinedHabit>
+    @Assisted("editData") private val editData: String? = null
 ) : ViewModel() {
 
     /*
@@ -62,15 +73,70 @@ class AddHabitViewModel @Inject constructor(
     val predefinedHabits = PredefinedHabitData.habits
     private val _state = MutableStateFlow<AddHabitState>(AddHabitState.Initial)
     val state = _state.asStateFlow()
-   init {
+    init {
         viewModelScope.launch {
             _state.update {
-                AddHabitState.Creation(
-                    form = getAllPredefinedHabitsUseCase().first()
-                )
+                when {
+                    // 1. Обычное создание карточки
+                    editData == null -> AddHabitState.Creation(
+                        form = getAllPredefinedHabitsUseCase().first(),
+                        mode = AddHabitMode.CREATE_NEW
+                    )
+
+                    // 2. Predefined хобби
+                    predefinedHabits.any { it.habitName == editData } -> {
+                        val predefined = predefinedHabits.first { it.habitName == editData }
+                        AddHabitState.Creation(
+                            form = predefined,
+                            mode = AddHabitMode.CREATE_FROM_PREDEFINED
+                        )
+                    }
+
+                    // 3. Редактирование существующего хобби
+                    else -> {
+                        try {
+                            val userId = getUserID()
+                            val habit = getHabitUseCase(userId, editData)
+
+                            val predefinedForm = PredefinedHabit(
+                                habitName = habit.title,
+                                icon = habit.emoji,
+                                color = habit.color,
+                                metricForHabit = habit.metric,
+                                target = habit.target,
+                                habitSchedule = habit.schedule,
+                                reminderTime = habit.reminderTime,
+                                reminderDate = habit.reminderDate,
+                                reminderIsActive = habit.reminderIsActive,
+                                habitType = habit.habitType,
+                                habitCustom = habit.habitCustom
+                            )
+
+                            AddHabitState.Creation(
+                                form = predefinedForm,
+                                mode = AddHabitMode.EDIT_EXISTING,
+                                habitId = editData // ✅ Сохраняем ID
+                            )
+                        } catch (e: Exception) {
+                            Log.e("AddHabitViewModel", "Error loading habit: ${e.message}")
+                            AddHabitState.Creation(
+                                form = getAllPredefinedHabitsUseCase().first(),
+                                mode = AddHabitMode.CREATE_NEW
+                            )
+                        }
+                    }
+                }
             }
         }
-   }
+    }
+//        viewModelScope.launch {
+//            _state.update {
+//                AddHabitState.Creation(
+//                    form = getAllPredefinedHabitsUseCase().first()
+//                )
+//            }
+//        }
+
     private inline fun AddHabitState.updateCreation(
         crossinline update: AddHabitState.Creation.() -> AddHabitState.Creation
     ): AddHabitState{
@@ -186,21 +252,51 @@ class AddHabitViewModel @Inject constructor(
             AddHabitEvent.Save -> {
                 viewModelScope.launch {
                     _state.update { previous ->
-                        if (previous is AddHabitState.Creation && previous.isSaveEnable){
-                            addHabitUseCase(
-                                emoji = previous.form.icon,
-                                title = previous.form.habitName,
-                                schedule = previous.form.habitSchedule,
-                                color = previous.form.color,
-                                target = previous.form.target,
-                                metric = previous.form.metricForHabit,
-                                reminderTime = previous.form.reminderTime,
-                                reminderDate = previous.form.reminderDate,
-                                reminderIsActive = previous.form.reminderIsActive,
-                                habitType = previous.form.habitType,
-                                habitCustom = previous.form.habitCustom,
-                                createdAt = LocalDate.now()
-                            )
+                        if (previous is AddHabitState.Creation && previous.isSaveEnable) {
+                            when (previous.mode) {
+                                AddHabitMode.EDIT_EXISTING -> {
+                                    // Редактирование существующего хобби
+                                    val habitUi = HabitUi(
+                                        habitId = previous.habitId!!, // Не null в режиме редактирования
+                                        userId = getUserID(),
+                                        emoji = previous.form.icon,
+                                        title = previous.form.habitName,
+                                        createdAt = LocalDate.now(), // Нужно сохранить оригинальную дату!
+                                        schedule = previous.form.habitSchedule,
+                                        color = previous.form.color,
+                                        target = previous.form.target,
+                                        metric = previous.form.metricForHabit,
+                                        reminderTime = previous.form.reminderTime,
+                                        reminderDate = previous.form.reminderDate,
+                                        reminderIsActive = previous.form.reminderIsActive,
+                                        habitType = previous.form.habitType,
+                                        habitCustom = previous.form.habitCustom
+                                    )
+
+                                    // Вызываем use case для редактирования
+                                    editHabitUseCase(habitUi)
+                                }
+
+                                AddHabitMode.CREATE_NEW,
+                                AddHabitMode.CREATE_FROM_PREDEFINED -> {
+                                    // Создание нового хобби
+                                    addHabitUseCase(
+                                        emoji = previous.form.icon,
+                                        title = previous.form.habitName,
+                                        schedule = previous.form.habitSchedule,
+                                        color = previous.form.color,
+                                        target = previous.form.target,
+                                        metric = previous.form.metricForHabit,
+                                        reminderTime = previous.form.reminderTime,
+                                        reminderDate = previous.form.reminderDate,
+                                        reminderIsActive = previous.form.reminderIsActive,
+                                        habitType = previous.form.habitType,
+                                        habitCustom = previous.form.habitCustom,
+                                        createdAt = LocalDate.now()
+                                    )
+                                }
+                            }
+
                             AddHabitState.Finished
                         } else {
                             previous
@@ -216,6 +312,12 @@ class AddHabitViewModel @Inject constructor(
             }
         }
 
+    }
+    @AssistedFactory
+    interface Factory {
+        fun create(
+            @Assisted("editData") editData: String? = null
+        ): AddHabitViewModel
     }
 }
 
@@ -233,6 +335,8 @@ sealed interface AddHabitState{
     // поэтому вызываем сначала Initaial
     data class Creation(
         val form: PredefinedHabit,
+        val mode: AddHabitMode = AddHabitMode.CREATE_NEW,
+        val habitId: String? = null,
         val activePicker: PickerType = PickerType.Close,
     ) : AddHabitState {
         val isSaveEnable: Boolean

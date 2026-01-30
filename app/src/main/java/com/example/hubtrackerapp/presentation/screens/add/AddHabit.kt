@@ -78,9 +78,11 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.hubtrackerapp.domain.hubbit.models.AddHabitMode
 import com.example.hubtrackerapp.domain.hubbit.models.HabitSchedule
 import com.example.hubtrackerapp.domain.hubbit.models.ModeForSwitchInHabit
 import com.example.hubtrackerapp.domain.hubbit.models.PredefinedHabit
+import com.example.hubtrackerapp.domain.hubbit.models.forUi.HabitWithProgressUi
 import com.example.hubtrackerapp.domain.hubbit.models.toDisplayText
 import com.example.hubtrackerapp.presentation.screens.components.ModSwitcher
 import com.example.hubtrackerapp.presentation.screens.components.SwitcherOption
@@ -95,7 +97,12 @@ import java.util.Locale
 @Composable
 fun AddHabit(
     modifier: Modifier = Modifier,
-    viewModel: AddHabitViewModel = hiltViewModel(),
+    editData: String? = null,
+    viewModel: AddHabitViewModel = hiltViewModel(
+        creationCallback = {factory: AddHabitViewModel.Factory ->
+            factory.create(editData)
+        }
+    ),
     onBackClick: () -> Unit
 ) {
     val state by viewModel.state.collectAsState()
@@ -110,7 +117,8 @@ fun AddHabit(
             AddHabitContent(
                 modifier = modifier,
                 form = creationState.form,
-                onEvent = viewModel::onEventAddHabit
+                onEvent = viewModel::onEventAddHabit,
+                mode = creationState.mode
             )
             PickerOverlay(
                 form = creationState.form,
@@ -279,6 +287,7 @@ private fun PickerOverlay(
 private fun AddHabitContent(
     modifier: Modifier = Modifier,
     form: PredefinedHabit,
+    mode: AddHabitMode,
     onEvent: (AddHabitEvent) -> Unit
 
 ){
@@ -295,7 +304,11 @@ private fun AddHabitContent(
                     ),
                     title = {
                         Text(
-                            text = "Create Custom Habit",
+                            text = if(mode == AddHabitMode.CREATE_NEW) {
+                                "Create Custom Habit"
+                            } else {
+                                "Edit Habit"
+                            } ,
                             style = MaterialTheme.typography.headlineMedium,
                             color = MaterialTheme.colorScheme.onBackground,
                             textAlign = TextAlign.Center
@@ -348,7 +361,11 @@ private fun AddHabitContent(
 
                         ) {
                         Text(
-                            text = "Add Habit"
+                            text = if(mode == AddHabitMode.CREATE_NEW || mode == AddHabitMode.CREATE_FROM_PREDEFINED ) {
+                                "Add Habit"
+                            } else {
+                                "Save habit"
+                            }
                         )
                     }
                 }
