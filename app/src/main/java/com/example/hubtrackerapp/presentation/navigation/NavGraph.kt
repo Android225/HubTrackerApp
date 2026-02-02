@@ -5,13 +5,10 @@ import android.util.Log
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import androidx.navigation.NavGraph
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navigation
-import com.example.hubtrackerapp.domain.hubbit.models.PredefinedHabit
-import com.example.hubtrackerapp.domain.hubbit.models.forUi.HabitWithProgressUi
 import com.example.hubtrackerapp.presentation.screens.add.AddHabit
 import com.example.hubtrackerapp.presentation.screens.authorization.AuthorizationHubScreen
 import com.example.hubtrackerapp.presentation.screens.authorization.RegistrationEnterEmailScreen

@@ -4,7 +4,6 @@ import HabitMetric
 import androidx.compose.ui.graphics.Color
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import com.example.hubtrackerapp.domain.hubbit.models.HabitSchedule
 import com.example.hubtrackerapp.domain.hubbit.models.ModeForSwitchInHabit
 import java.time.LocalDate
 import java.time.LocalTime

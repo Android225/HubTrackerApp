@@ -2,7 +2,6 @@
 
 package com.example.hubtrackerapp.presentation.screens.authorization
 
-import android.content.Context
 import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -35,18 +34,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import com.example.hubtrackerapp.presentation.theme.*
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
-import androidx.compose.ui.text.input.VisualTransformation.Companion
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.hubtrackerapp.presentation.screens.registration.RegisterEvent
 import com.example.hubtrackerapp.presentation.screens.registration.RegistrationViewModel
-
+import com.example.hubtrackerapp.presentation.theme.Black10
+import com.example.hubtrackerapp.presentation.theme.Black20
+import com.example.hubtrackerapp.presentation.theme.White100
 
 
 @Composable

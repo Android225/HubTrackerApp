@@ -1,7 +1,7 @@
 package com.example.hubtrackerapp.data.predefined
 
+import HabitMetric
 import com.example.hubtrackerapp.domain.hubbit.models.HabitSchedule
-import com.example.hubtrackerapp.domain.hubbit.models.ModeForSwitch
 import com.example.hubtrackerapp.domain.hubbit.models.ModeForSwitchInHabit
 import com.example.hubtrackerapp.domain.hubbit.models.PredefinedHabit
 import com.example.hubtrackerapp.presentation.theme.Blue100

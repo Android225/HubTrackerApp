@@ -5,7 +5,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.room.TypeConverter
 import com.example.hubtrackerapp.data.db.model.HabitScheduleDbModel
-import com.example.hubtrackerapp.domain.hubbit.models.HabitSchedule
 import com.example.hubtrackerapp.domain.hubbit.models.ModeForSwitchInHabit
 import com.google.gson.Gson
 import java.time.LocalDate

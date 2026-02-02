@@ -4,7 +4,6 @@ import com.example.hubtrackerapp.data.db.model.HabitDbModel
 import com.example.hubtrackerapp.domain.hubbit.models.HabitUi
 import com.example.hubtrackerapp.domain.hubbit.models.PredefinedHabit
 import java.time.LocalDate
-import java.util.UUID
 
 fun HabitUi.toDbModel(): HabitDbModel {
     return HabitDbModel(

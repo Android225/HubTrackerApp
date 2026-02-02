@@ -1,7 +1,6 @@
 package com.example.hubtrackerapp.data.db.model
 
 import androidx.room.Entity
-import androidx.room.PrimaryKey
 import java.time.LocalDate
 
 @Entity(

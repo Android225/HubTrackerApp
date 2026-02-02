@@ -1,12 +1,9 @@
 package com.example.hubtrackerapp.data
 
-import HabitMetric
-import android.content.Context
-import android.util.Log
-import androidx.compose.runtime.retain.retain
-import androidx.compose.ui.graphics.Color
 //import com.example.hubtrackerapp.data.TempDB.testUser
-import com.example.hubtrackerapp.data.db.HabitsDatabase
+import HabitMetric
+import android.util.Log
+import androidx.compose.ui.graphics.Color
 import com.example.hubtrackerapp.data.db.dao.HabitDao
 import com.example.hubtrackerapp.data.db.dao.HabitProgressDao
 import com.example.hubtrackerapp.data.db.dao.UserDao

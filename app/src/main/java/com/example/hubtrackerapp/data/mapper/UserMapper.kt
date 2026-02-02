@@ -1,9 +1,6 @@
 package com.example.hubtrackerapp.data.mapper
 
-import androidx.room.Entity
-import androidx.room.PrimaryKey
 import com.example.hubtrackerapp.data.db.model.UserDbModel
-import com.example.hubtrackerapp.domain.hubbit.models.PredefinedHabit
 import com.example.hubtrackerapp.domain.user.User
 import com.example.hubtrackerapp.presentation.screens.registration.model.RegistrationDraft
 

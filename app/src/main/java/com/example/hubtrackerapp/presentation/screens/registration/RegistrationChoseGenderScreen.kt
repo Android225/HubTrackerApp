@@ -2,13 +2,9 @@
 
 package com.example.hubtrackerapp.presentation.screens.registration
 
-import android.content.Context
-import android.graphics.Paint
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.snapping.SnapPosition
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -34,25 +30,17 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import com.example.hubtrackerapp.presentation.theme.*
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.hubtrackerapp.R
-import com.example.hubtrackerapp.presentation.screens.authorization.AuthorizationViewModel
-
-import java.time.format.TextStyle
+import com.example.hubtrackerapp.presentation.theme.Black10
+import com.example.hubtrackerapp.presentation.theme.Black20
+import com.example.hubtrackerapp.presentation.theme.White100
 
 @Composable
 fun RegistrationChoseGenderScreen(

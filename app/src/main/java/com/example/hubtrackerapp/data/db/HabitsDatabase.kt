@@ -6,10 +6,10 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import com.example.hubtrackerapp.data.db.dao.HabitDao
-import com.example.hubtrackerapp.data.db.model.HabitDbModel
 import com.example.hubtrackerapp.data.db.dao.HabitProgressDao
-import com.example.hubtrackerapp.data.db.model.HabitProgressDbModel
 import com.example.hubtrackerapp.data.db.dao.UserDao
+import com.example.hubtrackerapp.data.db.model.HabitDbModel
+import com.example.hubtrackerapp.data.db.model.HabitProgressDbModel
 import com.example.hubtrackerapp.data.db.model.UserDbModel
 
 @Database(

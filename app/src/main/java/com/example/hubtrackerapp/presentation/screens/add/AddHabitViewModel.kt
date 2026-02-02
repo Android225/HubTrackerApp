@@ -1,11 +1,11 @@
 package com.example.hubtrackerapp.presentation.screens.add
 
+//import com.example.hubtrackerapp.data.HabitRepositoryImpl
 import HabitMetric
 import android.util.Log
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-//import com.example.hubtrackerapp.data.HabitRepositoryImpl
 import com.example.hubtrackerapp.data.predefined.PredefinedHabitData
 import com.example.hubtrackerapp.domain.hubbit.AddHabitUseCase
 import com.example.hubtrackerapp.domain.hubbit.EditHabitUseCase
@@ -16,7 +16,6 @@ import com.example.hubtrackerapp.domain.hubbit.models.HabitSchedule
 import com.example.hubtrackerapp.domain.hubbit.models.HabitUi
 import com.example.hubtrackerapp.domain.hubbit.models.ModeForSwitchInHabit
 import com.example.hubtrackerapp.domain.hubbit.models.PredefinedHabit
-import com.example.hubtrackerapp.domain.hubbit.models.forUi.HabitWithProgressUi
 import com.example.hubtrackerapp.domain.predefined.GetAllPredefinedHabitsUseCase
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory

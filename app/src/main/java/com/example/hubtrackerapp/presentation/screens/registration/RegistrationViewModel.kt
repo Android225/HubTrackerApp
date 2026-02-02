@@ -1,13 +1,10 @@
 package com.example.hubtrackerapp.presentation.screens.registration
 
+//import com.example.hubtrackerapp.data.AuthRepositoryImpl
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-//import com.example.hubtrackerapp.data.AuthRepositoryImpl
-import com.example.hubtrackerapp.data.predefined.PredefinedHabitData
-import com.example.hubtrackerapp.data.predefined.PredefinedHabitRepositoryImpl
 import com.example.hubtrackerapp.domain.auth.RegisterUseCase
-import com.example.hubtrackerapp.domain.hubbit.AddHabitUseCase
 import com.example.hubtrackerapp.domain.hubbit.models.PredefinedHabit
 import com.example.hubtrackerapp.domain.predefined.GetAllPredefinedHabitsUseCase
 import com.example.hubtrackerapp.presentation.screens.registration.model.RegistrationDraft
@@ -17,7 +14,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-import kotlin.collections.emptyList
 
 @HiltViewModel
 class RegistrationViewModel @Inject constructor(
