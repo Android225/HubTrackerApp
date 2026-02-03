@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "203187244654",
+    "project_id": "hubtrackerapp",
+    "storage_bucket": "hubtrackerapp.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:203187244654:android:72b6c9b854e2ab883a607f",
+        "android_client_info": {
+          "package_name": "com.example.hubtrackerapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAiNdHhkPmqo30KMsP56Tp99fUaHoJ00Ks"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
