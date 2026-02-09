@@ -8,7 +8,6 @@ data class UserDbModel(
     @PrimaryKey
     val userId: String,
     val email: String,
-    val password: String = "",
     val firstName: String,
     val lastName: String,
     val birthDate: String,

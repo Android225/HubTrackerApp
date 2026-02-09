@@ -14,8 +14,6 @@ interface HabitProgressDao {
     @Insert(onConflict = OnConflictStrategy.Companion.REPLACE)
     suspend fun saveProgress(habitProgress: HabitProgressDbModel)
 
-    //в реализации базы создать доп функцию временную туда загонять habitId:String, date: LocalDate ,создать HabitProgressDbModel и передать сюда
-    //просто вернуть значение готорое загнали сюда
     @Insert(onConflict = OnConflictStrategy.Companion.IGNORE)
     suspend fun addProgressForHabit(progress: HabitProgressDbModel)
     @Query("SELECT * FROM habit_progress WHERE habitId = :habitId AND date = :date")
@@ -61,4 +59,11 @@ interface HabitProgressDao {
         startDate: String,
         endDate: String
     ): List<HabitProgressDbModel>
+
+    @Query("""
+    SELECT hp.* FROM habit_progress hp
+    INNER JOIN habits h ON hp.habitId = h.habitId
+    WHERE h.userId = :userId
+""")
+    suspend fun getAllProgressForUser(userId: String): List<HabitProgressDbModel>
 }

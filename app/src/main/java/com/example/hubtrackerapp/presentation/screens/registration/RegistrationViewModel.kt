@@ -30,25 +30,22 @@ class RegistrationViewModel @Inject constructor(
     private val _state = MutableStateFlow(RegistrationState.Creation())
     val state = _state.asStateFlow()
 
+    private val _navigationEvent = MutableStateFlow<RegistrationNavigation?>(null)
+    val navigationEvent = _navigationEvent.asStateFlow()
     private var predefinedHabits = emptyList<PredefinedHabit>()
 
     fun onEventRegister(event: RegisterEvent){
         when(event){
             is RegisterEvent.ChoseGender -> {
-
                 Log.d("Register", "ChoseGender On Register Click ${_state.value.registrationDraft}")
-
                 _state.update {
                     Log.d("Register", "Set gender input - ${event.gender}")
                     it.copy(registrationDraft = it.registrationDraft.copy(gender = event.gender))
                 }
             }
             is RegisterEvent.ChosePredefinedHabits -> {
-
-
                 Log.d("Register", "ChosePredefinedHabits On Register Click ${_state.value.registrationDraft}")
 
-                //при клике меняется состояние у списка хобби
                 val updatedHabits = _state.value.habits.map {
                     if (it.id == event.predefinedHabitId) it.copy(isPinned = !it.isPinned) else it
                 }
@@ -61,34 +58,30 @@ class RegistrationViewModel @Inject constructor(
                     }
                 Log.d("Register", "Set Add Habits in list input - ${event.predefinedHabitId}")
 
-
                 _state.update {it.copy(habits = updatedHabits)}
-
                 _state.update {it.copy(predefinedHabits = selectedHabits)}
-//
             }
             RegisterEvent.RegisterUser -> {
-
                 Log.d("Register", "RegisterUser On Register Click ${_state.value.registrationDraft}")
 
                 viewModelScope.launch {
                     Log.d("Register", "On Register Click ${_state.value.registrationDraft}")
 
                     val updatedDraft = _state.value.registrationDraft.copy(
-                        habbies = _state.value.predefinedHabits // ← ВОТ ОНО! Передаем выбранные привычки
+                        habbies = _state.value.predefinedHabits
                     )
                     Log.d("Register", "Draft with hobbies: $updatedDraft")
+
                     val success = registerUseCase(updatedDraft)
 
                     if (success) {
                         Log.d("Register", "Registration successful")
-                        // Можно перейти на другой экран
-                        // _state.update { RegistrationState.Finished }
+                        // Отправляем событие навигации
+                        _navigationEvent.value = RegistrationNavigation.RegistrationSuccess
                     } else {
                         Log.d("Register", "Registration failed")
-                        // Можно показать ошибку
+                        _navigationEvent.value = RegistrationNavigation.RegistrationFailed("Registration failed")
                     }
-
                 }
             }
             is RegisterEvent.SetBirthDate -> {
@@ -126,7 +119,10 @@ class RegistrationViewModel @Inject constructor(
             }
         }
     }
-
+    // Метод для очистки события навигации
+    fun clearNavigationEvent() {
+        _navigationEvent.value = null
+    }
     init {
         Log.d("RegistrationViewModel", "ViewModel CREATED - ${this.hashCode()}")
         viewModelScope.launch {
@@ -143,7 +139,10 @@ class RegistrationViewModel @Inject constructor(
         }
     }
 }
-
+sealed class RegistrationNavigation {
+    object RegistrationSuccess : RegistrationNavigation()
+    data class RegistrationFailed(val message: String) : RegistrationNavigation()
+}
 data class RegisterHabits(
     val id: Int,
     val emoji: String,

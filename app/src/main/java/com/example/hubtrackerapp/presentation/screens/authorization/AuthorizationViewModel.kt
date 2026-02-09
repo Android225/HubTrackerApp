@@ -26,6 +26,9 @@ class AuthorizationViewModel @Inject constructor(
 
     private val _loginSuccess = MutableStateFlow(false)
     val loginSuccess = _loginSuccess.asStateFlow()
+
+
+
     fun onAuthEvent(event: AuthorizationEvent){
         when(event){
             AuthorizationEvent.ForgetPassword -> {

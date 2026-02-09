@@ -28,8 +28,12 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -40,10 +44,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.example.hubtrackerapp.presentation.screens.registration.RegisterEvent
+import com.example.hubtrackerapp.presentation.screens.registration.RegistrationNavigation
 import com.example.hubtrackerapp.presentation.screens.registration.RegistrationViewModel
 import com.example.hubtrackerapp.presentation.theme.Black10
 import com.example.hubtrackerapp.presentation.theme.Black20
 import com.example.hubtrackerapp.presentation.theme.White100
+import kotlinx.coroutines.launch
 
 
 @Composable
@@ -54,6 +60,24 @@ fun RegistrationEnterEmailScreen(
     onNextStep: () -> Unit
 ) {
     val state by viewModel.state.collectAsState()
+    val navigationEvent by viewModel.navigationEvent.collectAsState()
+    LaunchedEffect(navigationEvent) {
+        when (navigationEvent) {
+            is RegistrationNavigation.RegistrationSuccess -> {
+                Log.d("Registration", "Registration successful, navigating...")
+                onNextStep()
+                viewModel.clearNavigationEvent()
+            }
+            is RegistrationNavigation.RegistrationFailed -> {
+                val error = (navigationEvent as RegistrationNavigation.RegistrationFailed).message
+                Log.e("Registration", "Registration failed: $error")
+                // TODO: Показать ошибку пользователю
+                viewModel.clearNavigationEvent()
+            }
+            null -> {}
+        }
+    }
+
     Scaffold(
         modifier = modifier,
         topBar = {
@@ -107,6 +131,7 @@ fun RegistrationEnterEmailScreen(
                     .padding(horizontal = 24.dp)
                     .padding(bottom = 24.dp, top = 16.dp)
             ) {
+
                 Button(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -114,8 +139,8 @@ fun RegistrationEnterEmailScreen(
                     enabled = state.isRegisterEnabled,
                     onClick = {
                         Log.d("Registration","Register Click")
+                        // Просто отправляем событие - навигация обработается через navigationEvent
                         viewModel.onEventRegister(RegisterEvent.RegisterUser)
-                        onNextStep()
                     },
                     shape = RoundedCornerShape(40.dp),
 

@@ -142,14 +142,35 @@ fun NavGraph() {
                     // data == null - создаем новый habit
                     // data != null - есть данные значить editMode
                     val route = if (data == null) {
-                        Screen.AddHabit.createRoute()
+                        "add_habit"
                     } else {
-                        Screen.AddHabit.createEditRoute(data)
+                        "add_habit/$data"
                     }
                     navController.navigate(route)
                 }
             )
         }
+
+        composable("add_habit") {
+            AddHabit(
+                editData = null,
+                onBackClick = {
+                    navController.popBackStack()
+                }
+            )
+        }
+
+        composable("add_habit/{edit_data}") {
+            val editData = it.arguments?.getString("edit_data")
+            AddHabit(
+                editData = editData,
+                onBackClick = {
+                    navController.popBackStack()
+                }
+            )
+        }
+
+
         composable(Screen.AddHabit.route) {
             val editData = Screen.AddHabit.getHabitData(it.arguments)
             AddHabit(

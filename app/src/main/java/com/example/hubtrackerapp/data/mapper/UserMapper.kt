@@ -5,16 +5,22 @@ import com.example.hubtrackerapp.domain.user.User
 import com.example.hubtrackerapp.presentation.screens.registration.model.RegistrationDraft
 
 fun User.toDbModel(): UserDbModel {
-    return UserDbModel(userId, email, password, firstName, lastName, birthDate, gender)
+    return UserDbModel(userId, email, firstName, lastName, birthDate, gender)
 }
 fun UserDbModel.toUserEntity(): User{
-    return User(userId,email,password,firstName,lastName,birthDate,gender)
+    return User(
+        userId = userId,
+        email = email,
+        firstName = firstName,
+        lastName = lastName,
+        birthDate = birthDate,
+        gender = gender
+    )
 }
 fun RegistrationDraft.toDbModelWithoutUserId(): UserDbModel{
     return UserDbModel(
         userId = "",
         email = email,
-        password = password,
         firstName = firstName,
         lastName = lastName,
         birthDate = birthDate,
