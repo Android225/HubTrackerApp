@@ -86,8 +86,7 @@ fun RegistrationScreen(
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
-                            modifier = Modifier
-                                .background(White100),
+                            modifier = Modifier,
                             imageVector = Icons.AutoMirrored.Filled.KeyboardArrowLeft,
                             contentDescription = "button back"
                         )
@@ -101,7 +100,7 @@ fun RegistrationScreen(
                     .fillMaxWidth()
                     .imePadding()
                     .padding(horizontal = 24.dp)
-                    .padding(bottom = 24.dp, top = 16.dp)
+                    .padding(bottom = 60.dp, top = 16.dp)
             ) {
 
                 Spacer(modifier = Modifier.padding(8.dp))
