@@ -6,6 +6,7 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.room.TypeConverter
 import com.example.hubtrackerapp.data.db.model.HabitScheduleDbModel
 import com.example.hubtrackerapp.domain.hubbit.models.ModeForSwitchInHabit
+import com.example.hubtrackerapp.domain.hubbit.models.friends.RequestStatus
 import com.google.gson.Gson
 import java.time.LocalDate
 import java.time.LocalTime
@@ -57,4 +58,12 @@ class Converters {
     @TypeConverter
     fun toHabitSchedule(value: String?): HabitScheduleDbModel? =
         value?.let { Gson().fromJson(it, HabitScheduleDbModel::class.java) }
+
+
+    @TypeConverter
+    fun fromRequestStatus(status: RequestStatus?): String? = status?.name
+
+    @TypeConverter
+    fun toRequestStatus(value: String?): RequestStatus? =
+        value?.let { RequestStatus.valueOf(it) }
 }

@@ -3,16 +3,19 @@ package com.example.hubtrackerapp.di
 import android.content.Context
 import com.example.hubtrackerapp.data.HabitsRepositoryImpl
 import com.example.hubtrackerapp.data.db.HabitsDatabase
+import com.example.hubtrackerapp.data.db.dao.FriendRequestDao
 import com.example.hubtrackerapp.data.db.dao.HabitDao
 import com.example.hubtrackerapp.data.db.dao.HabitProgressDao
 import com.example.hubtrackerapp.data.db.dao.UserDao
 import com.example.hubtrackerapp.data.predefined.PredefinedHabitData
 import com.example.hubtrackerapp.data.predefined.PredefinedHabitRepositoryImpl
+import com.example.hubtrackerapp.data.repository.FriendsRepositoryImpl
 import com.example.hubtrackerapp.domain.auth.AuthRepository
 import com.example.hubtrackerapp.domain.hubbit.HabitRepository
 import com.example.hubtrackerapp.domain.hubbit.models.PredefinedHabit
 import com.example.hubtrackerapp.domain.predefined.GetAllPredefinedHabitsUseCase
 import com.example.hubtrackerapp.domain.predefined.PredefinedHabitRepository
+import com.example.hubtrackerapp.domain.repository.FriendsRepository
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
@@ -30,6 +33,12 @@ interface DataModule {
     fun bindHabitRepository(
         impl: HabitsRepositoryImpl
     ): HabitRepository
+
+    @Singleton
+    @Binds
+    fun bindFriendsRepository(
+        impl: FriendsRepositoryImpl
+    ): FriendsRepository
 
     @Singleton
     @Binds
@@ -53,6 +62,8 @@ interface DataModule {
             return HabitsDatabase.getInstance(context)
         }
 
+
+
         @Singleton
         @Provides
         fun provideHabitDao(
@@ -75,6 +86,13 @@ interface DataModule {
             return database.userDao()
         }
 
+        @Singleton
+        @Provides
+        fun provideFriendRequestDao(
+            database: HabitsDatabase
+        ): FriendRequestDao {
+            return database.friendRequestDao()
+        }
         @Singleton
         @Provides
         fun provideGetAllPredefinedHabitsUseCase(
