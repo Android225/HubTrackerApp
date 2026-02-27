@@ -49,4 +49,6 @@ interface FriendsRepository {
 
     // является ли otherUserId другом(лежит ли в таблице Friend)
     suspend fun areFriends(userId: String, otherUserId: String): Boolean
+
+    suspend fun getFriendsCount(userId: String): Int
 }

@@ -3,10 +3,11 @@ package com.example.hubtrackerapp.di
 import android.content.Context
 import com.example.hubtrackerapp.data.HabitsRepositoryImpl
 import com.example.hubtrackerapp.data.db.HabitsDatabase
-import com.example.hubtrackerapp.data.db.dao.FriendRequestDao
+import com.example.hubtrackerapp.data.db.dao.friends.FriendRequestDao
 import com.example.hubtrackerapp.data.db.dao.HabitDao
 import com.example.hubtrackerapp.data.db.dao.HabitProgressDao
 import com.example.hubtrackerapp.data.db.dao.UserDao
+import com.example.hubtrackerapp.data.db.dao.friends.FriendDao
 import com.example.hubtrackerapp.data.predefined.PredefinedHabitData
 import com.example.hubtrackerapp.data.predefined.PredefinedHabitRepositoryImpl
 import com.example.hubtrackerapp.data.repository.FriendsRepositoryImpl
@@ -93,6 +94,15 @@ interface DataModule {
         ): FriendRequestDao {
             return database.friendRequestDao()
         }
+
+        @Singleton
+        @Provides
+        fun provideFriendDao(
+            database: HabitsDatabase
+        ): FriendDao {
+            return database.friendDao()
+        }
+
         @Singleton
         @Provides
         fun provideGetAllPredefinedHabitsUseCase(

@@ -1,4 +1,4 @@
-package com.example.hubtrackerapp.data.db.dao
+package com.example.hubtrackerapp.data.db.dao.friends
 
 import androidx.room.Dao
 import androidx.room.Insert

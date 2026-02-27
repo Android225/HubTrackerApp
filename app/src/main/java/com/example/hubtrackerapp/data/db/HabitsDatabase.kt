@@ -7,10 +7,11 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import androidx.sqlite.db.SupportSQLiteDatabase
-import com.example.hubtrackerapp.data.db.dao.FriendRequestDao
+import com.example.hubtrackerapp.data.db.dao.friends.FriendRequestDao
 import com.example.hubtrackerapp.data.db.dao.HabitDao
 import com.example.hubtrackerapp.data.db.dao.HabitProgressDao
 import com.example.hubtrackerapp.data.db.dao.UserDao
+import com.example.hubtrackerapp.data.db.dao.friends.FriendDao
 import com.example.hubtrackerapp.data.db.model.HabitDbModel
 import com.example.hubtrackerapp.data.db.model.HabitProgressDbModel
 import com.example.hubtrackerapp.data.db.model.UserDbModel
@@ -31,6 +32,7 @@ abstract class HabitsDatabase : RoomDatabase() {
     abstract fun userDao(): UserDao
     abstract fun habitProgressDao(): HabitProgressDao
     abstract fun friendRequestDao(): FriendRequestDao
+    abstract fun friendDao(): FriendDao
 
     companion object{
 
