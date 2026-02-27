@@ -58,6 +58,16 @@ interface FriendRequestDao {
     """)
     suspend fun getAllUserRequests(userId: String): List<FriendRequestDBModel>
 
+//    @Query("""
+//    SELECT EXISTS(
+//        SELECT 1 FROM friend_request
+//        WHERE ((fromUserId = :userId1 AND toUserId = :userId2)
+//               OR (fromUserId = :userId2 AND toUserId = :userId1))
+//        AND status = 'PENDING'
+//    )
+//""")
+//    suspend fun hasPendingRequest(userId1: String, userId2: String): Boolean
+
     @Query("DELETE FROM friend_request WHERE requestId = :requestId")
     suspend fun deleteRequestById(requestId: String)
 }

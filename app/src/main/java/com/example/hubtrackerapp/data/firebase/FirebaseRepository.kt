@@ -7,7 +7,7 @@ import com.example.hubtrackerapp.data.db.model.UserDbModel
 import com.example.hubtrackerapp.data.firebase.model.FirebaseHabit
 import com.example.hubtrackerapp.data.firebase.model.FirebaseHabitProgress
 import com.example.hubtrackerapp.data.firebase.model.FirebaseUser
-import com.example.hubtrackerapp.data.mapper.friends.toDbModel
+import com.example.hubtrackerapp.data.mapper.toDbModel
 import com.example.hubtrackerapp.data.mapper.toFirebase
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
@@ -172,6 +172,69 @@ class FirebaseRepository @Inject constructor() {
         }
     }
 
+    suspend fun getUserById(userId: String): FirebaseUser? = try {
+        Log.d("FirebaseRepository", "Fetching user by ID: $userId")
+        val userDoc = usersCollection.document(userId).get().await()
+        val user = userDoc.toObject(FirebaseUser::class.java)
+        Log.d("FirebaseRepository", "User found: ${user?.email ?: "null"}")
+        user
+    } catch (e: Exception) {
+        Log.e("FirebaseRepository", "Error fetching user by ID: ${e.message}")
+        null
+    }
+
+    suspend fun searchUsersByName(searchQuery: String): List<FirebaseUser> = try {
+        Log.d("FirebaseRepository", "Searching users by name: $searchQuery")
+
+        // Подготовка запроса (регистронезависимый поиск)
+        val queryLower = searchQuery.lowercase()
+        val queryUpper = searchQuery.replaceFirstChar { it.uppercase() }
+
+        // Ищем по firstName ИЛИ lastName
+        val snapshot = usersCollection
+            .whereGreaterThanOrEqualTo("firstName", queryUpper)
+            .whereLessThanOrEqualTo("firstName", queryUpper + "\uf8ff")
+            .get()
+            .await()
+
+        // Можно расширить поиск по lastName
+        val lastNameSnapshot = usersCollection
+            .whereGreaterThanOrEqualTo("lastName", queryUpper)
+            .whereLessThanOrEqualTo("lastName", queryUpper + "\uf8ff")
+            .get()
+            .await()
+
+        // Объединяем результаты
+        val results = (snapshot.documents + lastNameSnapshot.documents)
+            .mapNotNull { it.toObject(FirebaseUser::class.java) }
+            .distinctBy { it.userId }
+            .take(20) // лимит для производительности
+
+        Log.d("FirebaseRepository", "Found ${results.size} users")
+        results
+    } catch (e: Exception) {
+        Log.e("FirebaseRepository", "Error searching users: ${e.message}")
+        emptyList()
+    }
+
+    suspend fun searchUsers(query: String): List<FirebaseUser> {
+        return try {
+            Log.d("FirebaseRepository", "Universal search with query: $query")
+
+            // Если query похож на ID (длина > 20 и содержит буквы+цифры)
+            if (query.length > 20 && query.matches(Regex("^[a-zA-Z0-9]+$"))) {
+                // Поиск по ID
+                val user = getUserById(query)
+                return user?.let { listOf(it) } ?: emptyList()
+            } else {
+                // Поиск по имени
+                searchUsersByName(query)
+            }
+        } catch (e: Exception) {
+            Log.e("FirebaseRepository", "Error in universal search: ${e.message}")
+            emptyList()
+        }
+    }
     // доп операции
 
     suspend fun addOrUpdateHabit(userId: String, habit: HabitDbModel) {

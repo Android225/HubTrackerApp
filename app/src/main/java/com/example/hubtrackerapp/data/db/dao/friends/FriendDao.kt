@@ -3,6 +3,7 @@ package com.example.hubtrackerapp.data.db.dao.friends
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
+import com.example.hubtrackerapp.data.db.model.friends.FriendDBModel
 import com.example.hubtrackerapp.domain.hubbit.models.friends.model.Friend
 
 @Dao
@@ -12,7 +13,7 @@ interface FriendDao {
         WHERE userId = :userId 
         ORDER BY friendFirstName ASC
     """)
-    suspend fun getFriends(userId: String): List<Friend>
+    suspend fun getFriends(userId: String): List<FriendDBModel>
 
     @Query("""
         DELETE FROM friend 
@@ -29,7 +30,7 @@ interface FriendDao {
     suspend fun areFriends(userId: String, otherUserId: String): Boolean
 
     @Insert
-    suspend fun insert(friend: Friend)
+    suspend fun insert(friend: FriendDBModel)
 
     @Query("SELECT COUNT(*) FROM friend WHERE userId = :userId")
     suspend fun getFriendsCount(userId: String): Int
