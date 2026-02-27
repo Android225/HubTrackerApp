@@ -5,7 +5,7 @@ import com.example.hubtrackerapp.data.db.model.friends.FriendRequestDBModel
 import com.example.hubtrackerapp.domain.hubbit.models.friends.model.Friend
 import com.example.hubtrackerapp.domain.hubbit.models.friends.model.FriendRequest
 
-fun Friend.toDbModel(): FriendDBModel {
+fun Friend.toFriendDbModel(): FriendDBModel {
     return FriendDBModel(
         userId = userId,
         friendId = friendId,
@@ -16,7 +16,7 @@ fun Friend.toDbModel(): FriendDBModel {
         createdAt = createdAt
     )
 }
-fun FriendDBModel.toEntity(): Friend{
+fun FriendDBModel.toFriendEntity(): Friend{
     return Friend(
         userId = userId,
         friendId = friendId,

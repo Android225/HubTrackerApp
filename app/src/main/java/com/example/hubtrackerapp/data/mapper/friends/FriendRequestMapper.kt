@@ -3,7 +3,7 @@ package com.example.hubtrackerapp.data.mapper.friends
 import com.example.hubtrackerapp.data.db.model.friends.FriendRequestDBModel
 import com.example.hubtrackerapp.domain.hubbit.models.friends.model.FriendRequest
 
-fun FriendRequest.toDbModel(): FriendRequestDBModel {
+fun FriendRequest.toFriendRequestDbModel(): FriendRequestDBModel {
     return FriendRequestDBModel(
         requestId = requestId,
         fromUserId = fromUserId,
@@ -17,7 +17,7 @@ fun FriendRequest.toDbModel(): FriendRequestDBModel {
         updatedAt = updatedAt
     )
 }
-fun FriendRequestDBModel.toEntity(): FriendRequest{
+fun FriendRequestDBModel.toFriendRequestEntity(): FriendRequest{
     return FriendRequest(
         requestId = requestId,
         fromUserId = fromUserId,

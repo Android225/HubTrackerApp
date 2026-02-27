@@ -8,7 +8,7 @@ import com.example.hubtrackerapp.data.db.dao.HabitDao
 import com.example.hubtrackerapp.data.db.dao.HabitProgressDao
 import com.example.hubtrackerapp.data.db.dao.UserDao
 import com.example.hubtrackerapp.data.firebase.FirebaseRepository
-import com.example.hubtrackerapp.data.mapper.friends.toDbModel
+import com.example.hubtrackerapp.data.mapper.toDbModel
 import com.example.hubtrackerapp.data.mapper.toDbModelWithoutUserId
 import com.example.hubtrackerapp.data.mapper.toHabitEntities
 import com.example.hubtrackerapp.data.mapper.toHabitEntity
