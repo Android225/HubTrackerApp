@@ -1,6 +1,12 @@
-package com.example.hubtrackerapp.domain.hubbit.models.friends
+package com.example.hubtrackerapp.data.db.model.friends
 
-data class Friend(
+import androidx.room.Entity
+
+@Entity(
+    tableName = "friend",
+    primaryKeys = ["userId", "friendId"]
+)
+data class FriendDBModel (
     val userId: String,      // чей это друг
     val friendId: String,    // ID друга
 

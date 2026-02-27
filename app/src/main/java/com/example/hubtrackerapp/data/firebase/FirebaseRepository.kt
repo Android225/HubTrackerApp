@@ -7,7 +7,7 @@ import com.example.hubtrackerapp.data.db.model.UserDbModel
 import com.example.hubtrackerapp.data.firebase.model.FirebaseHabit
 import com.example.hubtrackerapp.data.firebase.model.FirebaseHabitProgress
 import com.example.hubtrackerapp.data.firebase.model.FirebaseUser
-import com.example.hubtrackerapp.data.mapper.toDbModel
+import com.example.hubtrackerapp.data.mapper.friends.toDbModel
 import com.example.hubtrackerapp.data.mapper.toFirebase
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth

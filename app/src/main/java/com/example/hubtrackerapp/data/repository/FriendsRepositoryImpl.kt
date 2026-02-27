@@ -2,9 +2,9 @@ package com.example.hubtrackerapp.data.repository
 
 import com.example.hubtrackerapp.data.db.dao.FriendRequestDao
 import com.example.hubtrackerapp.data.db.dao.UserDao
-import com.example.hubtrackerapp.domain.hubbit.models.friends.Friend
-import com.example.hubtrackerapp.domain.hubbit.models.friends.FriendRequest
-import com.example.hubtrackerapp.domain.repository.FriendsRepository
+import com.example.hubtrackerapp.domain.hubbit.models.friends.model.Friend
+import com.example.hubtrackerapp.domain.hubbit.models.friends.model.FriendRequest
+import com.example.hubtrackerapp.domain.hubbit.models.friends.repository.FriendsRepository
 import javax.inject.Inject
 
 class FriendsRepositoryImpl @Inject constructor(
@@ -59,7 +59,7 @@ class FriendsRepositoryImpl @Inject constructor(
         TODO("Not yet implemented")
     }
 
-    override suspend fun removeFriend(friendId: String) {
+    override suspend fun removeFriend(userId: String,friendId: String) {
         TODO("Not yet implemented")
     }
 

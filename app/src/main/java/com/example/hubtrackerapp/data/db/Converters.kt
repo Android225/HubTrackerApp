@@ -6,7 +6,7 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.room.TypeConverter
 import com.example.hubtrackerapp.data.db.model.HabitScheduleDbModel
 import com.example.hubtrackerapp.domain.hubbit.models.ModeForSwitchInHabit
-import com.example.hubtrackerapp.domain.hubbit.models.friends.RequestStatus
+import com.example.hubtrackerapp.domain.hubbit.models.friends.model.RequestStatus
 import com.google.gson.Gson
 import java.time.LocalDate
 import java.time.LocalTime

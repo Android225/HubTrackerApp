@@ -1,8 +1,8 @@
-package com.example.hubtrackerapp.data.db.model
+package com.example.hubtrackerapp.data.db.model.friends
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import com.example.hubtrackerapp.domain.hubbit.models.friends.RequestStatus
+import com.example.hubtrackerapp.domain.hubbit.models.friends.model.RequestStatus
 
 @Entity(tableName = "friend_request")
 data class FriendRequestDBModel (

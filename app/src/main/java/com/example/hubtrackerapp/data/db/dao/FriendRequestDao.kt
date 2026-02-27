@@ -3,9 +3,8 @@ package com.example.hubtrackerapp.data.db.dao
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
-import androidx.room.Update
-import com.example.hubtrackerapp.data.db.model.FriendRequestDBModel
-import com.example.hubtrackerapp.domain.hubbit.models.friends.RequestStatus
+import com.example.hubtrackerapp.data.db.model.friends.FriendRequestDBModel
+import com.example.hubtrackerapp.domain.hubbit.models.friends.model.RequestStatus
 
 @Dao
 interface FriendRequestDao {

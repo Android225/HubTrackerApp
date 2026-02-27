@@ -1,8 +1,7 @@
-package com.example.hubtrackerapp.domain.repository
+package com.example.hubtrackerapp.domain.hubbit.models.friends.repository
 
-import com.example.hubtrackerapp.domain.hubbit.models.friends.Friend
-import com.example.hubtrackerapp.domain.hubbit.models.friends.FriendRequest
-import com.example.hubtrackerapp.domain.hubbit.models.friends.RequestStatus
+import com.example.hubtrackerapp.domain.hubbit.models.friends.model.Friend
+import com.example.hubtrackerapp.domain.hubbit.models.friends.model.FriendRequest
 
 interface FriendsRepository {
 
@@ -46,7 +45,7 @@ interface FriendsRepository {
     suspend fun getFriends(): List<Friend>
 
     // Удалить из друзей
-    suspend fun removeFriend(friendId: String)
+    suspend fun removeFriend(userId: String, friendId: String)
 
     // является ли otherUserId другом(лежит ли в таблице Friend)
     suspend fun areFriends(userId: String, otherUserId: String): Boolean

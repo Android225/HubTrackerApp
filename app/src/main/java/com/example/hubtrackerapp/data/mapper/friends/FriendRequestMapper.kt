@@ -1,9 +1,7 @@
-package com.example.hubtrackerapp.data.mapper
+package com.example.hubtrackerapp.data.mapper.friends
 
-import com.example.hubtrackerapp.data.db.model.FriendRequestDBModel
-import com.example.hubtrackerapp.data.db.model.HabitProgressDbModel
-import com.example.hubtrackerapp.domain.hubbit.models.HabitProgress
-import com.example.hubtrackerapp.domain.hubbit.models.friends.FriendRequest
+import com.example.hubtrackerapp.data.db.model.friends.FriendRequestDBModel
+import com.example.hubtrackerapp.domain.hubbit.models.friends.model.FriendRequest
 
 fun FriendRequest.toDbModel(): FriendRequestDBModel {
     return FriendRequestDBModel(

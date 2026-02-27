@@ -15,7 +15,7 @@ import com.example.hubtrackerapp.domain.hubbit.HabitRepository
 import com.example.hubtrackerapp.domain.hubbit.models.PredefinedHabit
 import com.example.hubtrackerapp.domain.predefined.GetAllPredefinedHabitsUseCase
 import com.example.hubtrackerapp.domain.predefined.PredefinedHabitRepository
-import com.example.hubtrackerapp.domain.repository.FriendsRepository
+import com.example.hubtrackerapp.domain.hubbit.models.friends.repository.FriendsRepository
 import dagger.Binds
 import dagger.Module
 import dagger.Provides

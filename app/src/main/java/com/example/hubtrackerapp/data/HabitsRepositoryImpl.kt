@@ -4,15 +4,12 @@ package com.example.hubtrackerapp.data
 import HabitMetric
 import android.util.Log
 import androidx.compose.ui.graphics.Color
-import com.example.hubtrackerapp.data.db.dao.FriendRequestDao
 import com.example.hubtrackerapp.data.db.dao.HabitDao
 import com.example.hubtrackerapp.data.db.dao.HabitProgressDao
 import com.example.hubtrackerapp.data.db.dao.UserDao
-import com.example.hubtrackerapp.data.db.model.HabitProgressDbModel
 import com.example.hubtrackerapp.data.firebase.FirebaseRepository
-import com.example.hubtrackerapp.data.mapper.toDbModel
+import com.example.hubtrackerapp.data.mapper.friends.toDbModel
 import com.example.hubtrackerapp.data.mapper.toDbModelWithoutUserId
-import com.example.hubtrackerapp.data.mapper.toHabitDbModelWithoutHabitId
 import com.example.hubtrackerapp.data.mapper.toHabitEntities
 import com.example.hubtrackerapp.data.mapper.toHabitEntity
 import com.example.hubtrackerapp.data.mapper.toHabitProgressEntity

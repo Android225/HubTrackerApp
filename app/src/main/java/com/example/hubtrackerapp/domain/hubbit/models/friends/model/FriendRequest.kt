@@ -1,4 +1,4 @@
-package com.example.hubtrackerapp.domain.hubbit.models.friends
+package com.example.hubtrackerapp.domain.hubbit.models.friends.model
 
 data class FriendRequest (
     val requestId: String,
