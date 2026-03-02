@@ -8,15 +8,18 @@ import com.example.hubtrackerapp.data.db.dao.HabitDao
 import com.example.hubtrackerapp.data.db.dao.HabitProgressDao
 import com.example.hubtrackerapp.data.db.dao.UserDao
 import com.example.hubtrackerapp.data.db.dao.friends.FriendDao
+import com.example.hubtrackerapp.data.db.dao.statistic.UserActionDao
 import com.example.hubtrackerapp.data.predefined.PredefinedHabitData
 import com.example.hubtrackerapp.data.predefined.PredefinedHabitRepositoryImpl
 import com.example.hubtrackerapp.data.repository.FriendsRepositoryImpl
+import com.example.hubtrackerapp.data.repository.StatisticRepositoryImpl
 import com.example.hubtrackerapp.domain.auth.AuthRepository
 import com.example.hubtrackerapp.domain.hubbit.HabitRepository
 import com.example.hubtrackerapp.domain.hubbit.models.PredefinedHabit
 import com.example.hubtrackerapp.domain.predefined.GetAllPredefinedHabitsUseCase
 import com.example.hubtrackerapp.domain.predefined.PredefinedHabitRepository
 import com.example.hubtrackerapp.domain.hubbit.models.friends.repository.FriendsRepository
+import com.example.hubtrackerapp.domain.hubbit.models.statistic.repository.StatisticRepository
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
@@ -40,6 +43,11 @@ interface DataModule {
     fun bindFriendsRepository(
         impl: FriendsRepositoryImpl
     ): FriendsRepository
+    @Singleton
+    @Binds
+    fun bindStatisticRepository(
+        impl: StatisticRepositoryImpl
+    ): StatisticRepository
 
     @Singleton
     @Binds
@@ -101,6 +109,13 @@ interface DataModule {
             database: HabitsDatabase
         ): FriendDao {
             return database.friendDao()
+        }
+        @Singleton
+        @Provides
+        fun provideUserActionDao(
+            database: HabitsDatabase
+        ): UserActionDao {
+            return database.userActionDao()
         }
 
         @Singleton

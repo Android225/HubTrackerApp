@@ -9,15 +9,16 @@ import com.example.hubtrackerapp.domain.hubbit.models.statistic.model.ActionType
 @Dao
 interface UserActionDao {
 
+    //*
     @Insert
     suspend fun insertAction(action: UserActionDBModel)
 
 
-    //Все действия пользователя
+    //Все действия пользователя *
     @Query("SELECT * FROM user_action WHERE userId = :userId ORDER BY timestamp DESC")
     suspend fun getAllUserActions(userId: String): List<UserActionDBModel>
 
-    ///Все действия пользователя за период времени
+    ///Все действия пользователя за период времени *
     @Query("SELECT * FROM user_action WHERE userId = :userId AND timestamp BETWEEN :fromTimestamp AND :toTimestamp ORDER BY timestamp DESC")
     suspend fun getUserActionsInRange(
         userId: String,
@@ -25,14 +26,14 @@ interface UserActionDao {
         toTimestamp: Long
     ): List<UserActionDBModel>
 
-    //получение по типу
+    //получение по типу *
     @Query("SELECT * FROM user_action WHERE userId = :userId AND actionType = :actionType ORDER BY timestamp DESC")
     suspend fun getUserActionsByType(
         userId: String,
         actionType: ActionType
     ): List<UserActionDBModel>
 
-    //получение по типу за период времени
+    //получение по типу за период времени *
     @Query("""
         SELECT * FROM user_action 
         WHERE userId = :userId 
@@ -48,7 +49,7 @@ interface UserActionDao {
     ): List<UserActionDBModel>
 
 
-    // Универсальный подсчет количества записей по actionType по диапазону
+    // Универсальный подсчет количества записей по actionType по диапазону *
     @Query("SELECT COUNT(*) FROM user_action WHERE userId = :userId AND actionType = :actionType AND timestamp BETWEEN :from AND :to")
     suspend fun getActionCountInRange(
         userId: String,
@@ -63,15 +64,15 @@ interface UserActionDao {
         actionType: ActionType
     ): Int
 
-    //подсчет очков за период
+    //подсчет очков за период */
     @Query("SELECT SUM(pointsEarned) FROM user_action WHERE userId = :userId AND timestamp BETWEEN :startOfDay AND :endOfDay")
-    suspend fun getPointsEarnedForDate(
+    suspend fun getPointsEarnedInRange(
         userId: String,
         startOfDay: Long,
         endOfDay: Long
     ): Int?
 
-    //подсчет всех очков
+    //подсчет всех очков *
     @Query("SELECT SUM(pointsEarned) FROM user_action WHERE userId = :userId")
     suspend fun getTotalPoints(userId: String): Int?
 

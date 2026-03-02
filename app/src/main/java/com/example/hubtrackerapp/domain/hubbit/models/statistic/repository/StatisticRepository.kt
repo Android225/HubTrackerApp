@@ -11,7 +11,7 @@ import java.time.LocalDate
 
 interface StatisticRepository {
 
-    //запись действий пользователя
+    //запись действий пользователя **
     suspend fun logAction(
         actionType: ActionType,
         entityId: String? = null,
@@ -20,7 +20,7 @@ interface StatisticRepository {
         additionalData: String? = null
     ): Result<UserAction>
 
-    //запись готового объекта действия пользователя
+    //запись готового объекта действия пользователя **
     suspend fun logAction(action: UserAction): Result<UserAction>
 
     /*запись выполнения habit*/
@@ -78,9 +78,10 @@ interface StatisticRepository {
 
     // -- Получение действий--
 
+    //**
     suspend fun getAllUserActions(userId: String): List<UserAction>
 
-    //за конкретный период
+    //за конкретный период **
     suspend fun getUserActionsInRange(
         userId: String,
         fromTimestamp: Long,
@@ -124,6 +125,10 @@ interface StatisticRepository {
 
     // пропущеные привычки за день
     suspend fun getHabitsSkippedCount(
+        userId: String,
+        date: LocalDate
+    ): Int
+    suspend fun getHabitsFailedCount(
         userId: String,
         date: LocalDate
     ): Int
