@@ -7,6 +7,7 @@ import androidx.room.TypeConverter
 import com.example.hubtrackerapp.data.db.model.HabitScheduleDbModel
 import com.example.hubtrackerapp.domain.hubbit.models.ModeForSwitchInHabit
 import com.example.hubtrackerapp.domain.hubbit.models.friends.model.RequestStatus
+import com.example.hubtrackerapp.domain.hubbit.models.statistic.model.ActionType
 import com.google.gson.Gson
 import java.time.LocalDate
 import java.time.LocalTime
@@ -66,4 +67,11 @@ class Converters {
     @TypeConverter
     fun toRequestStatus(value: String?): RequestStatus? =
         value?.let { RequestStatus.valueOf(it) }
+
+    @TypeConverter
+    fun fromActionType(type: ActionType?): String? = type?.name
+
+    @TypeConverter
+    fun toActionType(value: String?): ActionType? =
+        value?.let { ActionType.valueOf(it) }
 }
