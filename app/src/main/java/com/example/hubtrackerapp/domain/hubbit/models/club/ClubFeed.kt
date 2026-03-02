@@ -1,6 +1,6 @@
 package com.example.hubtrackerapp.domain.hubbit.models.club
 
-import com.example.hubtrackerapp.domain.hubbit.models.statistic.ActionType
+import com.example.hubtrackerapp.domain.hubbit.models.statistic.model.ActionType
 
 data class ClubFeed (
     val clubFeedId: String,

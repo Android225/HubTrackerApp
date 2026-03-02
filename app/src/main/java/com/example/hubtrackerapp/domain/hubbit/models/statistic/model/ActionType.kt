@@ -1,4 +1,4 @@
-package com.example.hubtrackerapp.domain.hubbit.models.statistic
+package com.example.hubtrackerapp.domain.hubbit.models.statistic.model
 
 enum class ActionType {
     HABIT_COMPLETED,     // выполнил хобби

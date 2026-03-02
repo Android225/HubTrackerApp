@@ -1,8 +1,8 @@
-package com.example.hubtrackerapp.domain.hubbit.models.statistic
+package com.example.hubtrackerapp.domain.hubbit.models.statistic.model
 
 // Сущность для логирования всех действий пользователя,для последующего наглядного вывода
 // а так же для использовании в подведении статистики
-data class UserActions(
+data class UserAction(
     val userActionId: Long = 0,
     val userId: String, // чьё действие
     val actionType: ActionType, // тип действия пользователя
