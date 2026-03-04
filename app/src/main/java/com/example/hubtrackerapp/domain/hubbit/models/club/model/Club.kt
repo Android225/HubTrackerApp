@@ -9,5 +9,6 @@ data class Club (
     val category: String, // категория клуба типо спорт там,клуб читателей
     val createdAt: Long, //когда сделан
     val isPrivate: Boolean, //приватность клуба (по приглашениям/открытый)
-    val lastUpdate: Long //для отслеживания изменений
+    val lastUpdate: Long, //для отслеживания изменений
+    val memberCount: Int = 0
     )
