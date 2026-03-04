@@ -7,15 +7,21 @@ import com.example.hubtrackerapp.data.db.dao.friends.FriendRequestDao
 import com.example.hubtrackerapp.data.db.dao.HabitDao
 import com.example.hubtrackerapp.data.db.dao.HabitProgressDao
 import com.example.hubtrackerapp.data.db.dao.UserDao
+import com.example.hubtrackerapp.data.db.dao.club.ClubDao
+import com.example.hubtrackerapp.data.db.dao.club.ClubFeedDao
+import com.example.hubtrackerapp.data.db.dao.club.ClubStatsDao
+import com.example.hubtrackerapp.data.db.dao.club.UserInClubDao
 import com.example.hubtrackerapp.data.db.dao.friends.FriendDao
 import com.example.hubtrackerapp.data.db.dao.statistic.UserActionDao
 import com.example.hubtrackerapp.data.predefined.PredefinedHabitData
 import com.example.hubtrackerapp.data.predefined.PredefinedHabitRepositoryImpl
+import com.example.hubtrackerapp.data.repository.ClubRepositoryImpl
 import com.example.hubtrackerapp.data.repository.FriendsRepositoryImpl
 import com.example.hubtrackerapp.data.repository.StatisticRepositoryImpl
 import com.example.hubtrackerapp.domain.auth.AuthRepository
 import com.example.hubtrackerapp.domain.hubbit.HabitRepository
 import com.example.hubtrackerapp.domain.hubbit.models.PredefinedHabit
+import com.example.hubtrackerapp.domain.hubbit.models.club.repository.ClubRepository
 import com.example.hubtrackerapp.domain.predefined.GetAllPredefinedHabitsUseCase
 import com.example.hubtrackerapp.domain.predefined.PredefinedHabitRepository
 import com.example.hubtrackerapp.domain.hubbit.models.friends.repository.FriendsRepository
@@ -37,6 +43,12 @@ interface DataModule {
     fun bindHabitRepository(
         impl: HabitsRepositoryImpl
     ): HabitRepository
+
+    @Singleton
+    @Binds
+    fun bindClubRepository(
+        impl: ClubRepositoryImpl
+    ): ClubRepository
 
     @Singleton
     @Binds
@@ -70,7 +82,6 @@ interface DataModule {
         ): HabitsDatabase {
             return HabitsDatabase.getInstance(context)
         }
-
 
 
         @Singleton
@@ -116,6 +127,35 @@ interface DataModule {
             database: HabitsDatabase
         ): UserActionDao {
             return database.userActionDao()
+        }
+
+        @Singleton
+        @Provides
+        fun provideClubFeedDao(
+            database: HabitsDatabase
+        ): ClubFeedDao {
+            return database.clubFeedDao()
+        }
+        @Singleton
+        @Provides
+        fun provideClubDao(
+            database: HabitsDatabase
+        ): ClubDao {
+            return database.clubDao()
+        }
+        @Singleton
+        @Provides
+        fun provideClubStatsDao(
+            database: HabitsDatabase
+        ): ClubStatsDao {
+            return database.clubStatsDao()
+        }
+        @Singleton
+        @Provides
+        fun provideUserInClubDao(
+            database: HabitsDatabase
+        ): UserInClubDao {
+            return database.userInClubDao()
         }
 
         @Singleton

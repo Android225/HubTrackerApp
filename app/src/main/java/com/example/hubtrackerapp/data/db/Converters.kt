@@ -6,6 +6,7 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.room.TypeConverter
 import com.example.hubtrackerapp.data.db.model.HabitScheduleDbModel
 import com.example.hubtrackerapp.domain.hubbit.models.ModeForSwitchInHabit
+import com.example.hubtrackerapp.domain.hubbit.models.club.model.RoleMode
 import com.example.hubtrackerapp.domain.hubbit.models.friends.model.RequestStatus
 import com.example.hubtrackerapp.domain.hubbit.models.statistic.model.ActionType
 import com.google.gson.Gson
@@ -74,4 +75,11 @@ class Converters {
     @TypeConverter
     fun toActionType(value: String?): ActionType? =
         value?.let { ActionType.valueOf(it) }
+
+    @TypeConverter
+    fun fromRoleMode(type: RoleMode?): String? = type?.name
+
+    @TypeConverter
+    fun toRoleMode(value: String?): RoleMode? =
+        value?.let { RoleMode.valueOf(it) }
 }

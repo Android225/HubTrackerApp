@@ -11,6 +11,10 @@ import com.example.hubtrackerapp.data.db.dao.friends.FriendRequestDao
 import com.example.hubtrackerapp.data.db.dao.HabitDao
 import com.example.hubtrackerapp.data.db.dao.HabitProgressDao
 import com.example.hubtrackerapp.data.db.dao.UserDao
+import com.example.hubtrackerapp.data.db.dao.club.ClubDao
+import com.example.hubtrackerapp.data.db.dao.club.ClubFeedDao
+import com.example.hubtrackerapp.data.db.dao.club.ClubStatsDao
+import com.example.hubtrackerapp.data.db.dao.club.UserInClubDao
 import com.example.hubtrackerapp.data.db.dao.friends.FriendDao
 import com.example.hubtrackerapp.data.db.dao.statistic.UserActionDao
 import com.example.hubtrackerapp.data.db.model.HabitDbModel
@@ -35,6 +39,10 @@ abstract class HabitsDatabase : RoomDatabase() {
     abstract fun friendRequestDao(): FriendRequestDao
     abstract fun friendDao(): FriendDao
     abstract fun userActionDao(): UserActionDao
+    abstract fun clubDao(): ClubDao
+    abstract fun clubFeedDao(): ClubFeedDao
+    abstract fun clubStatsDao(): ClubStatsDao
+    abstract fun userInClubDao(): UserInClubDao
 
     companion object{
 
