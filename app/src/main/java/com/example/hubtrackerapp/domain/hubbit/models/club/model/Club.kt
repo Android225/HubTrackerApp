@@ -1,6 +1,4 @@
-package com.example.hubtrackerapp.domain.hubbit.models.club
-
-import java.time.LocalDate
+package com.example.hubtrackerapp.domain.hubbit.models.club.model
 
 data class Club (
     val clubId: String,

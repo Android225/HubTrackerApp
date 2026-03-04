@@ -1,4 +1,4 @@
-package com.example.hubtrackerapp.domain.hubbit.models.club
+package com.example.hubtrackerapp.domain.hubbit.models.club.model
 
 data class ClubStats (
     val clubId: String,

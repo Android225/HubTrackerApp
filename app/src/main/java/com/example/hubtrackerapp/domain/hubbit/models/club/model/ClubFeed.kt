@@ -1,4 +1,4 @@
-package com.example.hubtrackerapp.domain.hubbit.models.club
+package com.example.hubtrackerapp.domain.hubbit.models.club.model
 
 import com.example.hubtrackerapp.domain.hubbit.models.statistic.model.ActionType
 
