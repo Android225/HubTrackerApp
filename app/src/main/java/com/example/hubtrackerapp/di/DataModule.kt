@@ -7,6 +7,11 @@ import com.example.hubtrackerapp.data.db.dao.friends.FriendRequestDao
 import com.example.hubtrackerapp.data.db.dao.HabitDao
 import com.example.hubtrackerapp.data.db.dao.HabitProgressDao
 import com.example.hubtrackerapp.data.db.dao.UserDao
+import com.example.hubtrackerapp.data.db.dao.challenge.ChallengeDao
+import com.example.hubtrackerapp.data.db.dao.challenge.ChallengeHabitDao
+import com.example.hubtrackerapp.data.db.dao.challenge.ChallengeInvitationDao
+import com.example.hubtrackerapp.data.db.dao.challenge.ChallengeParticipantDao
+import com.example.hubtrackerapp.data.db.dao.challenge.UserCurrentChallengeDao
 import com.example.hubtrackerapp.data.db.dao.club.ClubDao
 import com.example.hubtrackerapp.data.db.dao.club.ClubFeedDao
 import com.example.hubtrackerapp.data.db.dao.club.ClubStatsDao
@@ -149,6 +154,41 @@ interface DataModule {
             database: HabitsDatabase
         ): ClubStatsDao {
             return database.clubStatsDao()
+        }
+        @Singleton
+        @Provides
+        fun provideChallengeDao(
+            database: HabitsDatabase
+        ): ChallengeDao {
+            return database.challengeDao()
+        }
+        @Singleton
+        @Provides
+        fun provideChallengeHabitDao(
+            database: HabitsDatabase
+        ): ChallengeHabitDao {
+            return database.challengeHabitDao()
+        }
+        @Singleton
+        @Provides
+        fun provideChallengeInvitationDao(
+            database: HabitsDatabase
+        ): ChallengeInvitationDao {
+            return database.challengeInvitationDao()
+        }
+        @Singleton
+        @Provides
+        fun provideChallengeParticipantDao(
+            database: HabitsDatabase
+        ): ChallengeParticipantDao {
+            return database.challengeParticipantDao()
+        }
+        @Singleton
+        @Provides
+        fun provideUserCurrentChallengeDao(
+            database: HabitsDatabase
+        ): UserCurrentChallengeDao {
+            return database.userCurrentChallengeDao()
         }
         @Singleton
         @Provides
