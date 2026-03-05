@@ -1,4 +1,4 @@
-package com.example.hubtrackerapp.domain.hubbit.models.challenges
+package com.example.hubtrackerapp.domain.hubbit.models.challenges.model
 
 import HabitMetric
 import java.time.LocalDate

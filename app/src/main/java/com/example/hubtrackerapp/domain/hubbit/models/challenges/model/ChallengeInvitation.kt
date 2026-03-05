@@ -1,4 +1,4 @@
-package com.example.hubtrackerapp.domain.hubbit.models.challenges
+package com.example.hubtrackerapp.domain.hubbit.models.challenges.model
 
 data class ChallengeInvitation (
     val challengeId: String,

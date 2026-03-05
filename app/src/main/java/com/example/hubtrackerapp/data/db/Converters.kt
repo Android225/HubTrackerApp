@@ -6,6 +6,10 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.room.TypeConverter
 import com.example.hubtrackerapp.data.db.model.HabitScheduleDbModel
 import com.example.hubtrackerapp.domain.hubbit.models.ModeForSwitchInHabit
+import com.example.hubtrackerapp.domain.hubbit.models.challenges.model.ChallengeGoalType
+import com.example.hubtrackerapp.domain.hubbit.models.challenges.model.ChallengeVisibility
+import com.example.hubtrackerapp.domain.hubbit.models.challenges.model.InvitationStatus
+import com.example.hubtrackerapp.domain.hubbit.models.challenges.model.ParticipantStatus
 import com.example.hubtrackerapp.domain.hubbit.models.club.model.RoleMode
 import com.example.hubtrackerapp.domain.hubbit.models.friends.model.RequestStatus
 import com.example.hubtrackerapp.domain.hubbit.models.statistic.model.ActionType
@@ -82,4 +86,37 @@ class Converters {
     @TypeConverter
     fun toRoleMode(value: String?): RoleMode? =
         value?.let { RoleMode.valueOf(it) }
+
+    @TypeConverter
+    fun fromChallengeVisibility(visibility: ChallengeVisibility?): String? =
+        visibility?.name
+
+    @TypeConverter
+    fun toChallengeVisibility(value: String?): ChallengeVisibility? =
+        value?.let { ChallengeVisibility.valueOf(it) }
+
+    @TypeConverter
+    fun fromChallengeGoalType(goalType: ChallengeGoalType?): String? =
+        goalType?.name
+
+    @TypeConverter
+    fun toChallengeGoalType(value: String?): ChallengeGoalType? =
+        value?.let { ChallengeGoalType.valueOf(it) }
+
+    @TypeConverter
+    fun fromInvitationStatus(status: InvitationStatus?): String? =
+        status?.name
+
+    @TypeConverter
+    fun toInvitationStatus(value: String?): InvitationStatus? =
+        value?.let { InvitationStatus.valueOf(it) }
+
+    @TypeConverter
+    fun fromParticipantStatus(status: ParticipantStatus?): String? =
+        status?.name
+
+    @TypeConverter
+    fun toParticipantStatus(value: String?): ParticipantStatus? =
+        value?.let { ParticipantStatus.valueOf(it) }
+
 }

@@ -1,8 +1,15 @@
-package com.example.hubtrackerapp.domain.hubbit.models.challenges
+package com.example.hubtrackerapp.data.db.model.challenge
 
 import HabitMetric
+import androidx.room.Entity
+import androidx.room.PrimaryKey
+import java.time.LocalDate
 
-data class ChallengeHabit (
+@Entity(
+    tableName = "challenge_habits",
+    primaryKeys = ["challengeId", "habitId"]
+)
+data class ChallengeHabitDBModel(
     val challengeId: String,
     val habitId: String,
     val habitName: String,
