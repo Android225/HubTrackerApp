@@ -94,8 +94,8 @@ interface ChallengeRepository {
         message: String? = null
     ): Result<ChallengeInvitation>
 
-    suspend fun acceptInvitation(invitationId: String): Result<ChallengeParticipant>
-    suspend fun declineInvitation(invitationId: String): Result<Unit>
+    suspend fun acceptInvitation(challengeId: String, invitedUserId: String): Result<ChallengeParticipant>
+    suspend fun declineInvitation(challengeId: String,invitedUserId: String): Result<Unit>
     suspend fun getIncomingInvitations(userId: String): List<ChallengeInvitation>
     suspend fun getOutgoingInvitations(userId: String): List<ChallengeInvitation>
 
