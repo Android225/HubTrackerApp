@@ -56,6 +56,8 @@ import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.BottomSheetDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -97,6 +99,7 @@ import com.example.hubtrackerapp.domain.hubbit.models.HomeMenuType
 import com.example.hubtrackerapp.domain.hubbit.models.ModeForSwitch
 import com.example.hubtrackerapp.domain.hubbit.models.PredefinedHabit
 import com.example.hubtrackerapp.domain.hubbit.models.SwipeHabitState
+import com.example.hubtrackerapp.domain.hubbit.models.club.model.Club
 import com.example.hubtrackerapp.domain.hubbit.models.forUi.CalendarDayUi
 import com.example.hubtrackerapp.domain.hubbit.models.forUi.HabitWithProgressUi
 import com.example.hubtrackerapp.domain.hubbit.models.forUi.Mood
@@ -201,7 +204,12 @@ fun HomeScreen(
                         )
                     }
 
-                    ModeForSwitch.CLUBS -> {}
+                    ModeForSwitch.CLUBS -> {
+                        HomeClubsScreen(
+                            onClubClick = {TODO("Сделать переход на экран клуба")},
+                            clubList = state.clubs
+                        )
+                    }
                 }
 
             }
@@ -286,6 +294,105 @@ fun HomeScreen(
     }
 }
 
+@Composable
+fun CreateClubButton(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        modifier = modifier.clickable(onClick = onClick),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant // нейтральный цвет
+        )
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                imageVector = Icons.Default.Add,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.6f) // ненавязчиво
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+                text = "Создать новый клуб",
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.6f)
+            )
+        }
+    }
+}
+
+@Composable
+private fun HomeClubsScreen(
+    modifier: Modifier = Modifier,
+    onClubClick: (String) -> Unit,
+    clubList: List<Club>
+){
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(10.dp),
+        contentPadding = PaddingValues(
+            bottom = 10.dp
+        )
+    ) {
+        itemsIndexed(
+            items = clubList,
+            key = { _, club: Club -> club.title }
+        ) { index, club ->
+            ClubCard(
+                club = club,
+                onClubClick = onClubClick
+            )
+        }
+        item {
+            CreateClubButton(
+                onClick = { TODO("создать клуб") },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
+            )
+        }
+    }
+}
+
+@Composable
+private fun ClubCard(
+    modifier: Modifier = Modifier,
+    club: Club,
+    onClubClick: (String) -> Unit
+){
+
+    Row(
+        modifier = modifier
+            .fillMaxSize()
+            //.fillMaxWidth()
+            //.padding(horizontal = 24.dp)
+            //.padding(top = 12.dp)
+            .border(
+                width = 1.dp,
+                color = Black10,
+                shape = RoundedCornerShape(16.dp)
+            ).clickable{
+                onClubClick(club.clubId)
+            }
+        ,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+
+        TextForChallengesAndHabits(
+            modifier = Modifier
+                .weight(1f),
+            cardName = club.title,
+            additionalInfo = "${club.memberCount} - members"
+        )
+    }
+}
 @Composable
 private fun AddOrCreateHabit(
     predefinedHabits: List<PredefinedHabit>,

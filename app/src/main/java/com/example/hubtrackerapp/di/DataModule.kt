@@ -20,12 +20,14 @@ import com.example.hubtrackerapp.data.db.dao.friends.FriendDao
 import com.example.hubtrackerapp.data.db.dao.statistic.UserActionDao
 import com.example.hubtrackerapp.data.predefined.PredefinedHabitData
 import com.example.hubtrackerapp.data.predefined.PredefinedHabitRepositoryImpl
+import com.example.hubtrackerapp.data.repository.ChallengeRepositoryImpl
 import com.example.hubtrackerapp.data.repository.ClubRepositoryImpl
 import com.example.hubtrackerapp.data.repository.FriendsRepositoryImpl
 import com.example.hubtrackerapp.data.repository.StatisticRepositoryImpl
 import com.example.hubtrackerapp.domain.auth.AuthRepository
 import com.example.hubtrackerapp.domain.hubbit.HabitRepository
 import com.example.hubtrackerapp.domain.hubbit.models.PredefinedHabit
+import com.example.hubtrackerapp.domain.hubbit.models.challenges.repository.ChallengeRepository
 import com.example.hubtrackerapp.domain.hubbit.models.club.repository.ClubRepository
 import com.example.hubtrackerapp.domain.predefined.GetAllPredefinedHabitsUseCase
 import com.example.hubtrackerapp.domain.predefined.PredefinedHabitRepository
@@ -40,7 +42,7 @@ import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 
 @Module
-@InstallIn(SingletonComponent:: class)
+@InstallIn(SingletonComponent::class)
 interface DataModule {
 
     @Singleton
@@ -60,6 +62,7 @@ interface DataModule {
     fun bindFriendsRepository(
         impl: FriendsRepositoryImpl
     ): FriendsRepository
+
     @Singleton
     @Binds
     fun bindStatisticRepository(
@@ -78,12 +81,19 @@ interface DataModule {
         impl: PredefinedHabitRepositoryImpl
     ): PredefinedHabitRepository
 
-    companion object{
+    //ChallengeRepositoryImpl
+    @Binds
+    @Singleton
+    fun bindChallengeRepository(
+        impl: ChallengeRepositoryImpl
+    ): ChallengeRepository
+
+    companion object {
 
         @Singleton
         @Provides
         fun provideDatabase(
-           @ApplicationContext context: Context
+            @ApplicationContext context: Context
         ): HabitsDatabase {
             return HabitsDatabase.getInstance(context)
         }
@@ -96,6 +106,7 @@ interface DataModule {
         ): HabitDao {
             return database.habitDao()
         }
+
         @Singleton
         @Provides
         fun provideHabitProgressDao(
@@ -103,6 +114,7 @@ interface DataModule {
         ): HabitProgressDao {
             return database.habitProgressDao()
         }
+
         @Singleton
         @Provides
         fun provideUserDao(
@@ -126,6 +138,7 @@ interface DataModule {
         ): FriendDao {
             return database.friendDao()
         }
+
         @Singleton
         @Provides
         fun provideUserActionDao(
@@ -141,6 +154,7 @@ interface DataModule {
         ): ClubFeedDao {
             return database.clubFeedDao()
         }
+
         @Singleton
         @Provides
         fun provideClubDao(
@@ -148,6 +162,7 @@ interface DataModule {
         ): ClubDao {
             return database.clubDao()
         }
+
         @Singleton
         @Provides
         fun provideClubStatsDao(
@@ -155,6 +170,7 @@ interface DataModule {
         ): ClubStatsDao {
             return database.clubStatsDao()
         }
+
         @Singleton
         @Provides
         fun provideChallengeDao(
@@ -162,6 +178,7 @@ interface DataModule {
         ): ChallengeDao {
             return database.challengeDao()
         }
+
         @Singleton
         @Provides
         fun provideChallengeHabitDao(
@@ -169,6 +186,7 @@ interface DataModule {
         ): ChallengeHabitDao {
             return database.challengeHabitDao()
         }
+
         @Singleton
         @Provides
         fun provideChallengeInvitationDao(
@@ -176,6 +194,7 @@ interface DataModule {
         ): ChallengeInvitationDao {
             return database.challengeInvitationDao()
         }
+
         @Singleton
         @Provides
         fun provideChallengeParticipantDao(
@@ -183,6 +202,7 @@ interface DataModule {
         ): ChallengeParticipantDao {
             return database.challengeParticipantDao()
         }
+
         @Singleton
         @Provides
         fun provideUserCurrentChallengeDao(
@@ -190,6 +210,7 @@ interface DataModule {
         ): UserCurrentChallengeDao {
             return database.userCurrentChallengeDao()
         }
+
         @Singleton
         @Provides
         fun provideUserInClubDao(

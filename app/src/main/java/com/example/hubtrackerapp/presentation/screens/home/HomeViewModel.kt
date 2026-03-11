@@ -22,6 +22,8 @@ import com.example.hubtrackerapp.domain.hubbit.models.HabitProgress
 import com.example.hubtrackerapp.domain.hubbit.models.HomeMenuType
 import com.example.hubtrackerapp.domain.hubbit.models.ModeForSwitch
 import com.example.hubtrackerapp.domain.hubbit.models.SwipeHabitState
+import com.example.hubtrackerapp.domain.hubbit.models.club.model.Club
+import com.example.hubtrackerapp.domain.hubbit.models.club.use_case.club.GetClubsUseCase
 import com.example.hubtrackerapp.domain.hubbit.models.forUi.CalendarDayUi
 import com.example.hubtrackerapp.domain.hubbit.models.forUi.HabitWithProgressUi
 import com.example.hubtrackerapp.domain.hubbit.models.forUi.Mood
@@ -48,7 +50,8 @@ class HomeViewModel @Inject constructor(
     private val switchCompleteStatusUseCase: SwitchCompleteStatusUseCase,
     private val switchFailStatusUseCase: SwitchFailStatusUseCase,
     private val switchSkipStatusUseCase: SwitchSkipStatusUseCase,
-    private val saveProgressUseCase: SaveProgressUseCase
+    private val saveProgressUseCase: SaveProgressUseCase,
+    private val getClubsUseCase: GetClubsUseCase
 ) : ViewModel() {
 
     //private val repository = HabitRepositoryImpl
@@ -73,6 +76,7 @@ class HomeViewModel @Inject constructor(
     val calendarDays = _calendarDays.asStateFlow()
 
     init {
+        loadClubs()
         generateMonth()
         selectedDate
             .onEach { date ->
@@ -102,6 +106,12 @@ class HomeViewModel @Inject constructor(
                     )
                 }
             }.launchIn(viewModelScope)
+    }
+    private fun loadClubs() {
+        viewModelScope.launch {
+            val clubs = getClubsUseCase()
+            _state.update { it.copy(clubs = clubs) }
+        }
     }
 
     private fun generateMonth() {
@@ -141,31 +151,31 @@ class HomeViewModel @Inject constructor(
                                     progressWithTarget = habit.target
                                 )
 
-                                    if(updatedHabit.isCompleted){
-                                        saveProgressUseCase(
-                                            HabitProgress(
-                                                habitId = updatedHabit.habitId,
-                                                date = selectedDate.value,
-                                                isCompleted = false,
-                                                progress = 0f,
-                                                progressWithTarget = "0",
-                                                skipped = updatedHabit.skipped,
-                                                failed = updatedHabit.failed
-                                            )
+                                if (updatedHabit.isCompleted) {
+                                    saveProgressUseCase(
+                                        HabitProgress(
+                                            habitId = updatedHabit.habitId,
+                                            date = selectedDate.value,
+                                            isCompleted = false,
+                                            progress = 0f,
+                                            progressWithTarget = "0",
+                                            skipped = updatedHabit.skipped,
+                                            failed = updatedHabit.failed
                                         )
-                                    } else {
-                                        saveProgressUseCase(
-                                            HabitProgress(
-                                                habitId = updatedHabit.habitId,
-                                                date = selectedDate.value,
-                                                isCompleted = true,
-                                                progress = updatedHabit.progress,
-                                                progressWithTarget = updatedHabit.target,
-                                                skipped = updatedHabit.skipped,
-                                                failed = updatedHabit.failed
-                                            )
+                                    )
+                                } else {
+                                    saveProgressUseCase(
+                                        HabitProgress(
+                                            habitId = updatedHabit.habitId,
+                                            date = selectedDate.value,
+                                            isCompleted = true,
+                                            progress = updatedHabit.progress,
+                                            progressWithTarget = updatedHabit.target,
+                                            skipped = updatedHabit.skipped,
+                                            failed = updatedHabit.failed
                                         )
-                                    }
+                                    )
+                                }
 
 
                                 updatedHabit
@@ -319,6 +329,11 @@ class HomeViewModel @Inject constructor(
                 _state.update {
                     it.copy(mode = event.newMode)
                 }
+                //актуальынй список клубов
+                if (event.newMode == ModeForSwitch.CLUBS) {
+                    loadClubs()
+                    Log.d("Home", "mode change to -> ${event.newMode} - get clubs -> loadClubs()")
+                }
             }
 
             is HomeEvent.OnDateChanged -> {
@@ -398,7 +413,7 @@ data class HomeUiState(
     val userName: String = "",
     val mood: Mood = Mood.Happy,
     val editProgressState: EditProgressState? = null,
-    //val clubs: List<ClubUI>
+    val clubs: List<Club> = emptyList(),
     //val challenges: List<ChallengesUI>
     val canEditToday: Boolean = false
 )
@@ -423,7 +438,7 @@ sealed interface HabitCommands {
 sealed interface HomeEvent {
     data object AddClicked : HomeEvent
     data object DismissAddMenu : HomeEvent
-    data object OpenBottomSheet: HomeEvent
+    data object OpenBottomSheet : HomeEvent
     data object ExploreClick : HomeEvent
     data object ActivityClick : HomeEvent
     data object ProfileClick : HomeEvent

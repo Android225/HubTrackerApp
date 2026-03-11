@@ -25,14 +25,38 @@ import com.example.hubtrackerapp.data.db.dao.statistic.UserActionDao
 import com.example.hubtrackerapp.data.db.model.HabitDbModel
 import com.example.hubtrackerapp.data.db.model.HabitProgressDbModel
 import com.example.hubtrackerapp.data.db.model.UserDbModel
+import com.example.hubtrackerapp.data.db.model.challenge.ChallengeDBModel
+import com.example.hubtrackerapp.data.db.model.challenge.ChallengeHabitDBModel
+import com.example.hubtrackerapp.data.db.model.challenge.ChallengeInvitationDBModel
+import com.example.hubtrackerapp.data.db.model.challenge.ChallengeParticipantDBModel
+import com.example.hubtrackerapp.data.db.model.challenge.UserCurrentChallengeDBModel
+import com.example.hubtrackerapp.data.db.model.club.ClubDBModel
+import com.example.hubtrackerapp.data.db.model.club.ClubFeedDBModel
+import com.example.hubtrackerapp.data.db.model.club.ClubStatsDBModel
+import com.example.hubtrackerapp.data.db.model.club.UserInClubDBModel
+import com.example.hubtrackerapp.data.db.model.friends.FriendDBModel
+import com.example.hubtrackerapp.data.db.model.friends.FriendRequestDBModel
+import com.example.hubtrackerapp.data.db.model.statistic.UserActionDBModel
 
 @Database(
     entities = [
         UserDbModel::class,
         HabitDbModel::class,
-        HabitProgressDbModel::class
+        HabitProgressDbModel::class,
+        FriendRequestDBModel::class,
+        FriendDBModel::class,
+        UserActionDBModel::class,
+        ClubDBModel::class,
+        ClubFeedDBModel::class,
+        ClubStatsDBModel::class,
+        UserInClubDBModel::class,
+        ChallengeDBModel::class,
+        ChallengeHabitDBModel::class,
+        ChallengeInvitationDBModel::class,
+        ChallengeParticipantDBModel::class,
+        UserCurrentChallengeDBModel::class
                ],
-    version = 3,
+    version = 4,
     exportSchema = true
 )
 @TypeConverters(Converters::class)
