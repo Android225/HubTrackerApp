@@ -83,6 +83,8 @@ import com.example.hubtrackerapp.domain.hubbit.models.PredefinedHabit
 import com.example.hubtrackerapp.domain.hubbit.models.toDisplayText
 import com.example.hubtrackerapp.presentation.screens.components.ModSwitcher
 import com.example.hubtrackerapp.presentation.screens.components.SwitcherOption
+import com.example.hubtrackerapp.presentation.screens.components.TextContent
+import com.example.hubtrackerapp.presentation.screens.components.TextStr
 import com.example.hubtrackerapp.presentation.theme.Black10
 import com.example.hubtrackerapp.presentation.theme.Black100
 import com.example.hubtrackerapp.presentation.theme.Black20
@@ -1376,48 +1378,4 @@ private fun ChoiceParametersForHabit(
             )
         }
     }
-}
-
-@Composable
-private fun TextStr(
-    modifier: Modifier = Modifier,
-    text: String
-) {
-    Text(
-        modifier = modifier,
-        text = text,
-        style = MaterialTheme.typography.labelSmall
-    )
-}
-
-@Composable
-private fun TextContent(
-    modifier: Modifier = Modifier,
-    text: String,
-    textPlace: String,
-    onTextChanged: (String) -> Unit,
-    visualTransformation: VisualTransformation = VisualTransformation.None
-) {
-    TextField(
-        modifier = modifier
-            .fillMaxWidth(),
-        value = text,
-        onValueChange = onTextChanged,
-        colors = TextFieldDefaults.colors(
-            focusedContainerColor = Color.Transparent,
-            unfocusedContainerColor = Color.Transparent
-            //Доделать цвета
-            //focusedIndicatorColor = Color.Transparent,
-            //unfocusedIndicatorColor = Color.Transparent
-        ),
-        visualTransformation = visualTransformation,
-        textStyle = MaterialTheme.typography.titleLarge,
-        placeholder = {
-            Text(
-                text = textPlace,
-                style = MaterialTheme.typography.titleLarge,
-                color = Black20
-            )
-        }
-    )
 }

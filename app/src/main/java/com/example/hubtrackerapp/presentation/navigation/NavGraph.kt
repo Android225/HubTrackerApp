@@ -12,6 +12,7 @@ import androidx.navigation.navigation
 import com.example.hubtrackerapp.presentation.screens.add.AddHabit
 import com.example.hubtrackerapp.presentation.screens.authorization.AuthorizationHubScreen
 import com.example.hubtrackerapp.presentation.screens.authorization.RegistrationEnterEmailScreen
+import com.example.hubtrackerapp.presentation.screens.clubs.add_club.AddClubScreen
 import com.example.hubtrackerapp.presentation.screens.home.HomeScreen
 import com.example.hubtrackerapp.presentation.screens.registration.RegistrationChooseHabbitsScreen
 import com.example.hubtrackerapp.presentation.screens.registration.RegistrationChoseGenderScreen
@@ -19,12 +20,14 @@ import com.example.hubtrackerapp.presentation.screens.registration.RegistrationS
 import com.example.hubtrackerapp.presentation.screens.registration.RegistrationViewModel
 
 @Composable
-fun NavGraph() {
+fun NavGraph(
+    startDestination: String = Screen.Authorization.route
+) {
     val navController = rememberNavController()
 
     NavHost(
         navController = navController,
-        startDestination = Screen.Authorization.route
+        startDestination = startDestination
     ) {
         composable(Screen.Authorization.route) {
            Log.d("Navigate","Screen.Authorization.route")
@@ -147,6 +150,14 @@ fun NavGraph() {
                         "add_habit/$data"
                     }
                     navController.navigate(route)
+                },
+                onAddClubClick = { data ->
+                    val route = if (data == null) {
+                        "add_club"
+                    } else {
+                        "add_club/$data"
+                    }
+                    navController.navigate(route)
                 }
             )
         }
@@ -160,6 +171,23 @@ fun NavGraph() {
             )
         }
 
+        composable("add_club") {
+            AddClubScreen(
+                editData = null,
+                onBackClick = {
+                    navController.popBackStack()
+                }
+            )
+        }
+        composable("add_club/{edit_data}") {
+            val editData = it.arguments?.getString("edit_data")
+            AddClubScreen(
+                editData = editData,
+                onBackClick = {
+                    navController.popBackStack()
+                }
+            )
+        }
         composable("add_habit/{edit_data}") {
             val editData = it.arguments?.getString("edit_data")
             AddHabit(
@@ -170,6 +198,15 @@ fun NavGraph() {
             )
         }
 
+        composable(Screen.AddClub.route) {
+            val editData = Screen.AddClub.getClubData(it.arguments)
+            AddClubScreen(
+                editData = editData,
+                onBackClick = {
+                    navController.popBackStack()
+                }
+            )
+        }
 
         composable(Screen.AddHabit.route) {
             val editData = Screen.AddHabit.getHabitData(it.arguments)
@@ -199,6 +236,14 @@ sealed class Screen(val route: String) {
         fun createEditRoute(data: String): String = "add_habit/$data"
 
         fun getHabitData(arguments: Bundle?): String? {
+            return arguments?.getString("edit_data")
+        }
+    }
+    data object AddClub: Screen("add_club/{edit_data}") {
+        fun createRoute(): String = "add_club"
+        fun createEditRoute(data: String): String = "add_club/$data"
+
+        fun getClubData(arguments: Bundle?): String? {
             return arguments?.getString("edit_data")
         }
     }

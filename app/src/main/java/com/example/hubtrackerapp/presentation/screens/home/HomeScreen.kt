@@ -123,7 +123,8 @@ import java.time.LocalDate
 fun HomeScreen(
     modifier: Modifier = Modifier,
     viewModel: HomeViewModel = hiltViewModel(),
-    onAddHabitClick: (String?) -> Unit
+    onAddHabitClick: (String?) -> Unit,
+    onAddClubClick: (String?) -> Unit
 ) {
     val state by viewModel.state.collectAsState()
     val predefinedHabits = viewModel.predefinedHabits
@@ -206,8 +207,12 @@ fun HomeScreen(
 
                     ModeForSwitch.CLUBS -> {
                         HomeClubsScreen(
-                            onClubClick = {TODO("Сделать переход на экран клуба")},
-                            clubList = state.clubs
+                            onClubClick = {TODO("Переход на экран клуба")},
+                            clubList = state.clubs,
+                            onAddClubClick = {
+                                onAddClubClick(it)
+                            }
+
                         )
                     }
                 }
@@ -331,7 +336,8 @@ fun CreateClubButton(
 private fun HomeClubsScreen(
     modifier: Modifier = Modifier,
     onClubClick: (String) -> Unit,
-    clubList: List<Club>
+    clubList: List<Club>,
+    onAddClubClick: (String?) -> Unit
 ){
     LazyColumn(
         modifier = Modifier
@@ -352,7 +358,7 @@ private fun HomeClubsScreen(
         }
         item {
             CreateClubButton(
-                onClick = { TODO("создать клуб") },
+                onClick = { onAddClubClick(null) },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(16.dp)

@@ -117,7 +117,7 @@ class ClubRepositoryImpl @Inject constructor(
                 return Result.failure(Exception("Only admin can update club"))
             }
 
-            val updatedClub = club.copy(lastUpdate = System.currentTimeMillis())
+            val updatedClub = club.copy(lastUpdate = System.currentTimeMillis(), createdAt = existing.createdAt, memberCount = existing.memberCount)
             clubDao.updateClub(updatedClub.toClubDbModel())
 
             Result.success(updatedClub)
